@@ -123,23 +123,28 @@ function pathAllowedForRole(
   // datos personales; ayuda para el manual de uso (sales, admin, manager).
   if (pathname === "/perfil" || pathname.startsWith("/perfil/")) return true;
   if (pathname === "/ayuda" || pathname.startsWith("/ayuda/")) return true;
+  // Helpdesk interno — accesible a los tres roles de org (no super_admin).
+  if (pathname === "/soporte" || pathname.startsWith("/soporte/")) return true;
   if (role === "admin") return true;
   if (role === "sales") {
     return (
       pathname.startsWith("/panel") ||
-      pathname.startsWith("/clientes")
+      pathname.startsWith("/clientes") ||
+      // Autoservicio de su propio Excel; el endpoint valida que salesId = self.
+      pathname.startsWith("/api/export/sales")
     );
   }
   if (role === "reviews_manager") {
     // El gestor comparte vistas con el admin (Dashboard + comerciales) y
     // tiene plenos permisos de administración sobre el rol `sales` (migración
     // 005): invitar, editar, reenviar acceso, eliminar. Lo que sigue siendo
-    // solo-admin: /gestores, /fichas, /resenas/verificacion, /ajustes.
+    // solo-admin: /gestores, /fichas, /resenas/verificacion.
     // /manager/* aloja los listados read-only del propio gestor (lista global
     // de reseñas, exportar Excel).
     return (
       pathname === "/dashboard" ||
       pathname.startsWith("/comerciales") ||
+      pathname.startsWith("/ranking") ||
       pathname.startsWith("/manager") ||
       pathname.startsWith("/api/export")
     );

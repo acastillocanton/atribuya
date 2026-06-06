@@ -14,6 +14,8 @@ import {
   Download,
   Link2,
   LifeBuoy,
+  MessageCircle,
+  Trophy,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { pickActiveId } from "./active-item";
@@ -142,6 +144,36 @@ export function Sidebar({ groups, user }: SidebarProps) {
           gap: 4,
         }}
       >
+        {/* Soporte interno (helpdesk) — accesible a los tres roles. Sin badge
+            de no-leídos por ahora (requeriría llamar a support_unread_count()
+            en el layout; se añade cuando la migración 016 esté aplicada). */}
+        <Link
+          href="/soporte"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "7px 10px",
+            borderRadius: 8,
+            background: pathname.startsWith("/soporte") ? "rgba(0,0,0,0.05)" : "transparent",
+            color: pathname.startsWith("/soporte") ? "var(--ink)" : "var(--ink-3)",
+            fontSize: 13.5,
+            fontWeight: pathname.startsWith("/soporte") ? 600 : 500,
+            textDecoration: "none",
+          }}
+        >
+          <MessageCircle
+            aria-hidden="true"
+            size={16}
+            strokeWidth={pathname.startsWith("/soporte") ? 2 : 1.75}
+            style={{
+              color: pathname.startsWith("/soporte") ? "var(--ink)" : "var(--ink-4)",
+              flexShrink: 0,
+            }}
+          />
+          <span>Soporte</span>
+        </Link>
+
         {/* Centro de ayuda — accesible a los tres roles. Pintado justo
             encima del avatar de perfil para que esté visible siempre sin
             ocupar espacio de la navegación principal. */}
@@ -228,6 +260,7 @@ export const ADMIN_SIDEBAR_GROUPS: SidebarGroup[] = [
     label: "Equipo",
     items: [
       { id: "sales", label: "Comerciales", href: "/comerciales", icon: Users },
+      { id: "ranking", label: "Ranking", href: "/ranking", icon: Trophy },
       { id: "managers", label: "Gestores", href: "/gestores", icon: UserCog },
     ],
   },
@@ -258,6 +291,7 @@ export const MANAGER_SIDEBAR_GROUPS: SidebarGroup[] = [
     items: [
       { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { id: "team", label: "Comerciales", href: "/comerciales", icon: Users },
+      { id: "ranking", label: "Ranking", href: "/ranking", icon: Trophy },
       { id: "reviews", label: "Reseñas", href: "/manager/resenas", icon: Star },
       { id: "export", label: "Exportar Excel", href: "/manager/export", icon: Download },
     ],
