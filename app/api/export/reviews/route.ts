@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { parseRange } from "@/lib/date-range";
+import { parseRange, thisMonthRange, lastMonthRange } from "@/lib/date-range";
 // Tipos de exceljs SOLO (import type) — no se incluye en el bundle.
 import type ExcelJS from "exceljs";
 
@@ -52,9 +52,18 @@ type SalesProfile = {
   full_name: string;
   monthly_goal: number;
   status: string;
+  location_id: string | null;
 };
 
 type LocationLite = { id: string; name: string };
+
+// Reseña mínima para el "Parte por ficha" (conteos mes anterior vs mes actual).
+type MonthlyReviewRow = {
+  sales_id: string | null;
+  location_id: string;
+  rating: number;
+  google_created_at: string;
+};
 
 const MATCH_LABEL: Record<string, string> = {
   counted: "Atribuida automática",
@@ -136,21 +145,39 @@ export async function GET(request: NextRequest) {
   if (salesId) shareLinksQuery = shareLinksQuery.eq("sales_id", salesId);
   if (locationId) shareLinksQuery = shareLinksQuery.eq("location_id", locationId);
 
-  const [reviewsRes, shareLinksRes, salesRes, locationsRes] = await Promise.all([
+  // "Parte por ficha" (Hoja 3): conteos counted del mes en curso vs mes anterior.
+  // Ventana independiente del rango filtrado (el informe es comparativa mensual).
+  const now = new Date();
+  const curMonth = thisMonthRange(now);
+  const prevMonth = lastMonthRange(now);
+  let monthlyQuery = supabase
+    .from("reviews")
+    .select("sales_id, location_id, rating, google_created_at")
+    .eq("match_state", "counted")
+    .eq("is_duplicate", false)
+    .is("removed_at", null)
+    .gte("google_created_at", prevMonth.startIso)
+    .lt("google_created_at", curMonth.endIso)
+    .limit(REVIEWS_HARD_LIMIT);
+  if (locationId) monthlyQuery = monthlyQuery.eq("location_id", locationId);
+
+  const [reviewsRes, shareLinksRes, salesRes, locationsRes, monthlyRes] = await Promise.all([
     query.returns<ReviewRow[]>(),
     shareLinksQuery.returns<ShareLinkRow[]>(),
     supabase
       .from("profiles")
-      .select("id, full_name, monthly_goal, status")
+      .select("id, full_name, monthly_goal, status, location_id")
       .eq("role", "sales")
       .returns<SalesProfile[]>(),
     supabase.from("locations").select("id, name").order("name").returns<LocationLite[]>(),
+    monthlyQuery.returns<MonthlyReviewRow[]>(),
   ]);
   const reviews = reviewsRes.data;
   const error = reviewsRes.error;
   const shareLinks = shareLinksRes.data ?? [];
   const allSales = salesRes.data ?? [];
   const allLocations = locationsRes.data ?? [];
+  const monthlyReviews = monthlyRes.data ?? [];
   if (error) {
     console.error("[export/reviews] query failed:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -212,6 +239,17 @@ export async function GET(request: NextRequest) {
     allSales,
     allLocations,
     filters: { salesId, locationId, matchState },
+  });
+
+  // ─── Hoja 3 — Parte por ficha (mes anterior vs mes actual) ─────────────
+  renderMonthlyByFichaSheet(workbook, {
+    allSales,
+    allLocations,
+    monthlyReviews,
+    prevMonthStartIso: prevMonth.startIso,
+    curMonthStartIso: curMonth.startIso,
+    prevMonthLabel: prevMonth.label,
+    curMonthLabel: curMonth.label,
   });
 
   const buffer = await workbook.xlsx.writeBuffer();
@@ -482,6 +520,172 @@ function renderSummarySheet(
   const foot = sheet.getCell(`A${footRow}`);
   foot.value = `Generado el ${new Date().toLocaleString("es-ES")} · Atribuya · Atribuya`;
   foot.font = { italic: true, size: 9.5, color: { argb: COLOR.ink2 } };
+}
+
+/**
+ * Hoja 3 — "Parte por ficha". Portado del parte semanal del producto base,
+ * generalizado a multi-tenant: en vez de departamentos fijos (específicos del
+ * cliente original) agrupa por FICHA (location). Por cada ficha con actividad o
+ * comerciales activos, lista sus comerciales con reseñas verificadas (counted,
+ * no duplicadas) del MES ANTERIOR vs el MES ACTUAL, con la valoración media de
+ * la ficha en esos dos meses como cabecera. Datos scoped por RLS (el caller es
+ * admin/manager → solo su org).
+ */
+function renderMonthlyByFichaSheet(
+  workbook: ExcelJS.Workbook,
+  data: {
+    allSales: SalesProfile[];
+    allLocations: LocationLite[];
+    monthlyReviews: MonthlyReviewRow[];
+    prevMonthStartIso: string;
+    curMonthStartIso: string;
+    prevMonthLabel: string;
+    curMonthLabel: string;
+  },
+) {
+  const {
+    allSales,
+    allLocations,
+    monthlyReviews,
+    curMonthStartIso,
+    prevMonthLabel,
+    curMonthLabel,
+  } = data;
+
+  const sheet = workbook.addWorksheet("Parte por ficha");
+  sheet.columns = [
+    { key: "a", width: 30 },
+    { key: "b", width: 18 },
+    { key: "c", width: 18 },
+  ];
+
+  // ── Conteos por (ficha, comercial) y mes; rating acumulado por ficha. ──
+  const prevByLocSales = new Map<string, number>();
+  const curByLocSales = new Map<string, number>();
+  const locRatingSum = new Map<string, number>();
+  const locRatingCount = new Map<string, number>();
+  const key = (loc: string, sid: string) => `${loc}|${sid}`;
+
+  for (const r of monthlyReviews) {
+    if (!r.sales_id) continue;
+    const isCur = r.google_created_at >= curMonthStartIso;
+    const m = isCur ? curByLocSales : prevByLocSales;
+    const k = key(r.location_id, r.sales_id);
+    m.set(k, (m.get(k) ?? 0) + 1);
+    locRatingSum.set(r.location_id, (locRatingSum.get(r.location_id) ?? 0) + r.rating);
+    locRatingCount.set(r.location_id, (locRatingCount.get(r.location_id) ?? 0) + 1);
+  }
+
+  const nameById = new Map(allSales.map((s) => [s.id, s.full_name] as const));
+  const salesWithActivityByLoc = new Map<string, Set<string>>();
+  for (const m of [prevByLocSales, curByLocSales]) {
+    for (const k of m.keys()) {
+      const [loc, sid] = k.split("|") as [string, string];
+      const set = salesWithActivityByLoc.get(loc) ?? new Set<string>();
+      set.add(sid);
+      salesWithActivityByLoc.set(loc, set);
+    }
+  }
+
+  // ── Cabecera de la hoja ──
+  sheet.mergeCells("A1:C1");
+  const title = sheet.getCell("A1");
+  title.value = "Atribuya · Parte por ficha";
+  title.font = { name: "Calibri", size: 18, bold: true, color: { argb: COLOR.brand } };
+  title.alignment = { vertical: "middle" };
+  sheet.getRow(1).height = 28;
+  sheet.mergeCells("A2:C2");
+  const subtitle = sheet.getCell("A2");
+  subtitle.value = `Reseñas verificadas por comercial — ${prevMonthLabel} vs ${curMonthLabel}`;
+  subtitle.font = { name: "Calibri", size: 11, color: { argb: COLOR.ink2 } };
+
+  let r = 4;
+  let anyBlock = false;
+
+  for (const loc of allLocations) {
+    // Comerciales de esta ficha: activos asignados + cualquiera con actividad.
+    const activeAssigned = allSales
+      .filter((s) => s.location_id === loc.id && s.status === "active")
+      .map((s) => s.id);
+    const ids = new Set<string>([
+      ...activeAssigned,
+      ...(salesWithActivityByLoc.get(loc.id) ?? []),
+    ]);
+    if (ids.size === 0) continue;
+    anyBlock = true;
+
+    // Cabecera de ficha con valoración media de los 2 meses.
+    const rc = locRatingCount.get(loc.id) ?? 0;
+    const avg = rc > 0 ? (locRatingSum.get(loc.id) ?? 0) / rc : null;
+    sheet.mergeCells(`A${r}:C${r}`);
+    const h = sheet.getCell(`A${r}`);
+    h.value = avg !== null
+      ? `${loc.name} · valoración ${avg.toFixed(2).replace(".", ",")} (${rc} reseñas en los 2 meses)`
+      : `${loc.name} · sin reseñas en los 2 meses`;
+    h.font = { bold: true, size: 12, color: { argb: COLOR.brand } };
+    h.fill = { type: "pattern", pattern: "solid", fgColor: { argb: COLOR.cream2 } };
+    h.alignment = { vertical: "middle" };
+    sheet.getRow(r).height = 22;
+    r++;
+
+    // Cabecera de columnas
+    const headerRow = r;
+    ["Comercial", prevMonthLabel, curMonthLabel].forEach((label, i) => {
+      const col = String.fromCharCode("A".charCodeAt(0) + i);
+      const c = sheet.getCell(`${col}${headerRow}`);
+      c.value = label;
+      c.font = { bold: true, size: 11 };
+      c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: COLOR.cream } };
+      c.border = { bottom: { style: "thin", color: { argb: COLOR.line } } };
+      c.alignment = { vertical: "middle", horizontal: i === 0 ? "left" : "right" };
+    });
+    r++;
+
+    // Filas por comercial, ordenadas por reseñas del mes actual desc.
+    const rows = [...ids]
+      .map((sid) => ({
+        name: nameById.get(sid) ?? "Comercial",
+        prev: prevByLocSales.get(key(loc.id, sid)) ?? 0,
+        cur: curByLocSales.get(key(loc.id, sid)) ?? 0,
+      }))
+      .sort((a, b) => b.cur - a.cur || b.prev - a.prev || a.name.localeCompare(b.name, "es"));
+
+    for (const row of rows) {
+      const rr = sheet.getRow(r);
+      rr.getCell(1).value = row.name;
+      rr.getCell(2).value = row.prev;
+      rr.getCell(3).value = row.cur;
+      rr.getCell(1).alignment = { horizontal: "left" };
+      rr.getCell(2).alignment = { horizontal: "right" };
+      rr.getCell(3).alignment = { horizontal: "right" };
+      for (let c = 1; c <= 3; c++) {
+        rr.getCell(c).border = { bottom: { style: "hair", color: { argb: COLOR.line } } };
+      }
+      r++;
+    }
+
+    // Subtotal de la ficha
+    const subTotalPrev = rows.reduce((s, x) => s + x.prev, 0);
+    const subTotalCur = rows.reduce((s, x) => s + x.cur, 0);
+    const tr = sheet.getRow(r);
+    tr.getCell(1).value = "Total ficha";
+    tr.getCell(2).value = subTotalPrev;
+    tr.getCell(3).value = subTotalCur;
+    for (let c = 1; c <= 3; c++) {
+      const cell = tr.getCell(c);
+      cell.font = { bold: true };
+      cell.alignment = { horizontal: c === 1 ? "left" : "right" };
+      cell.border = { top: { style: "thin", color: { argb: COLOR.line } } };
+    }
+    r += 2; // espacio entre fichas
+  }
+
+  if (!anyBlock) {
+    const c = sheet.getCell("A4");
+    c.value = "Sin comerciales activos ni reseñas en los dos últimos meses.";
+    c.font = { italic: true, color: { argb: COLOR.ink2 } };
+    sheet.mergeCells("A4:C4");
+  }
 }
 
 function drawKpi(
