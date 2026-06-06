@@ -147,10 +147,10 @@ Verificado con un run manual (`workflow_dispatch`) → success. Si vuelve a fall
 
 ### 7.2 Brevo SMTP — bloqueante antes del primer cliente
 
-Sin Brevo, Supabase usa su email gratuito limitado a ~4/hora. Con eso no funcionan las invitaciones a usuarios en volumen. Pasos:
+Sin Brevo, Supabase usa su email gratuito limitado a ~4/hora. Con eso no funcionan las invitaciones a usuarios en volumen. **Además, desde el lote 1 de mejoras (ver §9) Brevo también es lo que activa el envío real de las alertas ≤2★ y los emails de plantillas** — hoy el código degrada con gracia (no envía, no rompe). Pasos:
 1. Crear cuenta en brevo.com
-2. Verificar dominio emisor
-3. Añadir las 3 variables `BREVO_SMTP_*` en Vercel y en `.env.local`
+2. Verificar dominio emisor (`atribuya.com`)
+3. Añadir `BREVO_SMTP_USER`, `BREVO_SMTP_PASS`, `BREVO_FROM_EMAIL` en Vercel y en `.env.local`
 4. En Supabase Dashboard → Authentication → SMTP Settings → activar custom SMTP
 
 ### 7.3 Google Cloud — bloqueante para el primer cliente real
@@ -178,6 +178,22 @@ Alta manual desde `/super`:
 ### 7.6 DPA (Data Processing Agreement)
 
 Los `/terminos` y `/privacidad` están completos. Falta el DPA bilateral para firmar con cada cliente. Necesario antes de firmar el primer contrato.
+
+### 7.7 Camino crítico al primer cliente
+
+En orden: **Brevo (§7.2) → Google Cloud (§7.3) → DPA (§7.6)**. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
+
+### 7.8 Mejoras de producto pendientes (lotes del producto base)
+
+El producto base single-tenant tiene features que aún no se han portado a Atribuya. El **lote 1 ya está hecho** (§9). Quedan:
+
+- **Lote 🟡** (medio, alto valor): comisiones por reseña, caché de rating de Google por ficha, suite E2E Playwright.
+- **Lote 🟠** (grande / migración nueva / toca multi-tenant): helpdesk de soporte (3 tablas), rol "director de oficina" (conflicto con el modelo de roles — requiere rediseño RLS), parte semanal Excel (departamentos a repensar), verificación de reseñas abierta a todos los roles, Excel individual por comercial.
+- **Descartadas**: multi-marca por ficha (específica del cliente original; el SaaS define marca por org), `monthly_goal` default 5.
+
+### 7.9 Capturas del Centro de Ayuda
+
+`public/help/*.png` (01-09) son de una versión anterior de la UI con branding antiguo. Regenerar desde `atribuya.com` con el branding Atribuya cuando entre la primera org. Ver `public/help/README.md`.
 
 ---
 

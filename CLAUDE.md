@@ -285,6 +285,18 @@ Sin resolver hasta que el usuario las decida:
 6. **Billing**: primeros 5-8 clientes facturación manual con Holded. Stripe a partir del cliente 6-8.
 7. **Mover rutas autenticadas bajo `/o/[orgSlug]/...`**: deferred en Fase 6. Reevaluar cuando llegue al cliente #5.
 
+### 8.1 Camino crítico al primer cliente (técnico)
+
+En orden: **Brevo SMTP → Google Cloud (OAuth + Places) → DPA**. Ver §7 para el detalle de cada uno. Lo demás de §8 son decisiones de negocio, no bloqueantes técnicos.
+
+### 8.2 Roadmap de features pendientes (del producto base)
+
+El lote 1 (calidad de reseñas) está hecho (Fase 14). Quedan, por portar desde el producto base single-tenant:
+- **Lote 🟡** (medio): comisiones por reseña, caché de rating por ficha, suite E2E Playwright.
+- **Lote 🟠** (grande / migración nueva / toca multi-tenant): helpdesk de soporte, rol "director de oficina" (rediseño RLS), parte semanal Excel, verificación multi-rol, Excel individual.
+- **Descartadas**: multi-marca por ficha, `monthly_goal` default 5.
+- **Capturas `public/help/*.png`**: regenerar con branding Atribuya.
+
 ---
 
 ## 9. Mantenimiento de este archivo
