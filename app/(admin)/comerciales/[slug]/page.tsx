@@ -51,6 +51,7 @@ type ReviewRow = {
   match_state: string;
   match_confidence: number;
   client_id: string | null;
+  is_duplicate: boolean;
 };
 
 export default async function ComercialDetallePage({ params, searchParams }: PageProps) {
@@ -138,7 +139,7 @@ export default async function ComercialDetallePage({ params, searchParams }: Pag
     supabase
       .from("reviews")
       .select(
-        "id, author_name, rating, text, google_created_at, match_state, match_confidence, client_id",
+        "id, author_name, rating, text, google_created_at, match_state, match_confidence, client_id, is_duplicate",
       )
       .eq("sales_id", sales.id)
       .is("removed_at", null)
@@ -178,7 +179,9 @@ export default async function ComercialDetallePage({ params, searchParams }: Pag
   // ─── KPIs del rango ────────────────────────────────────────────────────
   // shares y reviews ya vienen filtrados por SQL al rango activo.
   const visitsInRange = shares.length;
-  const reviewsCounted = reviews.filter((r) => r.match_state === "counted").length;
+  const reviewsCounted = reviews.filter(
+    (r) => r.match_state === "counted" && !r.is_duplicate,
+  ).length;
   const reviewsPending = reviews.filter((r) => r.match_state === "pending").length;
   const reviewsUnmatched = reviews.filter((r) => r.match_state === "unmatched").length;
   const conversion =

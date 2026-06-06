@@ -79,6 +79,7 @@ export type Database = {
           avatar_url: string | null;
           joined_at: string;
           org_id: string | null;
+          message_templates: Record<string, string> | null;
         };
         Insert: {
           id: string;
@@ -93,6 +94,7 @@ export type Database = {
           avatar_url?: string | null;
           joined_at?: string;
           org_id?: string | null;
+          message_templates?: Record<string, string> | null;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: [];
@@ -164,6 +166,8 @@ export type Database = {
           match_state: MatchState;
           match_evidence: Record<string, unknown> | null;
           org_id: string | null;
+          is_duplicate: boolean;
+          low_rating_alerted_at: string | null;
         };
         Insert: {
           id?: string;
@@ -181,6 +185,8 @@ export type Database = {
           match_state?: MatchState;
           match_evidence?: Record<string, unknown> | null;
           org_id?: string | null;
+          is_duplicate?: boolean;
+          low_rating_alerted_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["reviews"]["Insert"]>;
         Relationships: [];

@@ -4,12 +4,19 @@ import { listPlaceReviews, PlacesApiError, type PlacesReview } from "@/lib/googl
 import {
   processFreshReviews,
   flushNotifications,
+  flushLowRatingAlerts,
   type LocationSummary,
   type SalesInfo,
   type FreshReview,
   type PendingNotification,
 } from "@/lib/cron/process-reviews";
 import { notifyNewReview } from "@/lib/email/notify-new-review";
+import { notifyLowRating } from "@/lib/email/notify-low-rating";
+import {
+  resolveLowRatingRecipients,
+  type LowRatingAlert,
+  type ProfileLite,
+} from "@/lib/cron/low-rating-alerts";
 
 /**
  * Orquestador del sync de reseñas vía Google Places API.
@@ -174,7 +181,7 @@ export async function syncPlaces(args: SyncPlacesArgs = {}): Promise<SyncPlacesR
     locationsQuery = locationsQuery.in("id", filter);
   }
 
-  const [locationsRes, salesRes] = await Promise.all([
+  const [locationsRes, salesRes, staffRes] = await Promise.all([
     locationsQuery.returns<
       { id: string; name: string; google_place_id: string; org_id: string }[]
     >(),
@@ -183,6 +190,20 @@ export async function syncPlaces(args: SyncPlacesArgs = {}): Promise<SyncPlacesR
       .select("id, full_name, email, status")
       .eq("role", "sales")
       .returns<{ id: string; full_name: string; email: string | null; status: string }[]>(),
+    // Admins + reviews_managers (por org) para las alertas ≤2★.
+    admin
+      .from("profiles")
+      .select("id, email, status, role, org_id")
+      .in("role", ["admin", "reviews_manager"])
+      .returns<
+        {
+          id: string;
+          email: string | null;
+          status: string;
+          role: "admin" | "reviews_manager";
+          org_id: string | null;
+        }[]
+      >(),
   ]);
 
   if (locationsRes.error) {
@@ -202,6 +223,26 @@ export async function syncPlaces(args: SyncPlacesArgs = {}): Promise<SyncPlacesR
   for (const s of salesRes.data ?? []) {
     salesById.set(s.id, { full_name: s.full_name, email: s.email, status: s.status });
   }
+
+  // Admins / managers indexados por org para las alertas ≤2★ (multi-tenant:
+  // cada alerta solo va a staff de la org dueña de la reseña).
+  const adminsByOrg = new Map<string, ProfileLite[]>();
+  const managersByOrg = new Map<string, ProfileLite[]>();
+  for (const p of staffRes.data ?? []) {
+    if (!p.org_id) continue;
+    const lite: ProfileLite = {
+      id: p.id,
+      email: p.email,
+      status: p.status as ProfileLite["status"],
+    };
+    const bucket = p.role === "admin" ? adminsByOrg : managersByOrg;
+    const list = bucket.get(p.org_id) ?? [];
+    list.push(lite);
+    bucket.set(p.org_id, list);
+  }
+  const orgByLocationId = new Map<string, string>();
+  for (const loc of locations) orgByLocationId.set(loc.id, loc.org_id);
+
   const appBase =
     process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
@@ -218,6 +259,7 @@ export async function syncPlaces(args: SyncPlacesArgs = {}): Promise<SyncPlacesR
 
   const summary: LocationSummary[] = [];
   const allPending: PendingNotification[] = [];
+  const allLowRatingAlerts: LowRatingAlert[] = [];
   let totalRemoved = 0;
   let totalRestored = 0;
 
@@ -301,17 +343,23 @@ export async function syncPlaces(args: SyncPlacesArgs = {}): Promise<SyncPlacesR
         continue;
       }
 
-      const notifs = await processFreshReviews(
+      const { notifications, lowRatingAlerts } = await processFreshReviews(
         {
           admin,
-          location: { id: loc.id, name: loc.name, org_id: loc.org_id },
+          location: {
+            id: loc.id,
+            name: loc.name,
+            org_id: loc.org_id,
+            place_id: loc.google_place_id,
+          },
           fresh,
           salesById,
           source: "places_api",
         },
         entry,
       );
-      allPending.push(...notifs);
+      allPending.push(...notifications);
+      allLowRatingAlerts.push(...lowRatingAlerts);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       const code = err instanceof PlacesApiError ? err.code : undefined;
@@ -323,6 +371,32 @@ export async function syncPlaces(args: SyncPlacesArgs = {}): Promise<SyncPlacesR
   }
 
   const notifResult = await flushNotifications(admin, allPending, notifyNewReview, appBase);
+
+  // Alertas ≤2★: resolvemos nombres de cliente para los alerts atribuidos y
+  // disparamos el flush (admin + manager por org + sales atribuido).
+  if (allLowRatingAlerts.length > 0) {
+    const clientIds = [
+      ...new Set(
+        allLowRatingAlerts.map((a) => a.clientId).filter((c): c is string => c !== null),
+      ),
+    ];
+    const clientNameById = new Map<string, string>();
+    if (clientIds.length > 0) {
+      const { data: clientRows } = await admin
+        .from("clients")
+        .select("id, full_name")
+        .in("id", clientIds)
+        .returns<{ id: string; full_name: string }[]>();
+      for (const c of clientRows ?? []) clientNameById.set(c.id, c.full_name);
+    }
+    await flushLowRatingAlerts(
+      admin,
+      allLowRatingAlerts,
+      { adminsByOrg, managersByOrg, salesById, clientNameById, orgByLocationId, appBase },
+      notifyLowRating,
+      resolveLowRatingRecipients,
+    );
+  }
 
   return {
     locations_processed: summary.length,

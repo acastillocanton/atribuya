@@ -86,6 +86,7 @@ async function loadPanelData(range: DateRange): Promise<PanelData> {
       .select("rating", { count: "exact" })
       .eq("sales_id", user.id)
       .is("removed_at", null)
+      .eq("is_duplicate", false)
       .in("match_state", ["counted", "pending"])
       .gte("google_created_at", range.startIso)
       .lt("google_created_at", range.endIso),
@@ -103,6 +104,7 @@ async function loadPanelData(range: DateRange): Promise<PanelData> {
         .select("id", { count: "exact", head: true })
         .eq("sales_id", user.id)
         .is("removed_at", null)
+        .eq("is_duplicate", false)
         .in("match_state", ["counted", "pending"])
         .gte("google_created_at", prev.startIso)
         .lt("google_created_at", prev.endIso)

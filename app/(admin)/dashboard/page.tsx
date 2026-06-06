@@ -61,6 +61,7 @@ type ReviewLite = {
   sales_id: string | null;
   location_id: string;
   google_created_at: string;
+  is_duplicate: boolean;
 };
 
 function startOfMonthsAgoIso(n: number, d = new Date()) {
@@ -146,7 +147,7 @@ export default async function DashboardPage({
     supabase.from("clients").select("id", { count: "planned", head: true }),
     supabase
       .from("reviews")
-      .select("rating, match_state, sales_id, location_id, google_created_at")
+      .select("rating, match_state, sales_id, location_id, google_created_at, is_duplicate")
       .is("removed_at", null)
       .gte("google_created_at", range.startIso)
       .lt("google_created_at", range.endIso)
@@ -218,7 +219,8 @@ export default async function DashboardPage({
   for (const r of reviewsMonth) {
     if (!r.sales_id) continue;
     reviewsBySales.set(r.sales_id, (reviewsBySales.get(r.sales_id) ?? 0) + 1);
-    if (r.match_state === "counted") {
+    // `counted` = reseñas pagables: excluye duplicadas (migración 015).
+    if (r.match_state === "counted" && !r.is_duplicate) {
       reviewsCountedBySales.set(
         r.sales_id,
         (reviewsCountedBySales.get(r.sales_id) ?? 0) + 1,

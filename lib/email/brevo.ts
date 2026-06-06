@@ -25,6 +25,9 @@ const BREVO_SMTP_PORT = 587;
 
 type SendInput = {
   to: string | string[];
+  /** Destinatarios ocultos. Útil para alertas multi-stakeholder (admin +
+   *  manager + sales atribuido) sin exponer la lista de unos a otros. */
+  bcc?: string | string[];
   subject: string;
   html: string;
   text?: string;
@@ -77,6 +80,11 @@ export async function sendEmail(input: SendInput): Promise<SendResult> {
     const info = await getTransporter(user, pass).sendMail({
       from,
       to: Array.isArray(input.to) ? input.to : [input.to],
+      bcc: input.bcc
+        ? Array.isArray(input.bcc)
+          ? input.bcc
+          : [input.bcc]
+        : undefined,
       subject: input.subject,
       html: input.html,
       text: input.text,

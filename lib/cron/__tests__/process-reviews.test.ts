@@ -27,6 +27,15 @@ function makeMockAdmin(captured: InsertedRow[]) {
             gte() {
               return this;
             },
+            like() {
+              return this;
+            },
+            neq() {
+              return this;
+            },
+            is() {
+              return this;
+            },
             order() {
               return this;
             },
@@ -34,7 +43,7 @@ function makeMockAdmin(captured: InsertedRow[]) {
               return this;
             },
             returns() {
-              // candidates query → no share_links in the window
+              // candidates query / edit-merge incumbents → empty.
               return Promise.resolve({ data: [], error: null });
             },
           };

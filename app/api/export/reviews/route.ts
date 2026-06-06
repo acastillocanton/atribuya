@@ -38,6 +38,7 @@ type ReviewRow = {
   sales: { full_name: string; slug: string } | null;
   client: { full_name: string } | null;
   location: { name: string } | null;
+  is_duplicate: boolean;
 };
 
 type ShareLinkRow = {
@@ -111,7 +112,7 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from("reviews")
     .select(
-      "id, google_review_id, author_name, rating, text, google_created_at, match_state, match_confidence, sales_id, location_id, sales:profiles!reviews_sales_id_fkey(full_name, slug), client:clients(full_name), location:locations(name)",
+      "id, google_review_id, author_name, rating, text, google_created_at, match_state, match_confidence, sales_id, location_id, is_duplicate, sales:profiles!reviews_sales_id_fkey(full_name, slug), client:clients(full_name), location:locations(name)",
     )
     .is("removed_at", null)
     .gte("google_created_at", range.startIso)
@@ -276,7 +277,10 @@ function renderSummarySheet(
 
   // ─── KPIs ──────────────────────────────────────────────────────────────
   const total = reviews.length;
-  const counted = reviews.filter((r) => r.match_state === "counted").length;
+  // `counted` = reseñas pagables: excluye duplicadas (migración 015).
+  const counted = reviews.filter(
+    (r) => r.match_state === "counted" && !r.is_duplicate,
+  ).length;
   const pending = reviews.filter((r) => r.match_state === "pending").length;
   const unmatched = reviews.filter((r) => r.match_state === "unmatched").length;
   const avg = total > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / total : 0;

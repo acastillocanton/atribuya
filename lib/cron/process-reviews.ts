@@ -5,6 +5,14 @@ import {
   TEMPORAL_WINDOW_HOURS,
   type ShareLinkCandidate,
 } from "@/lib/matching/attribute-review";
+import { decideDuplicateForClient } from "@/lib/cron/duplicate-detection";
+import { decideEditMerge } from "@/lib/cron/edit-merge";
+import {
+  isLowRating,
+  type LowRatingAlert,
+  type ProfileLite,
+  type SalesLite,
+} from "@/lib/cron/low-rating-alerts";
 
 /**
  * Helper compartido entre los crons de Business Profile y Places API.
@@ -13,9 +21,9 @@ import {
  * convertidas al shape común) y un mapa de comerciales por id para encolar
  * notificaciones cuando entre una con match='counted'.
  *
- * Outputs: actualiza `entry` con contadores y devuelve el array de
- * notificaciones pendientes para que el caller las envíe en batch al final
- * con `Promise.allSettled` (igual que el cron actual).
+ * Outputs: actualiza `summary` con los contadores y devuelve las
+ * notificaciones (al sales atribuido) Y las alertas ≤2★ (admin + manager +
+ * sales) para que el caller las envíe en batch al final.
  */
 
 /** Shape mínimo de una reseña fresca para pasar por el matcher + insert. */
@@ -37,6 +45,11 @@ export type LocationCtx = {
    * right org see them under RLS.
    */
   org_id: string;
+  /**
+   * place_id de Google para el CTA "Ver en Google" del email de alerta ≤2★.
+   * Si la ficha no lo tiene, el CTA se omite.
+   */
+  place_id?: string | null;
 };
 
 export type LocationSummary = {
@@ -47,6 +60,9 @@ export type LocationSummary = {
   counted: number;
   pending: number;
   unmatched: number;
+  /** Reseñas frescas que resultaron ser una EDICIÓN de una existente (mismo
+   *  autor+ficha) y se fusionaron en vez de insertarse. */
+  merged?: number;
   error?: string;
 };
 
@@ -82,8 +98,7 @@ export type ProcessReviewsArgs = {
 
 /**
  * Carga share_links candidatos para una location dentro de la ventana
- * temporal cubriendo la reseña más antigua del batch. Igual que hacía el
- * cron de Business Profile inline.
+ * temporal cubriendo la reseña más antigua del batch.
  */
 async function loadCandidates(
   admin: ProcessReviewsArgs["admin"],
@@ -126,19 +141,137 @@ async function loadCandidates(
 
 /**
  * Inserta cada reseña fresca pasando por el matcher. Acumula notificaciones
- * para envío en batch al final. Mutará `summary` con los contadores.
+ * (al sales atribuido) Y alertas ≤2★ (admin + manager + sales) para envío en
+ * batch al final. Mutará `summary` con los contadores.
  */
 export async function processFreshReviews(
   args: ProcessReviewsArgs,
   summary: LocationSummary,
-): Promise<PendingNotification[]> {
+): Promise<{
+  notifications: PendingNotification[];
+  lowRatingAlerts: LowRatingAlert[];
+}> {
   const { admin, location, fresh, salesById, source } = args;
-  if (fresh.length === 0) return [];
+  if (fresh.length === 0) return { notifications: [], lowRatingAlerts: [] };
 
   const candidates = await loadCandidates(admin, location.id, fresh);
   const notifications: PendingNotification[] = [];
+  const lowRatingAlerts: LowRatingAlert[] = [];
 
   for (const fr of fresh) {
+    // ── Fusión por autor (edit-merge) ──────────────────────────────────────
+    // Google permite UNA reseña por persona y negocio, así que una reseña
+    // fresca cuyo author_name (no anónimo) ya existe en esta ficha es la MISMA
+    // reseña editada (Places sintetiza un id nuevo al cambiar el timestamp).
+    // En vez de insertar un duplicado fantasma, actualizamos la fila existente.
+    // Solo el path de Places sufre el problema (id sintético); acotamos a
+    // incumbentes `places:%` para no cruzar fuentes.
+    if (source === "places_api" && fr.hasAuthorName) {
+      const { data: incRows } = await admin
+        .from("reviews")
+        .select(
+          "id, rating, removed_at, low_rating_alerted_at, match_state, sales_id, client_id",
+        )
+        .eq("location_id", location.id)
+        .like("google_review_id", "places:%")
+        .eq("author_name", fr.author_name)
+        .neq("google_review_id", fr.google_review_id)
+        .returns<
+          {
+            id: string;
+            rating: number;
+            removed_at: string | null;
+            low_rating_alerted_at: string | null;
+            match_state: "counted" | "pending" | "unmatched";
+            sales_id: string | null;
+            client_id: string | null;
+          }[]
+        >();
+
+      const incumbents = incRows ?? [];
+      const decision = decideEditMerge({
+        hasAuthorName: true,
+        incumbents: incumbents.map((r) => ({
+          id: r.id,
+          rating: r.rating,
+          removed_at: r.removed_at,
+          low_rating_alerted_at: r.low_rating_alerted_at,
+        })),
+        incomingRating: fr.rating,
+      });
+
+      if (decision.action === "merge") {
+        const inc = incumbents.find((r) => r.id === decision.incumbentId);
+        const update: Record<string, unknown> = {
+          google_review_id: fr.google_review_id,
+          rating: fr.rating,
+          text: fr.text,
+          google_created_at: fr.google_created_at,
+          fetched_at: new Date().toISOString(),
+        };
+        if (decision.clearRemovedAt) update.removed_at = null;
+        if (decision.reAlertLowRating) update.low_rating_alerted_at = null;
+
+        const { error: mergeErr } = await admin
+          .from("reviews")
+          .update(update as never)
+          .eq("id", decision.incumbentId);
+
+        if (mergeErr) {
+          console.error("[cron] edit-merge update failed:", mergeErr, fr.google_review_id);
+          await admin.from("audit_log").insert({
+            entity_type: "review",
+            entity_id: decision.incumbentId,
+            action: "review_edit_merge_failed",
+            org_id: location.org_id,
+            payload: {
+              google_review_id: fr.google_review_id,
+              author_name: fr.author_name,
+              source,
+              error: mergeErr.message,
+            },
+          } as never);
+          // No insertamos fila nueva (evitamos el duplicado que queríamos
+          // prevenir). La reseña sigue "fresca" → se reintenta en el próximo run.
+          continue;
+        }
+
+        summary.merged = (summary.merged ?? 0) + 1;
+        await admin.from("audit_log").insert({
+          entity_type: "review",
+          entity_id: decision.incumbentId,
+          action: "review_edit_merged",
+          org_id: location.org_id,
+          payload: {
+            author_name: fr.author_name,
+            source,
+            new_google_review_id: fr.google_review_id,
+            new_rating: fr.rating,
+            old_rating: inc?.rating ?? null,
+            re_alert_low_rating: decision.reAlertLowRating,
+          },
+        } as never);
+
+        // Si la edición baja a ≤2★ por primera vez, re-alertar (el UPDATE ya
+        // limpió low_rating_alerted_at; flushLowRatingAlerts lo re-sella).
+        if (decision.reAlertLowRating && inc) {
+          lowRatingAlerts.push({
+            reviewId: inc.id,
+            rating: fr.rating,
+            authorName: fr.author_name,
+            reviewText: fr.text,
+            locationId: location.id,
+            locationName: location.name,
+            placeId: location.place_id ?? null,
+            matchState: inc.match_state,
+            salesId: inc.sales_id,
+            clientId: inc.client_id,
+          });
+        }
+        continue;
+      }
+    }
+
     const result = attributeReview(
       {
         google_review_id: fr.google_review_id,
@@ -148,6 +281,17 @@ export async function processFreshReviews(
       },
       candidates,
     );
+
+    // ── Anti-fraude por duplicados (migración 015) ─────────────────────────
+    // Si esta reseña va a un client_id que ya tiene una principal, marcarla
+    // como duplicada. Si la entrante es MÁS antigua que la principal, invertir
+    // (la nueva pasa a principal y demotamos la vieja).
+    const dup = result.client_id
+      ? await decideDuplicateForClient(admin, {
+          clientId: result.client_id,
+          incomingGoogleCreatedAt: fr.google_created_at,
+        })
+      : { newIsDuplicate: false, demotedReviewId: null };
 
     const row = {
       location_id: location.id,
@@ -165,6 +309,7 @@ export async function processFreshReviews(
       match_state: result.match_state,
       match_evidence: result.match_evidence,
       source,
+      is_duplicate: dup.newIsDuplicate,
     };
 
     const { data: inserted, error: insErr } = await admin
@@ -175,7 +320,63 @@ export async function processFreshReviews(
 
     if (insErr || !inserted) {
       console.error("[cron] insert review failed:", insErr, fr.google_review_id);
+      // Visibilidad: una reseña "fresca" que falla al insertar suele ser una
+      // colisión del unique(location_id, google_review_id). Dejamos traza.
+      await admin.from("audit_log").insert({
+        entity_type: "review",
+        entity_id: location.id,
+        action: "insert_collision",
+        org_id: location.org_id,
+        payload: {
+          location_id: location.id,
+          google_review_id: fr.google_review_id,
+          author_name: fr.author_name,
+          rating: fr.rating,
+          source,
+          error: insErr?.message ?? null,
+        },
+      } as never);
       continue;
+    }
+
+    if (dup.demotedReviewId) {
+      const { error: demoteErr } = await admin
+        .from("reviews")
+        .update({ is_duplicate: true } as never)
+        .eq("id", dup.demotedReviewId);
+      if (demoteErr) {
+        console.error("[cron] demote principal failed:", demoteErr, dup.demotedReviewId);
+        // Fail-safe anti-doble-conteo: la nueva se insertó como principal pero
+        // la vieja NO se pudo demotar → quedarían DOS principales para el mismo
+        // cliente. Revertimos la nueva a duplicada (sesgo a infra-contar).
+        await admin
+          .from("reviews")
+          .update({ is_duplicate: true } as never)
+          .eq("id", inserted.id);
+        await admin.from("audit_log").insert({
+          entity_type: "review",
+          entity_id: inserted.id,
+          action: "demote_failed_failsafe_duplicate",
+          org_id: location.org_id,
+          payload: {
+            intended_demote: dup.demotedReviewId,
+            google_review_id: fr.google_review_id,
+            source,
+          },
+        } as never);
+      } else {
+        await admin.from("audit_log").insert({
+          entity_type: "review",
+          entity_id: dup.demotedReviewId,
+          action: "demoted_by_older_duplicate",
+          org_id: location.org_id,
+          payload: {
+            promoted_review_id: inserted.id,
+            promoted_google_review_id: fr.google_review_id,
+            source,
+          },
+        } as never);
+      }
     }
 
     summary.new_reviews++;
@@ -207,9 +408,28 @@ export async function processFreshReviews(
     } else {
       summary.unmatched++;
     }
+
+    // Alerta ≤2★: independiente del match_state. La idempotencia REAL la
+    // garantiza el INSERT inicial (solo procesamos reseñas frescas, así que un
+    // re-run no las re-inserta ni re-alerta). `low_rating_alerted_at` se rellena
+    // tras el envío para trazabilidad.
+    if (isLowRating(fr.rating)) {
+      lowRatingAlerts.push({
+        reviewId: inserted.id,
+        rating: fr.rating,
+        authorName: fr.author_name,
+        reviewText: fr.text,
+        locationId: location.id,
+        locationName: location.name,
+        placeId: location.place_id ?? null,
+        matchState: result.match_state,
+        salesId: result.sales_id ?? null,
+        clientId: result.client_id ?? null,
+      });
+    }
   }
 
-  return notifications;
+  return { notifications, lowRatingAlerts };
 }
 
 /**
@@ -299,4 +519,189 @@ export async function flushNotifications(
   }
 
   return { attempted: pending.length, failed };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alertas ≤2★ — flush.
+//
+// Mismo patrón que flushNotifications: Promise.allSettled + audit_log de
+// fallos. Además marca reviews.low_rating_alerted_at en cada envío exitoso
+// para trazabilidad ante re-runs del cron.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type LowRatingAlertContext = {
+  /** Admins activos POR ORG. Multi-tenant: una alerta solo va a admins de la
+   *  org dueña de la reseña — nunca cross-org. Indexado por org_id. */
+  adminsByOrg: Map<string, ProfileLite[]>;
+  /** reviews_manager activos POR ORG. Mismo aislamiento que adminsByOrg. */
+  managersByOrg: Map<string, ProfileLite[]>;
+  /** Mapa de sales por id — para nombre, email y status. Indexado por sales_id. */
+  salesById: Map<string, SalesInfo>;
+  /** Nombres de cliente por client_id — para mostrar en el email. */
+  clientNameById: Map<string, string>;
+  /** Org de cada location — para resolver destinatarios y tenant-scope de audit. */
+  orgByLocationId: Map<string, string>;
+  appBase: string;
+};
+
+type LowRatingNotifyInput = {
+  rating: number;
+  authorName: string;
+  reviewText: string | null;
+  locationName: string;
+  matchState: "counted" | "pending" | "unmatched";
+  salesName: string | null;
+  clientName: string | null;
+  reviewId: string;
+  placeId: string | null;
+  appBase: string;
+  to: string[];
+};
+
+type LowRatingNotifyResult =
+  | { ok: true }
+  | { ok: false; status?: number; error?: string }
+  | { ok: false; skipped: true; reason: string };
+
+type ResolveRecipients = (params: {
+  matchState: "counted" | "pending" | "unmatched";
+  sales: SalesLite | null;
+  admins: ProfileLite[];
+  managers: ProfileLite[];
+}) => string[];
+
+export async function flushLowRatingAlerts(
+  admin: ProcessReviewsArgs["admin"],
+  alerts: LowRatingAlert[],
+  ctx: LowRatingAlertContext,
+  notifyFn: (input: LowRatingNotifyInput) => Promise<LowRatingNotifyResult>,
+  resolveRecipients: ResolveRecipients,
+): Promise<{ attempted: number; failed: number; skipped: number }> {
+  if (alerts.length === 0) return { attempted: 0, failed: 0, skipped: 0 };
+
+  let attempted = 0;
+  let failed = 0;
+  let skipped = 0;
+
+  const results = await Promise.allSettled(
+    alerts.map(async (a) => {
+      const sales = a.salesId ? (ctx.salesById.get(a.salesId) ?? null) : null;
+      const salesLite: SalesLite | null =
+        sales && a.salesId
+          ? {
+              id: a.salesId,
+              email: sales.email,
+              status: sales.status as SalesLite["status"],
+            }
+          : null;
+
+      // Destinatarios SOLO de la org dueña de la reseña (aislamiento multi-tenant).
+      const orgId = ctx.orgByLocationId.get(a.locationId);
+      const recipients = resolveRecipients({
+        matchState: a.matchState,
+        sales: salesLite,
+        admins: orgId ? (ctx.adminsByOrg.get(orgId) ?? []) : [],
+        managers: orgId ? (ctx.managersByOrg.get(orgId) ?? []) : [],
+      });
+
+      if (recipients.length === 0) {
+        return { reviewId: a.reviewId, status: "no_recipients" as const };
+      }
+
+      attempted++;
+      const sendRes = await notifyFn({
+        rating: a.rating,
+        authorName: a.authorName,
+        reviewText: a.reviewText,
+        locationName: a.locationName,
+        matchState: a.matchState,
+        salesName: sales?.full_name ?? null,
+        clientName: a.clientId ? (ctx.clientNameById.get(a.clientId) ?? null) : null,
+        reviewId: a.reviewId,
+        placeId: a.placeId,
+        appBase: ctx.appBase,
+        to: recipients,
+      });
+
+      if (!sendRes.ok) {
+        return { reviewId: a.reviewId, status: "send_failed" as const, info: sendRes };
+      }
+
+      // Marca idempotencia/trazabilidad. Si falla no es crítico (el INSERT ya
+      // garantiza que el cron no re-procesará la review), pero loggea.
+      const { error: markErr } = await admin
+        .from("reviews")
+        .update({ low_rating_alerted_at: new Date().toISOString() } as never)
+        .eq("id", a.reviewId);
+      if (markErr) {
+        console.error("[cron] failed to mark low_rating_alerted_at:", markErr);
+      }
+
+      return { reviewId: a.reviewId, status: "ok" as const };
+    }),
+  );
+
+  const auditRows: Array<Record<string, unknown>> = [];
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    const a = alerts[i];
+    if (!r || !a) continue;
+    const orgId = ctx.orgByLocationId.get(a.locationId) ?? null;
+    if (r.status === "rejected") {
+      failed++;
+      auditRows.push({
+        entity_type: "review",
+        entity_id: a.reviewId,
+        action: "low_rating_alert_failed",
+        org_id: orgId,
+        payload: {
+          rating: a.rating,
+          error: r.reason instanceof Error ? r.reason.message : String(r.reason),
+        },
+      });
+      continue;
+    }
+    if (r.value.status === "no_recipients") {
+      skipped++;
+      auditRows.push({
+        entity_type: "review",
+        entity_id: a.reviewId,
+        action: "low_rating_alert_skipped",
+        org_id: orgId,
+        payload: { rating: a.rating, reason: r.value.status },
+      });
+    } else if (r.value.status === "send_failed") {
+      failed++;
+      const info = r.value.info;
+      auditRows.push({
+        entity_type: "review",
+        entity_id: a.reviewId,
+        action: "low_rating_alert_failed",
+        org_id: orgId,
+        payload: {
+          rating: a.rating,
+          error: "error" in info ? info.error : "reason" in info ? info.reason : "unknown",
+        },
+      });
+    } else {
+      auditRows.push({
+        entity_type: "review",
+        entity_id: a.reviewId,
+        action: "low_rating_alerted",
+        org_id: orgId,
+        payload: { rating: a.rating, match_state: a.matchState },
+      });
+    }
+  }
+
+  if (auditRows.length > 0) {
+    const { error: auditErr } = await admin
+      .from("audit_log")
+      .insert(auditRows as never);
+    if (auditErr) {
+      console.error("[cron] failed to write low_rating_alert audit rows:", auditErr);
+    }
+  }
+
+  return { attempted, failed, skipped };
 }
