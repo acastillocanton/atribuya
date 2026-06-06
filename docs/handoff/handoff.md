@@ -51,8 +51,10 @@ SaaS B2B multi-tenant que atribuye reseñas de Google Business Profile a comerci
 | 12 | SEO — sitemap + OG image 1200×630 + Twitter cards | ✅ | `46ea02d` · 2026-06-06 |
 | 13 | Dominio comercial `atribuya.com` (Hostinger) | ✅ | 2026-06-06 |
 | Fix | Repo público (desbloquea deploys Vercel Hobby) | ✅ | 2026-06-06 |
+| 14 | Lote 1 — calidad de reseñas (mig 015) | ✅ | 2026-06-06 |
+| 15 | Lote 2 — features para vender (ranking, soporte, excel, parte por ficha) | ✅ | 2026-06-06 |
 
-**Último trabajo (2026-06-06)**: Brevo SMTP operativo de punta a punta (cuenta reutilizada de Castillo Cantón, dominio `atribuya.com` autenticado, env vars en Vercel, Custom SMTP en Supabase Auth, rate limit 50/h) + aviso de leads + plantilla de magic link branded y arreglo del flujo de login (`/auth/confirm`). Antes: fix del cron horario, auditoría SEO, y migración al dominio `atribuya.com`.
+**Último trabajo (2026-06-06) — lote 2 "para vender"**: portadas 4 features del producto base, adaptadas a multi-tenant (sin rol director ni departamentos): **(2.1) ranking + insignias** (`/ranking`, `/panel/ranking`, insignias en el panel), **(2.2) helpdesk de soporte** intra-org (migración **016** aplicada; `/soporte`), **(2.3) Excel individual por comercial** (`/api/export/sales/[id]`, aislado por `org_id`), **(2.4) parte por ficha** (3ª hoja en el export de reseñas). Además: borrador de **DPA** (`docs/legal/dpa.md`), stub `/ajustes` eliminado, **modo demo poblado** en las páginas del comercial y **7/9 capturas de ayuda** regeneradas con branding Atribuya. 174 tests, typecheck y build OK. Antes (mismo día): Brevo SMTP de punta a punta, fix cron horario, SEO y dominio `atribuya.com`.
 
 ---
 
@@ -85,7 +87,7 @@ Las rutas autenticadas (`/dashboard`, `/panel`, etc.) **no tienen prefijo de org
 
 Un solo proyecto Supabase `iuiveiznvwjeoyhescmx`. En MVP pre-cliente es suficiente. Crear `atribuya-prod` separado cuando entren 2-3 clientes con tráfico real.
 
-### Migraciones aplicadas (001 → 015)
+### Migraciones aplicadas (001 → 016)
 
 | Migración | Qué hace |
 |---|---|
@@ -95,6 +97,9 @@ Un solo proyecto Supabase `iuiveiznvwjeoyhescmx`. En MVP pre-cliente es suficien
 | 013 | `profiles.slug` pasa a UNIQUE por (org_id, slug) — permite "juan-perez" en dos orgs |
 | 014 | Tabla `leads` — captura formulario de la landing, solo visible para super_admin |
 | 015 | Calidad de reseñas: `is_duplicate`, `low_rating_alerted_at`, `message_templates` + lockdown `profiles_self_update` (congela columnas sensibles, incl. `org_id`) |
+| 016 | Helpdesk de soporte multi-tenant: `support_conversations`/`support_messages`/`support_read_receipts` (todas con `org_id`) + RLS intra-org + función `support_unread_count()` |
+
+> Nota: el plan reservaba una 017 para "caché de rating por ficha", pero no fue necesaria (el parte por ficha calcula la valoración al vuelo). No existe.
 
 ### Datos en BD ahora mismo
 
@@ -186,25 +191,26 @@ Alta manual desde `/super`:
 3. "Invitar admin" → email del admin de la org
 4. El admin recibe magic link, entra, conecta su GBP
 
-### 7.6 DPA (Data Processing Agreement)
+### 7.6 DPA (Data Processing Agreement) — ✅ BORRADOR LISTO (2026-06-06)
 
-Los `/terminos` y `/privacidad` están completos. Falta el DPA bilateral para firmar con cada cliente. Necesario antes de firmar el primer contrato.
+Los `/terminos` y `/privacidad` están completos. El DPA (Acuerdo de Encargado del Tratamiento, art. 28 RGPD) está redactado en **`docs/legal/dpa.md`** — 15 cláusulas + 3 anexos, modelo Responsable (cliente) / Encargado (Castillo Cantón), subencargados reales (Supabase Fráncfort, Vercel, Brevo, Google), con placeholders `[...]` para los datos del cliente. ⚠️ **Pendiente: revisión por un profesional legal** antes de firmar el primer contrato.
 
 ### 7.7 Camino crítico al primer cliente
 
-En orden: ~~Brevo (§7.2)~~ ✅ → **Google Cloud (§7.3) → DPA (§7.6)**. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
+En orden: ~~Brevo (§7.2)~~ ✅ → **Google Cloud (§7.3)** (único bloqueante técnico que queda) → ~~DPA~~ (borrador listo, falta revisión legal §7.6). Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
 
 ### 7.8 Mejoras de producto pendientes (lotes del producto base)
 
-El producto base single-tenant tiene features que aún no se han portado a Atribuya. El **lote 1 ya está hecho** (§9). Quedan:
+El producto base single-tenant tiene features que aún no se han portado a Atribuya. Los **lotes 1 y 2 ya están hechos**. Quedan:
 
-- **Lote 🟡** (medio, alto valor): comisiones por reseña, caché de rating de Google por ficha, suite E2E Playwright.
-- **Lote 🟠** (grande / migración nueva / toca multi-tenant): helpdesk de soporte (3 tablas), rol "director de oficina" (conflicto con el modelo de roles — requiere rediseño RLS), parte semanal Excel (departamentos a repensar), verificación de reseñas abierta a todos los roles, Excel individual por comercial.
+- **Lote 🟡** (medio, alto valor): comisiones por reseña, ~~caché de rating por ficha~~ (descartada, innecesaria), suite E2E Playwright.
+- **Lote 🟠** (grande / toca multi-tenant): rol "director de oficina" (conflicto con el modelo de roles — requiere rediseño RLS), verificación de reseñas abierta a todos los roles. ~~helpdesk~~ ✅ (lote 2), ~~parte semanal~~ ✅ (como "parte por ficha"), ~~Excel individual~~ ✅ (lote 2).
+- **Pendiente menor del helpdesk**: badge de no-leídos en el sidebar (llamar `support_unread_count()` desde el layout) y acceso a Soporte en mobile (el footer del sidebar no existe en mobile).
 - **Descartadas**: multi-marca por ficha (específica del cliente original; el SaaS define marca por org), `monthly_goal` default 5.
 
-### 7.9 Capturas del Centro de Ayuda
+### 7.9 Capturas del Centro de Ayuda — ✅ 7/9 hechas (2026-06-06)
 
-`public/help/*.png` (01-09) son de una versión anterior de la UI con branding antiguo. Regenerar desde `atribuya.com` con el branding Atribuya cuando entre la primera org. Ver `public/help/README.md`.
+`public/help/*.png`: **7 de 9 regeneradas** con branding Atribuya capturando el **modo demo** con Playwright (`scripts/capture-help.py`). Para ello se poblaron con datos de ejemplo las páginas del comercial en modo demo (`/clientes`, `/clientes/[slug]`, `/panel/enlace`, `/panel/resenas`, `/perfil`) — esto **también mejora las demos comerciales**. Pendientes **01** (email del magic link) y **06** (diagrama de flujo): no son pantallas de la app, requieren hacerse a mano/diseño. Ver `public/help/README.md`.
 
 ---
 
@@ -270,5 +276,11 @@ curl -X POST https://api.supabase.com/v1/projects/iuiveiznvwjeoyhescmx/database/
 | [lib/cron/process-reviews.ts](../../lib/cron/process-reviews.ts) | Motor de atribución de reseñas |
 | [lib/landing.ts](../../lib/landing.ts) | Lógica de `recordOpenAndRedirect` para la landing pública |
 | [app/actions/submit-lead.ts](../../app/actions/submit-lead.ts) | Server action del formulario de la landing |
-| [supabase/migrations/](../../supabase/migrations/) | Migraciones 001-015 en orden |
+| [lib/leaderboard.ts](../../lib/leaderboard.ts) | Ranking org-scoped (lote 2); `getLeaderboard({ orgId, ... })` |
+| [app/(profile)/soporte/](../../app/(profile)/soporte/) | Helpdesk de soporte (lote 2) — pages + `actions.ts` |
+| [app/api/export/sales/[id]/route.ts](../../app/api/export/sales/%5Bid%5D/route.ts) | Excel individual por comercial (lote 2), aislado por `org_id` |
+| [app/api/export/reviews/route.ts](../../app/api/export/reviews/route.ts) | Export de reseñas — 3 hojas (Reseñas, Resumen, Parte por ficha) |
+| [docs/legal/dpa.md](../legal/dpa.md) | Borrador del DPA (art. 28 RGPD) — pendiente revisión legal |
+| [scripts/capture-help.py](../../scripts/capture-help.py) | Captura las pantallas de ayuda desde el modo demo (Playwright) |
+| [supabase/migrations/](../../supabase/migrations/) | Migraciones 001-016 en orden |
 | [docs/tests-multitenancy.md](../tests-multitenancy.md) | 15 tests de aislamiento cross-org — referencia para validar RLS |
