@@ -299,7 +299,7 @@ El lote 1 (calidad de reseñas) está hecho (Fase 14). El **lote 2** (Fase 15, 2
 - **Lote 🟠** (grande / toca multi-tenant): rol "director de oficina" (rediseño RLS), verificación multi-rol. ~~helpdesk~~ ✅, ~~parte semanal~~ ✅ (como parte por ficha), ~~Excel individual~~ ✅.
 - **Pendiente del helpdesk**: badge de no-leídos en el sidebar (requiere llamar `support_unread_count()` en el layout) + acceso a Soporte en mobile (el footer del sidebar no existe en mobile).
 - **Descartadas**: multi-marca por ficha, `monthly_goal` default 5.
-- **Capturas `public/help/*.png`**: regenerar con branding Atribuya (pendiente — tarea 1.4 del plan de venta).
+- **Capturas `public/help/*.png`**: 7 de 9 regeneradas con branding Atribuya (2026-06-06) capturando el **modo demo** con Playwright (`scripts/capture-help.py`). Para ello se poblaron con datos de ejemplo las páginas del comercial en modo demo (`/clientes`, `/clientes/[slug]`, `/panel/enlace`, `/panel/resenas`, `/perfil`) — también mejora las demos comerciales. Pendientes 01 (email del magic link) y 06 (diagrama de flujo): no son pantallas de la app, requieren regenerarse a mano/diseño.
 
 ---
 
