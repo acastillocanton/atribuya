@@ -97,6 +97,7 @@ Migraciones SQL: ejecutar en Supabase Dashboard → SQL Editor en orden numéric
 | 13. Dominio comercial atribuya.com | ✅ Hecho (2026-06-06) | Comprado en Hostinger. DNS: A `@`→`76.76.21.21`, CNAME `www`→`cname.vercel-dns.com`. Dominio añadido en Vercel. Todas las URLs hardcodeadas migradas `atribuya.vercel.app`→`atribuya.com` (sitemap, metadataBase, canonical, hreflang, OG, terminos). Supabase Auth Site URL → `https://atribuya.com` + redirect allowlist actualizada. `NEXT_PUBLIC_APP_URL` en Vercel → `https://atribuya.com`. Verificado: `atribuya.com` 308→`www.atribuya.com` 200 OK. |
 | Fix infra: repo público | ✅ Hecho (2026-06-06) | Vercel Hobby bloqueaba TODOS los deploys por git push de repos privados ("commit author does not have contributing access"). El redeploy manual desde UI también bloqueado. Solución: repo `acastillocanton/atribuya` pasado a **público** (no hay secretos en el código, todos en env vars de Vercel). Deploys vuelven a pasar. Hay un Deploy Hook creado en Vercel (Settings→Git) como vía alternativa de disparo manual. |
 | 14. Portar mejoras de calidad de reseñas (lote 1) | ✅ Hecho (2026-06-06) | Migración **015** (`is_duplicate`, `low_rating_alerted_at`, `message_templates` + lockdown `profiles_self_update` que congela org_id/role/slug/monthly_goal/location_id/status). 5 features portadas del producto base single-tenant, adaptadas a multi-tenant: **detección de duplicados** (anti-fraude por client_id, `lib/cron/duplicate-detection.ts`), **edit-merge** (reseñas editadas en Google, `lib/cron/edit-merge.ts`), **alertas ≤2★** (`lib/cron/low-rating-alerts.ts` + `lib/email/notify-low-rating.ts`, destinatarios resueltos POR ORG — admin+manager+sales, sin cross-org; quitado el rol "director" del original), **plantillas de mensaje por comercial** (`app/(sales)/panel/plantillas/`), **lockdown RLS**. Filtro `is_duplicate=false` en KPIs (dashboard, panel, comerciales, export). 31 tests nuevos (115/115). Las alertas/plantillas envían email solo cuando Brevo esté configurado (degradan con gracia). |
+| 15. Portar features para vender (lote 2) | ✅ Hecho (2026-06-06) | 4 features del producto base portadas y adaptadas a multi-tenant + limpieza de stub. **(2.1) Ranking + insignias**: `lib/leaderboard.ts` (org-scoped, sin rol director; el panel del comercial usa service-role filtrado por `org_id` porque un `sales` no puede leer perfiles de compañeros vía RLS), `lib/panel-badges.ts` + `lib/panel-motivation.ts` + `bucketByMonth` en `lib/date-range.ts`, componentes `components/{ranking,panel}/*` + `components/ui/Badge.tsx`, páginas `/ranking` (admin/manager) y `/panel/ranking` (sales, ya no stub) + insignias reales en `/panel`. Fallbacks demo en las 3 vistas (probar sin BD: `NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= npm run dev`). **(2.2) Helpdesk de soporte** (intra-org): migración **016** (`support_conversations`/`support_messages`/`support_read_receipts` con `org_id` + RLS multi-tenant + `support_unread_count()`), `app/(profile)/soporte/*`, `components/soporte/*`, `lib/email/notify-support.ts` (respondedores resueltos POR ORG). Enlace "Soporte" en sidebar (sin badge de no-leídos todavía — añadir tras confirmar uso). **(2.3) Excel individual por comercial**: `lib/reports/sales-report.ts` + `app/api/export/sales/[id]/route.ts` (aislamiento por `org_id` en queries service-role), botones en `/panel/resenas` y `/comerciales/[slug]`. **(2.4) Parte por ficha**: 3ª hoja "Parte por ficha" en `/api/export/reviews` (mes anterior vs mes actual por comercial agrupado por ficha; sin migración — se descartó la caché de rating por innecesaria). **(1.3)** Stub `/ajustes` eliminado. Sin rol `office_director` ni departamentos (específicos del cliente original). 56 tests nuevos (174/174). |
 
 ---
 
@@ -217,7 +218,7 @@ Creado 2026-05-24. **Renombrado en el dashboard `atribuya-dev` → `atribuya`** 
 
 **Decisión (2026-05-24)**: NO se crea un proyecto Supabase separado para prod. Se reusa este. Razones: MVP pre-cliente, free tier en ambos casos, complejidad operativa de 2 entornos no compensa el aislamiento. Cuando entre cliente #2-3 con tráfico real, creamos `atribuya-staging` y este pasa a ser prod oficial. Nombre del proyecto en el dashboard puede renombrarse a "atribuya" (Settings → General).
 
-**Migraciones aplicadas:** 001 → 015. La 015 (calidad de reseñas + lockdown auto-update) aplicada vía Dashboard SQL Editor el 2026-06-06.
+**Migraciones aplicadas:** 001 → 016. La 015 (calidad de reseñas + lockdown auto-update) aplicada el 2026-06-06. La **016** (helpdesk de soporte multi-tenant — 3 tablas `support_*` + RLS + `support_unread_count()`) aplicada el 2026-06-06. La 017 que el plan reservaba para la caché de rating **no llegó a crearse** (el parte por ficha se resolvió con una hoja extra en el export, sin necesitar caché).
 
 **Estado actual de datos:**
 - `organizations` — 2 filas: Acme Promotora (active), Beta Apartamentos (trial) — `dev-seeds/01_*`.
@@ -293,11 +294,12 @@ En orden: ~~Brevo SMTP~~ (✅ hecho 2026-06-06) → **Google Cloud (OAuth + Plac
 
 ### 8.2 Roadmap de features pendientes (del producto base)
 
-El lote 1 (calidad de reseñas) está hecho (Fase 14). Quedan, por portar desde el producto base single-tenant:
-- **Lote 🟡** (medio): comisiones por reseña, caché de rating por ficha, suite E2E Playwright.
-- **Lote 🟠** (grande / migración nueva / toca multi-tenant): helpdesk de soporte, rol "director de oficina" (rediseño RLS), parte semanal Excel, verificación multi-rol, Excel individual.
+El lote 1 (calidad de reseñas) está hecho (Fase 14). El **lote 2** (Fase 15, 2026-06-06) portó: **ranking + insignias**, **helpdesk de soporte** (migración 016), **Excel individual por comercial** y **parte por ficha** (hoja en el export). Quedan, por portar desde el producto base single-tenant:
+- **Lote 🟡** (medio): comisiones por reseña, ~~caché de rating por ficha~~ (innecesaria — el export calcula la valoración al vuelo), suite E2E Playwright.
+- **Lote 🟠** (grande / toca multi-tenant): rol "director de oficina" (rediseño RLS), verificación multi-rol. ~~helpdesk~~ ✅, ~~parte semanal~~ ✅ (como parte por ficha), ~~Excel individual~~ ✅.
+- **Pendiente del helpdesk**: badge de no-leídos en el sidebar (requiere llamar `support_unread_count()` en el layout) + acceso a Soporte en mobile (el footer del sidebar no existe en mobile).
 - **Descartadas**: multi-marca por ficha, `monthly_goal` default 5.
-- **Capturas `public/help/*.png`**: regenerar con branding Atribuya.
+- **Capturas `public/help/*.png`**: regenerar con branding Atribuya (pendiente — tarea 1.4 del plan de venta).
 
 ---
 
