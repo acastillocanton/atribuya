@@ -55,7 +55,7 @@ export default async function ClientesPage() {
 
   const profile = salesProfile ?? DEMO_PROFILE;
   const orgSlug = profile.organizations?.slug ?? "demo";
-  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.es";
+  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.com";
 
   return (
     <>

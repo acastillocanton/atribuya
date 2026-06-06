@@ -112,7 +112,7 @@ export default function AyudaPage() {
             <h2 style={h2Style}>2. Entrar por primera vez</h2>
             <p style={pStyle}>
               El administrador (Alejandro o Rafael) te dará de alta con tu
-              email. Recibirás un correo de <strong>notificaciones@atribuya.es</strong>
+              email. Recibirás un correo de <strong>notificaciones@atribuya.com</strong>
               {" "}con un botón &ldquo;Acceder a Atribuya&rdquo;.
             </p>
             <ol style={olStyle}>
@@ -132,10 +132,10 @@ export default function AyudaPage() {
             <p style={pStyle}>
               <strong>Para sesiones siguientes:</strong> entra en{" "}
               <a
-                href="https://app.atribuya.es"
+                href="https://atribuya.com"
                 style={linkStyle}
               >
-                app.atribuya.es
+                atribuya.com
               </a>{" "}
               y pide un nuevo enlace de acceso introduciendo tu email. Cada
               enlace dura 1 hora.

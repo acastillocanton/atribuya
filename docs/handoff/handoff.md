@@ -147,11 +147,23 @@ Verificado con un run manual (`workflow_dispatch`) → success. Si vuelve a fall
 
 ### 7.2 Brevo SMTP — bloqueante antes del primer cliente
 
-Sin Brevo, Supabase usa su email gratuito limitado a ~4/hora. Con eso no funcionan las invitaciones a usuarios en volumen. **Además, desde el lote 1 de mejoras (ver §9) Brevo también es lo que activa el envío real de las alertas ≤2★ y los emails de plantillas** — hoy el código degrada con gracia (no envía, no rompe). Pasos:
-1. Crear cuenta en brevo.com
-2. Verificar dominio emisor (`atribuya.com`)
-3. Añadir `BREVO_SMTP_USER`, `BREVO_SMTP_PASS`, `BREVO_FROM_EMAIL` en Vercel y en `.env.local`
-4. En Supabase Dashboard → Authentication → SMTP Settings → activar custom SMTP
+Sin Brevo, Supabase usa su email gratuito limitado a ~4/hora. Con eso no funcionan las invitaciones a usuarios en volumen. **Además, desde el lote 1 de mejoras (ver §9) Brevo también es lo que activa el envío real de las alertas ≤2★, los emails de plantillas y el aviso de leads** — hoy el código degrada con gracia (no envía, no rompe).
+
+**Estado: código listo (2026-06-06), config de dashboards pendiente de ejecutar.**
+
+Decisiones tomadas: remitente `notificaciones@atribuya.com` (solo envío, sin buzón real); reply-to a `a.castillo.esv@gmail.com`; dominio autenticado solo para envío (SPF/DKIM, **sin MX**).
+
+Cambios de código ya hechos:
+- `lib/email/brevo.ts`: reply-to por defecto vía `BREVO_REPLY_TO` (el FROM no es buzón).
+- `lib/email/notify-lead.ts` + `app/actions/submit-lead.ts`: aviso de lead best-effort a `LEAD_NOTIFY_EMAIL` (no rompe la respuesta si el email falla).
+- Limpiadas las refs obsoletas `atribuya.es` → `atribuya.com`.
+
+Pasos manuales pendientes (ver plan en `~/.claude/plans/voy-a-crear-la-fuzzy-cocoa.md`):
+1. Crear cuenta en brevo.com (login con un email de gestión, no con el remitente).
+2. Brevo → Domains → autenticar `atribuya.com`: añadir en Hostinger los DKIM/TXT que muestre Brevo + SPF (`v=spf1 include:spf.brevo.com ~all`) + DMARC (`v=DMARC1; p=none; rua=...`). Solo un SPF por dominio: fusionar si ya existe.
+3. Brevo → SMTP & API → SMTP: copiar Login + generar SMTP key (no API key; se muestra una vez).
+4. Añadir en Vercel y `.env.local`: `BREVO_SMTP_USER`, `BREVO_SMTP_PASS`, `BREVO_FROM_EMAIL`, `BREVO_REPLY_TO`, `LEAD_NOTIFY_EMAIL`.
+5. Supabase Dashboard → Authentication → SMTP Settings → activar custom SMTP + subir el rate limit de Auth.
 
 ### 7.3 Google Cloud — bloqueante para el primer cliente real
 
@@ -221,7 +233,7 @@ La landing (`app/page.tsx`) está en producción con:
 - SEO: `robots.ts`, `sitemap.xml`, JSON-LD `FAQPage`
 - Tipografía: Fraunces (headings) + Geist (body)
 
-Los leads se guardan en tabla `leads` (BD). El email de notificación al super_admin está **pendiente de Brevo** — cuando Brevo esté activo hay que añadir el Nodemailer en `app/actions/submit-lead.ts`.
+Los leads se guardan en tabla `leads` (BD). El email de notificación al super_admin **ya está implementado** (`lib/email/notify-lead.ts`, invocado best-effort desde `app/actions/submit-lead.ts`): se envía a `LEAD_NOTIFY_EMAIL` cuando Brevo está configurado, y degrada con gracia si no (el lead se guarda igual).
 
 ---
 

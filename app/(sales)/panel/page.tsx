@@ -209,7 +209,7 @@ export default async function PanelPage({
     now.getTime() < new Date(range.endIso).getTime();
 
   const data = await loadPanelData(range);
-  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.es";
+  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.com";
   const link = buildShareDisplay(appBase, data.orgSlug, data.slug);
   const fullUrl = buildShareUrl(appBase, data.orgSlug, data.slug);
 

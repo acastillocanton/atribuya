@@ -109,7 +109,7 @@ export default async function ClienteDetallePage({ params }: PageProps) {
   const firstVisit = visits[visits.length - 1]?.opened_at ?? null;
   const lastVisit = visits[0]?.opened_at ?? null;
 
-  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.es";
+  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.com";
 
   const fmtDateTime = (iso: string) =>
     new Date(iso).toLocaleString("es-ES", {

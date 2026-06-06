@@ -37,6 +37,22 @@ vi.mock("@/lib/supabase/service", () => ({
   }),
 }));
 
+// Mockeamos el aviso de lead: no queremos tocar SMTP en tests. Capturamos las
+// llamadas y permitimos forzar un fallo para validar el comportamiento
+// best-effort (un email roto NO debe romper la respuesta al visitante).
+const notify: { calls: Record<string, unknown>[]; shouldThrow: boolean } = {
+  calls: [],
+  shouldThrow: false,
+};
+
+vi.mock("@/lib/email/notify-lead", () => ({
+  notifyLead: async (input: Record<string, unknown>) => {
+    notify.calls.push(input);
+    if (notify.shouldThrow) throw new Error("smtp boom");
+    return { ok: true as const, id: "test-msg-id" };
+  },
+}));
+
 import { submitLead } from "../submit-lead";
 
 function buildForm(fields: Record<string, string>): FormData {
@@ -49,6 +65,8 @@ describe("submitLead", () => {
   beforeEach(() => {
     captured.rows = [];
     insertError = null;
+    notify.calls = [];
+    notify.shouldThrow = false;
   });
 
   it("acepta un payload válido, normaliza e inserta", async () => {
@@ -216,5 +234,45 @@ describe("submitLead", () => {
     // beforeEach no toca el header store).
     headerStore["x-forwarded-for"] = "203.0.113.42, 10.0.0.1";
     headerStore["x-real-ip"] = null;
+  });
+
+  it("tras insertar correctamente, dispara notifyLead con los datos del lead", async () => {
+    const fd = buildForm({
+      name: "Ana Pérez",
+      email: "ana@empresa.com",
+      company: "Promotora Ejemplo SL",
+      message: "Hola, somos 6 comerciales.",
+    });
+    const res = await submitLead(fd);
+    expect(res).toEqual({ ok: true });
+    expect(notify.calls).toHaveLength(1);
+    expect(notify.calls[0]).toMatchObject({
+      name: "Ana Pérez",
+      email: "ana@empresa.com",
+      company: "Promotora Ejemplo SL",
+      message: "Hola, somos 6 comerciales.",
+      source: "landing",
+    });
+  });
+
+  it("no notifica si el insert falla (no hay lead que avisar)", async () => {
+    insertError = { message: "boom" };
+    const fd = buildForm({ name: "Ana", email: "a@b.com", company: "Acme SL" });
+    const res = await submitLead(fd);
+    expect(res.ok).toBe(false);
+    expect(notify.calls).toHaveLength(0);
+  });
+
+  it("best-effort: si notifyLead lanza, submitLead sigue devolviendo ok (el lead ya está guardado)", async () => {
+    notify.shouldThrow = true;
+    const fd = buildForm({
+      name: "Ana",
+      email: "a@b.com",
+      company: "Acme SL",
+    });
+    const res = await submitLead(fd);
+    expect(res).toEqual({ ok: true });
+    expect(captured.rows).toHaveLength(1);
+    expect(notify.calls).toHaveLength(1);
   });
 });

@@ -18,6 +18,12 @@ import nodemailer, { type Transporter } from "nodemailer";
  *     Brevo te la enseña una sola vez al crearla).
  *   - BREVO_FROM_EMAIL: remitente. Formato `Atribuya <notificaciones@dominio>`.
  *     El dominio del email debe estar verificado en Brevo (Senders & IP).
+ *
+ * Variable opcional:
+ *   - BREVO_REPLY_TO: dirección a la que llegan las respuestas. El remitente
+ *     (`notificaciones@atribuya.com`) NO es un buzón real, así que apuntamos
+ *     reply-to a un correo que sí se lee. Se aplica por defecto a todos los
+ *     envíos salvo que el caller pase su propio `replyTo`.
  */
 
 const BREVO_SMTP_HOST = "smtp-relay.brevo.com";
@@ -88,7 +94,9 @@ export async function sendEmail(input: SendInput): Promise<SendResult> {
       subject: input.subject,
       html: input.html,
       text: input.text,
-      replyTo: input.replyTo,
+      // El caller puede forzar un reply-to; si no, usamos el global
+      // (BREVO_REPLY_TO) porque el FROM no es un buzón que se lea.
+      replyTo: input.replyTo ?? process.env.BREVO_REPLY_TO,
     });
     return { ok: true, id: info.messageId };
   } catch (err) {

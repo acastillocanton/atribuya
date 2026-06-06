@@ -266,7 +266,7 @@ Se creará en la misma cuenta Supabase pero como proyecto aparte (`atribuya-prod
 | SEO | ✅ Completo | `app/sitemap.ts` (4 URLs), OG image dinámica 1200×630 (`app/opengraph-image.tsx` + `/en`), `metadataBase`, Twitter cards, canonical + hreflang en `atribuya.com`. |
 | Cron diario | ✅ Configurado | `vercel.json` define 2 crons (Places + Business Profile). Vercel Hobby permite 2 diarios. |
 | Cron horario | ✅ Operativo (2026-06-06) | `.github/workflows/sync-places-hourly.yml`. Secrets `APP_URL`=`https://atribuya.com` y `CRON_SECRET` configurados vía `gh secret set`. Run manual → success. |
-| Brevo SMTP | ⏳ Diferido | Sin Brevo, Supabase usa su email gratis (~4/h rate-limit). Necesario antes del primer cliente con invitaciones. |
+| Brevo SMTP | ⏳ Código listo, config pendiente | **Código hecho (2026-06-06)**: reply-to global vía `BREVO_REPLY_TO` en `lib/email/brevo.ts`; aviso de leads best-effort (`lib/email/notify-lead.ts` → `submit-lead.ts`) a `LEAD_NOTIFY_EMAIL`; refs `atribuya.es`→`.com` limpiadas. **Pendiente manual**: crear cuenta Brevo, autenticar `atribuya.com` (SPF/DKIM, sin MX), env vars en Vercel, custom SMTP en Supabase Auth. Remitente `notificaciones@atribuya.com`, reply-to `a.castillo.esv@gmail.com`. Ver handoff §7.2. Sin Brevo, Supabase usa su email gratis (~4/h). |
 | Google Cloud (OAuth + Places) | ⏳ Diferido | No bloquea hasta que un cliente quiera conectar GBP. |
 | Dominio comercial | ✅ atribuya.com | Comprado en Hostinger. DNS A+CNAME → Vercel. HTTPS OK. |
 | Stripe (billing) | ❌ No aplica todavía | Facturación manual hasta cliente #5-8. |

@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase/service";
+import { notifyLead } from "@/lib/email/notify-lead";
 
 /**
  * Server action que recibe el formulario de captación de leads en la
@@ -131,6 +132,22 @@ export async function submitLead(formData: FormData): Promise<SubmitLeadResult> 
       ok: false,
       error: m.retry,
     };
+  }
+
+  // Aviso interno best-effort. El lead ya está guardado (lo crítico), así que
+  // un fallo de email NO debe romper la respuesta al visitante.
+  try {
+    await notifyLead({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      company: parsed.data.company,
+      message: parsed.data.message,
+      source: locale === "en" ? "landing-en" : "landing",
+      userAgent,
+      ip,
+    });
+  } catch (notifyErr) {
+    console.error("submitLead notify failed", notifyErr);
   }
 
   return { ok: true };

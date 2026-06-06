@@ -100,7 +100,7 @@ export default async function EnlacePage() {
   const personalizedMonth = personalizedMonthRes.count ?? 0;
   const lastVisit = genericLastRes.data?.opened_at ?? null;
 
-  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.es";
+  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.com";
   const fullUrl = buildShareUrl(appBase, orgSlug, profile.slug);
   const displayUrl = buildShareDisplay(appBase, orgSlug, profile.slug);
 
