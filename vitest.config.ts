@@ -6,7 +6,13 @@ export default defineConfig({
     environment: "node",
     globals: false,
     include: ["**/__tests__/**/*.test.ts", "**/*.test.ts"],
-    exclude: ["node_modules/**", ".next/**", "_design_package/**"],
+    exclude: [
+      "node_modules/**",
+      ".next/**",
+      "_design_package/**",
+      // Repo del proyecto original anidado (solo referencia para portar).
+      "00 - Proyecto Original./**",
+    ],
     coverage: {
       reporter: ["text", "html"],
       include: ["lib/**/*.ts"],

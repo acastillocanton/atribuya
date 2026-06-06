@@ -50,3 +50,7 @@ _design_package/design.tar
 # supabase CLI cache (per-machine, contains linked-project.json, pooler-url, etc.)
 supabase/.temp/
 supabase/.branches/
+
+# proyecto original ReseñaHub — repo git independiente anidado, NO debe rastrearse aquí
+# (sirve solo como fuente de referencia para portar features). Tiene su propio .git/node_modules/.next.
+00 - Proyecto Original./
