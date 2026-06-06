@@ -199,13 +199,6 @@ export default async function ComercialDetallePage({ params, searchParams }: Pag
   // natural completo; si no, marcamos el ratio como null y avisamos en UI.
   const pct = isMonthRange && meta > 0 ? Math.round((reviewsCounted / meta) * 100) : null;
 
-  // Querystring para los enlaces dependientes del rango (Excel, etc.).
-  const exportParams = new URLSearchParams({
-    sales_id: sales.id,
-    from: range.from,
-    to: range.to,
-  });
-
   const fmtDate = (iso: string) =>
     new Date(iso).toLocaleDateString("es-ES", {
       day: "2-digit",
@@ -241,7 +234,10 @@ export default async function ComercialDetallePage({ params, searchParams }: Pag
               label={range.label}
               shortcuts={shortcuts}
             />
-            <Link href={`/api/export/reviews?${exportParams.toString()}`} style={primaryBtn}>
+            <Link
+              href={`/api/export/sales/${sales.id}?from=${range.from}&to=${range.to}`}
+              style={primaryBtn}
+            >
               Descargar Excel
             </Link>
             <Link href="/comerciales" style={linkBtn}>
