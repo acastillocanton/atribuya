@@ -38,64 +38,68 @@ type ReviewRow = {
 
 type ResenasSearchParams = Promise<{ from?: string; to?: string }>;
 
+// Reseñas de ejemplo para el modo demo (sin BD). Fechas relativas a "ahora"
+// para que caigan dentro del mes en curso (rango por defecto).
+function demoReviews(now: Date): ReviewRow[] {
+  const iso = (daysAgo: number) =>
+    new Date(now.getTime() - daysAgo * 86_400_000).toISOString();
+  const loc = { name: "Acme Promotora · Centro" };
+  return [
+    { id: "d1", author_name: "Lucía Marín", rating: 5, text: "Trato excelente y muy buen asesoramiento. Mateo me ayudó en todo el proceso.", google_created_at: iso(1), match_state: "counted", match_confidence: 96, client: { full_name: "Lucía Marín", slug: "lucia-marin" }, location: loc },
+    { id: "d2", author_name: "Carlos Pérez", rating: 5, text: "Muy profesionales, repetiría sin dudarlo.", google_created_at: iso(3), match_state: "counted", match_confidence: 91, client: { full_name: "Carlos Pérez", slug: "carlos-perez" }, location: loc },
+    { id: "d3", author_name: "Marta R.", rating: 4, text: "Buena experiencia en general, algo de espera al principio.", google_created_at: iso(6), match_state: "counted", match_confidence: 84, client: { full_name: "Marta Ruiz", slug: "marta-ruiz" }, location: loc },
+    { id: "d4", author_name: "anónimo", rating: 5, text: "Recomendable 100%.", google_created_at: iso(9), match_state: "pending", match_confidence: 52, client: null, location: loc },
+    { id: "d5", author_name: "José Antonio Gil", rating: 5, text: "Encantados con la atención recibida por Mateo.", google_created_at: iso(14), match_state: "counted", match_confidence: 93, client: { full_name: "José A. Gil", slug: "jose-a-gil" }, location: loc },
+  ];
+}
+
 export default async function MisResenasPage({
   searchParams,
 }: {
   searchParams: ResenasSearchParams;
 }) {
-  if (!isSupabaseConfigured()) {
-    return (
-      <>
-        <Topbar
-          title="Mis reseñas"
-          subtitle="Modo demo — sin base de datos"
-          breadcrumb="Mi panel"
-          range={null}
-        />
-        <div style={{ padding: "24px 32px" }}>
-          <Card>
-            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
-              Configura Supabase para ver tus reseñas atribuidas reales.
-            </div>
-          </Card>
-        </div>
-      </>
-    );
-  }
-
   const params = await searchParams;
   const now = new Date();
   const range = parseRange(params.from, params.to, now);
   const shortcuts = defaultShortcuts(now);
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  let profile: SalesProfile;
+  let reviews: ReviewRow[];
 
-  const profileRes = await supabase
-    .from("profiles")
-    .select("id, full_name, slug")
-    .eq("id", user.id)
-    .maybeSingle<SalesProfile>();
+  if (!isSupabaseConfigured()) {
+    // Modo demo: datos de ejemplo para que la pantalla se vea poblada sin BD.
+    profile = { id: "demo", full_name: "Mateo Salgado", slug: "mateo-salgado" };
+    reviews = demoReviews(now);
+  } else {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) redirect("/login");
 
-  if (!profileRes.data) redirect("/panel");
-  const profile = profileRes.data;
+    const profileRes = await supabase
+      .from("profiles")
+      .select("id, full_name, slug")
+      .eq("id", user.id)
+      .maybeSingle<SalesProfile>();
 
-  const reviewsRes = await supabase
-    .from("reviews")
-    .select(
-      "id, author_name, rating, text, google_created_at, match_state, match_confidence, client:clients(full_name, slug), location:locations(name)",
-    )
-    .eq("sales_id", user.id)
-    .is("removed_at", null)
-    .gte("google_created_at", range.startIso)
-    .lt("google_created_at", range.endIso)
-    .order("google_created_at", { ascending: false })
-    .returns<ReviewRow[]>();
+    if (!profileRes.data) redirect("/panel");
+    profile = profileRes.data;
 
-  const reviews = reviewsRes.data ?? [];
+    const reviewsRes = await supabase
+      .from("reviews")
+      .select(
+        "id, author_name, rating, text, google_created_at, match_state, match_confidence, client:clients(full_name, slug), location:locations(name)",
+      )
+      .eq("sales_id", user.id)
+      .is("removed_at", null)
+      .gte("google_created_at", range.startIso)
+      .lt("google_created_at", range.endIso)
+      .order("google_created_at", { ascending: false })
+      .returns<ReviewRow[]>();
+
+    reviews = reviewsRes.data ?? [];
+  }
 
   // KPIs del rango
   const total = reviews.length;

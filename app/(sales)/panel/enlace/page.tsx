@@ -21,84 +21,83 @@ type SalesProfile = {
 };
 
 export default async function EnlacePage() {
-  if (!isSupabaseConfigured()) {
-    return (
-      <>
-        <Topbar
-          title="Mi enlace"
-          subtitle="Modo demo — sin base de datos"
-          breadcrumb="Mi panel"
-          range={null}
-        />
-        <div style={{ padding: "24px 32px" }}>
-          <Card>
-            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
-              Configura Supabase para ver tu enlace personal real.
-            </div>
-          </Card>
-        </div>
-      </>
-    );
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const profileRes = await supabase
-    .from("profiles")
-    .select("id, full_name, slug, organizations:organizations(slug)")
-    .eq("id", user.id)
-    .maybeSingle<SalesProfile>();
-
-  if (!profileRes.data || !profileRes.data.organizations?.slug) redirect("/panel");
-  const profile = profileRes.data;
-  const orgSlug = profile.organizations!.slug;
-
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-  // Stats del enlace GENÉRICO (sin client_id, las visitas al QR del mostrador).
-  // Separamos de las visitas con sub-cliente porque la atribución funciona
-  // distinta — el comercial necesita saber el peso del genérico vs personalizado.
-  const [genericTotalRes, genericMonthRes, genericLastRes, personalizedMonthRes] =
-    await Promise.all([
-      // Total histórico de visitas QR genérico — no se compara con objetivo
-      // ni con periodo anterior, así que basta count aproximado (rápido en
-      // tablas grandes).
-      supabase
-        .from("share_links")
-        .select("id", { count: "planned", head: true })
-        .eq("sales_id", user.id)
-        .is("client_id", null),
-      supabase
-        .from("share_links")
-        .select("id", { count: "exact", head: true })
-        .eq("sales_id", user.id)
-        .is("client_id", null)
-        .gte("opened_at", monthStart),
-      supabase
-        .from("share_links")
-        .select("opened_at")
-        .eq("sales_id", user.id)
-        .is("client_id", null)
-        .order("opened_at", { ascending: false })
-        .limit(1)
-        .maybeSingle<{ opened_at: string }>(),
-      supabase
-        .from("share_links")
-        .select("id", { count: "exact", head: true })
-        .eq("sales_id", user.id)
-        .not("client_id", "is", null)
-        .gte("opened_at", monthStart),
-    ]);
+  let profile: SalesProfile;
+  let orgSlug: string;
+  let genericTotal: number;
+  let genericMonth: number;
+  let personalizedMonth: number;
+  let lastVisit: string | null;
 
-  const genericTotal = genericTotalRes.count ?? 0;
-  const genericMonth = genericMonthRes.count ?? 0;
-  const personalizedMonth = personalizedMonthRes.count ?? 0;
-  const lastVisit = genericLastRes.data?.opened_at ?? null;
+  if (!isSupabaseConfigured()) {
+    // Modo demo: enlace y stats de ejemplo. El QR lo pinta LinkArsenalBlock
+    // desde la URL, así que se ve igual que en real.
+    profile = {
+      id: "demo",
+      full_name: "Mateo Salgado",
+      slug: "mateo-salgado",
+      organizations: { slug: "demo" },
+    };
+    orgSlug = "demo";
+    genericTotal = 184;
+    genericMonth = 23;
+    personalizedMonth = 12;
+    lastVisit = new Date(now.getTime() - 2 * 3_600_000).toISOString();
+  } else {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) redirect("/login");
+
+    const profileRes = await supabase
+      .from("profiles")
+      .select("id, full_name, slug, organizations:organizations(slug)")
+      .eq("id", user.id)
+      .maybeSingle<SalesProfile>();
+
+    if (!profileRes.data || !profileRes.data.organizations?.slug) redirect("/panel");
+    profile = profileRes.data;
+    orgSlug = profile.organizations!.slug;
+
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+    // Stats del enlace GENÉRICO (sin client_id, las visitas al QR del mostrador).
+    const [genericTotalRes, genericMonthRes, genericLastRes, personalizedMonthRes] =
+      await Promise.all([
+        supabase
+          .from("share_links")
+          .select("id", { count: "planned", head: true })
+          .eq("sales_id", user.id)
+          .is("client_id", null),
+        supabase
+          .from("share_links")
+          .select("id", { count: "exact", head: true })
+          .eq("sales_id", user.id)
+          .is("client_id", null)
+          .gte("opened_at", monthStart),
+        supabase
+          .from("share_links")
+          .select("opened_at")
+          .eq("sales_id", user.id)
+          .is("client_id", null)
+          .order("opened_at", { ascending: false })
+          .limit(1)
+          .maybeSingle<{ opened_at: string }>(),
+        supabase
+          .from("share_links")
+          .select("id", { count: "exact", head: true })
+          .eq("sales_id", user.id)
+          .not("client_id", "is", null)
+          .gte("opened_at", monthStart),
+      ]);
+
+    genericTotal = genericTotalRes.count ?? 0;
+    genericMonth = genericMonthRes.count ?? 0;
+    personalizedMonth = personalizedMonthRes.count ?? 0;
+    lastVisit = genericLastRes.data?.opened_at ?? null;
+  }
 
   const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.com";
   const fullUrl = buildShareUrl(appBase, orgSlug, profile.slug);

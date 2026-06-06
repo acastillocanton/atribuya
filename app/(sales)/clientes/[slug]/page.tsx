@@ -43,69 +43,89 @@ type ReviewRow = {
 export default async function ClienteDetallePage({ params }: PageProps) {
   const { slug } = await params;
 
+  let profile: SalesProfile;
+  let client: ClientDetail;
+  let orgSlug: string;
+  let visits: { opened_at: string; source: string }[];
+  let reviews: ReviewRow[];
+
   if (!isSupabaseConfigured()) {
-    return (
-      <>
-        <Topbar
-          title="Detalle"
-          subtitle="Modo demo — sin base de datos"
-          breadcrumb="Mis clientes"
-        />
-        <div style={{ padding: "24px 32px" }}>
-          <Card>
-            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
-              Configura Supabase para ver detalle real del cliente.
-            </div>
-          </Card>
-        </div>
-      </>
-    );
+    // Modo demo: cliente de ejemplo derivado del slug + visitas y reseñas.
+    const now = Date.now();
+    const iso = (daysAgo: number) => new Date(now - daysAgo * 86_400_000).toISOString();
+    const DEMO_NAMES: Record<string, string> = {
+      "lucia-marin": "Lucía Marín",
+      "carlos-perez": "Carlos Pérez",
+      "marta-ruiz": "Marta Ruiz",
+      "jose-a-gil": "José A. Gil",
+    };
+    const name = DEMO_NAMES[slug] ?? "Cliente Demo";
+    profile = { full_name: "Mateo Salgado", slug: "mateo-salgado", organizations: { slug: "demo" } };
+    orgSlug = "demo";
+    client = {
+      id: "demo",
+      full_name: name,
+      slug,
+      email: `${slug.replace(/-/g, ".")}@example.com`,
+      phone: "+34 600 111 222",
+      created_at: iso(20),
+      sales_id: "demo",
+    };
+    visits = [
+      { opened_at: iso(1), source: "whatsapp" },
+      { opened_at: iso(3), source: "whatsapp" },
+      { opened_at: iso(12), source: "qr" },
+    ];
+    reviews = [
+      { id: "dr1", author_name: name, rating: 5, text: "Trato excelente y muy buen asesoramiento. Mateo me ayudó en todo el proceso.", google_created_at: iso(1), match_state: "counted", match_confidence: 96 },
+    ];
+  } else {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) notFound();
+
+    const [profileRes, clientRes] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("full_name, slug, organizations:organizations(slug)")
+        .eq("id", user.id)
+        .maybeSingle<SalesProfile>(),
+      supabase
+        .from("clients")
+        .select("id, full_name, slug, email, phone, created_at, sales_id")
+        .eq("sales_id", user.id)
+        .eq("slug", slug)
+        .maybeSingle<ClientDetail>(),
+    ]);
+
+    if (!profileRes.data || !clientRes.data) notFound();
+    if (!profileRes.data.organizations?.slug) notFound();
+    profile = profileRes.data;
+    client = clientRes.data;
+    orgSlug = profile.organizations!.slug;
+
+    const [visitsRes, reviewsRes] = await Promise.all([
+      supabase
+        .from("share_links")
+        .select("opened_at, source")
+        .eq("client_id", client.id)
+        .order("opened_at", { ascending: false })
+        .returns<{ opened_at: string; source: string }[]>(),
+      supabase
+        .from("reviews")
+        .select("id, author_name, rating, text, google_created_at, match_state, match_confidence")
+        .eq("client_id", client.id)
+        .is("removed_at", null)
+        .order("google_created_at", { ascending: false })
+        .returns<ReviewRow[]>(),
+    ]);
+
+    visits = visitsRes.data ?? [];
+    reviews = reviewsRes.data ?? [];
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) notFound();
-
-  const [profileRes, clientRes] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("full_name, slug, organizations:organizations(slug)")
-      .eq("id", user.id)
-      .maybeSingle<SalesProfile>(),
-    supabase
-      .from("clients")
-      .select("id, full_name, slug, email, phone, created_at, sales_id")
-      .eq("sales_id", user.id)
-      .eq("slug", slug)
-      .maybeSingle<ClientDetail>(),
-  ]);
-
-  const profile = profileRes.data;
-  const client = clientRes.data;
-  if (!profile || !client) notFound();
-  if (!profile.organizations?.slug) notFound();
-  const orgSlug = profile.organizations.slug;
-
-  const [visitsRes, reviewsRes] = await Promise.all([
-    supabase
-      .from("share_links")
-      .select("opened_at, source")
-      .eq("client_id", client.id)
-      .order("opened_at", { ascending: false })
-      .returns<{ opened_at: string; source: string }[]>(),
-    supabase
-      .from("reviews")
-      .select("id, author_name, rating, text, google_created_at, match_state, match_confidence")
-      .eq("client_id", client.id)
-      .is("removed_at", null)
-      .order("google_created_at", { ascending: false })
-      .returns<ReviewRow[]>(),
-  ]);
-
-  const visits = visitsRes.data ?? [];
-  const reviews = reviewsRes.data ?? [];
   const firstVisit = visits[visits.length - 1]?.opened_at ?? null;
   const lastVisit = visits[0]?.opened_at ?? null;
 

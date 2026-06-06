@@ -18,6 +18,14 @@ const DEMO_PROFILE: SalesProfile = {
   organizations: { slug: "demo" },
 };
 
+// Clientes de ejemplo para el modo demo (sin BD).
+const DEMO_CLIENTS: ClientRow[] = [
+  { id: "dc1", full_name: "Lucía Marín", slug: "lucia-marin", email: "lucia.marin@example.com", phone: "+34 600 111 222", created_at: "2026-06-01T10:00:00Z" },
+  { id: "dc2", full_name: "Carlos Pérez", slug: "carlos-perez", email: null, phone: "+34 600 333 444", created_at: "2026-05-28T12:30:00Z" },
+  { id: "dc3", full_name: "Marta Ruiz", slug: "marta-ruiz", email: "marta.ruiz@example.com", phone: null, created_at: "2026-05-20T09:15:00Z" },
+  { id: "dc4", full_name: "José A. Gil", slug: "jose-a-gil", email: null, phone: "+34 600 555 666", created_at: "2026-05-12T17:45:00Z" },
+] as ClientRow[];
+
 export default async function ClientesPage() {
   let salesProfile: SalesProfile | null = null;
   let clients: ClientRow[] = [];
@@ -51,6 +59,7 @@ export default async function ClientesPage() {
     }
   } else {
     salesProfile = DEMO_PROFILE;
+    clients = DEMO_CLIENTS;
   }
 
   const profile = salesProfile ?? DEMO_PROFILE;

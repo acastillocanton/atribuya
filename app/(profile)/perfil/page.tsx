@@ -31,48 +31,45 @@ function statusLabel(status: ProfileRow["status"]): string {
 }
 
 export default async function PerfilPage() {
+  let profile: ProfileRow;
+  let memberSince: string;
+
   if (!isSupabaseConfigured()) {
-    return (
-      <>
-        <Topbar
-          title="Mi perfil"
-          subtitle="Modo demo — sin base de datos"
-          breadcrumb="Atribuya"
-          range={null}
-        />
-        <div style={{ padding: "24px 32px" }}>
-          <Card>
-            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
-              Configura Supabase para ver tu perfil real.
-            </div>
-          </Card>
-        </div>
-      </>
-    );
+    // Modo demo: perfil de ejemplo (rol comercial) para verse poblado sin BD.
+    profile = {
+      id: "demo",
+      full_name: "Mateo Salgado",
+      email: "mateo.salgado@example.com",
+      role: "sales",
+      slug: "mateo-salgado",
+      status: "active",
+      avatar_url: null,
+    };
+    memberSince = "1 de mayo de 2026";
+  } else {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) redirect("/login");
+
+    const profileRes = await supabase
+      .from("profiles")
+      .select("id, full_name, email, role, slug, status, avatar_url")
+      .eq("id", user.id)
+      .maybeSingle<ProfileRow>();
+
+    if (!profileRes.data) redirect("/login");
+    profile = profileRes.data;
+
+    memberSince = user.created_at
+      ? new Date(user.created_at).toLocaleDateString("es-ES", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })
+      : "—";
   }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const profileRes = await supabase
-    .from("profiles")
-    .select("id, full_name, email, role, slug, status, avatar_url")
-    .eq("id", user.id)
-    .maybeSingle<ProfileRow>();
-
-  const profile = profileRes.data;
-  if (!profile) redirect("/login");
-
-  const memberSince = user.created_at
-    ? new Date(user.created_at).toLocaleDateString("es-ES", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      })
-    : "—";
 
   const isSales = profile.role === "sales";
   // Admin/manager no tienen MobileTabBar — en mobile necesitan un botón
