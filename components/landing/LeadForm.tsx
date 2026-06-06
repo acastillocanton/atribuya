@@ -1,0 +1,222 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { submitLead, type SubmitLeadResult } from "@/app/actions/submit-lead";
+
+export type LeadFormLocale = "es" | "en";
+
+type FormState =
+  | { kind: "idle" }
+  | { kind: "submitting" }
+  | { kind: "error"; message: string; fieldErrors?: Record<string, string> }
+  | { kind: "success" };
+
+const inputClass =
+  "w-full rounded-md border border-line bg-white px-3 py-2.5 text-[15px] text-ink placeholder:text-ink-4 outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10";
+
+const labelClass = "block text-[13px] font-semibold text-ink-2 mb-1.5";
+
+const DICTS = {
+  es: {
+    successTitle: "✓ Gracias. Te contactamos en menos de 24h.",
+    successBody: "Hemos recibido tu mensaje. Mientras tanto, si quieres adelantar algo puedes escribir directamente a",
+    honeypotLabel: "No rellenes este campo",
+    name: "Tu nombre",
+    namePh: "Ana Pérez",
+    company: "Empresa",
+    companyPh: "Promotora Ejemplo SL",
+    email: "Email profesional",
+    emailPh: "ana@empresa.com",
+    message: "¿Qué te interesa?",
+    messageOpt: "(opcional)",
+    messagePh: "Sector, número de comerciales, qué problema queréis resolver…",
+    cta: "Solicitar demo",
+    ctaSending: "Enviando…",
+    consent1: "Al enviar aceptas que te contactemos por email para coordinar la demo. No compartimos tus datos con terceros. Más en nuestra",
+    consent2: "política de privacidad",
+    privacyHref: "/privacidad",
+  },
+  en: {
+    successTitle: "✓ Thanks. We'll get back to you within 24h.",
+    successBody: "We received your message. Meanwhile, feel free to write directly to",
+    honeypotLabel: "Do not fill this field",
+    name: "Your name",
+    namePh: "Ana Pérez",
+    company: "Company",
+    companyPh: "Example Real Estate LLC",
+    email: "Work email",
+    emailPh: "ana@company.com",
+    message: "What's your situation?",
+    messageOpt: "(optional)",
+    messagePh: "Industry, number of sales reps, the problem you want to solve…",
+    cta: "Request a demo",
+    ctaSending: "Sending…",
+    consent1: "By submitting you accept that we contact you by email to schedule the demo. We don't share your data with third parties. More in our",
+    consent2: "privacy policy",
+    privacyHref: "/privacidad",
+  },
+} as const;
+
+export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
+  const t = DICTS[locale];
+  const [state, setState] = useState<FormState>({ kind: "idle" });
+  const [pending, startTransition] = useTransition();
+
+  function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      setState({ kind: "submitting" });
+      const res: SubmitLeadResult = await submitLead(formData);
+      if (res.ok) {
+        setState({ kind: "success" });
+        return;
+      }
+      setState({
+        kind: "error",
+        message: res.error,
+        fieldErrors: res.fieldErrors,
+      });
+    });
+  }
+
+  if (state.kind === "success") {
+    return (
+      <div className="rounded-lg border border-ok bg-ok-bg p-6">
+        <p className="text-base font-semibold text-ok">{t.successTitle}</p>
+        <p className="mt-2 text-sm text-ink-2">
+          {t.successBody}{" "}
+          <a
+            href="mailto:a.castillo.esv@gmail.com"
+            className="font-medium text-ink underline"
+          >
+            a.castillo.esv@gmail.com
+          </a>
+          .
+        </p>
+      </div>
+    );
+  }
+
+  const fieldErrors = state.kind === "error" ? state.fieldErrors ?? {} : {};
+  const generalError = state.kind === "error" ? state.message : null;
+
+  return (
+    <form action={handleSubmit} className="space-y-4" noValidate>
+      {/* Locale hidden — el server action lo lee para devolver mensajes
+          de error en el idioma adecuado. */}
+      <input type="hidden" name="locale" value={locale} />
+
+      {/* Honeypot: campo invisible para humanos, irresistible para bots. */}
+      <div
+        aria-hidden="true"
+        className="absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden"
+      >
+        <label htmlFor="website">
+          {t.honeypotLabel}
+          <input
+            id="website"
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </label>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="lead-name" className={labelClass}>
+            {t.name}
+          </label>
+          <input
+            id="lead-name"
+            type="text"
+            name="name"
+            required
+            autoComplete="name"
+            placeholder={t.namePh}
+            className={inputClass}
+            disabled={pending}
+          />
+          {fieldErrors.name && (
+            <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>
+          )}
+        </div>
+        <div>
+          <label htmlFor="lead-company" className={labelClass}>
+            {t.company}
+          </label>
+          <input
+            id="lead-company"
+            type="text"
+            name="company"
+            required
+            autoComplete="organization"
+            placeholder={t.companyPh}
+            className={inputClass}
+            disabled={pending}
+          />
+          {fieldErrors.company && (
+            <p className="mt-1 text-xs text-red-600">{fieldErrors.company}</p>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="lead-email" className={labelClass}>
+          {t.email}
+        </label>
+        <input
+          id="lead-email"
+          type="email"
+          name="email"
+          required
+          autoComplete="email"
+          placeholder={t.emailPh}
+          className={inputClass}
+          disabled={pending}
+        />
+        {fieldErrors.email && (
+          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="lead-message" className={labelClass}>
+          {t.message} <span className="font-normal text-ink-3">{t.messageOpt}</span>
+        </label>
+        <textarea
+          id="lead-message"
+          name="message"
+          rows={4}
+          placeholder={t.messagePh}
+          className={`${inputClass} resize-y`}
+          disabled={pending}
+        />
+        {fieldErrors.message && (
+          <p className="mt-1 text-xs text-red-600">{fieldErrors.message}</p>
+        )}
+      </div>
+
+      {generalError && (
+        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {generalError}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="inline-flex w-full items-center justify-center rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2 disabled:cursor-wait disabled:opacity-70 sm:w-auto"
+      >
+        {pending ? t.ctaSending : t.cta}
+      </button>
+      <p className="text-xs text-ink-3">
+        {t.consent1}{" "}
+        <a href={t.privacyHref} className="underline">
+          {t.consent2}
+        </a>
+        .
+      </p>
+    </form>
+  );
+}

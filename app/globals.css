@@ -1,0 +1,277 @@
+/* Hallmark · macrostructure: Stat-Led · genre: editorial · theme: custom
+ * paper-band: light · display-style: italic-serif (Fraunces) · accent-hue: ink-only
+ * nav: N5 floating-pill · footer: Ft5 statement
+ * studied: no · run: 2026-05-24
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #F5F5F7;
+  --surface: #FFFFFF;
+  --surface-2: #FAFAFB;
+  --line: #E5E5EA;
+  --line-strong: #D2D2D7;
+  --ink: #1D1D1F;
+  --ink-2: #515154;
+  --ink-3: #6E6E73;
+  --ink-4: #86868B;
+  --ink-5: #AEAEB2;
+  --ok: #2D7D46;
+  --ok-bg: #E8F0EB;
+  --warn-bg: #F4ECDB;
+  --warn: #8A6A1E;
+  --gold: #B58A2C;
+  --ios-bg: #F2F2F7;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  /* Landing display sizes — mobile-first, scale up via clamp() */
+  --text-stat: clamp(3.25rem, 1.75rem + 7.5vw, 8.5rem);
+  --text-stat-sm: clamp(1.75rem, 1.2rem + 2.5vw, 2.75rem);
+  --text-display: clamp(2rem, 1.1rem + 4.5vw, 4.25rem);
+  --text-h2: clamp(1.625rem, 1rem + 3vw, 2.75rem);
+  --text-h3: clamp(1.125rem, 0.9rem + 1vw, 1.5rem);
+  --text-lead: clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-text);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+button {
+  font: inherit;
+}
+
+/* Utility classes preserved from the design prototype */
+.h-rule {
+  height: 1px;
+  background: var(--line);
+  width: 100%;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-3);
+  background: #f2f2f4;
+  border: 1px solid var(--line);
+}
+
+.pill.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+  border-color: transparent;
+}
+
+.pill.warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-color: transparent;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  display: inline-block;
+}
+
+/* Focus ring — visible by default for accessibility */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Mobile (≤767px) — exclusivo del rol sales.
+ *
+ * Reglas con prefijo `sales-*` para garantizar que NO afectan a
+ * (admin), (manager) ni (profile). El sidebar se oculta, aparece la
+ * MobileTabBar fija inferior, y los grids fijos colapsan a 1 columna.
+ *
+ * NUNCA usar estas clases fuera de `app/(sales)/` ni de
+ * `components/layout/MobileTabBar.tsx`.
+ * ──────────────────────────────────────────────────────────────────── */
+
+/* Helpers de visibilidad — se aplican siempre, no solo en mobile, pero
+   el efecto solo se nota cuando hay media queries que las cambian. */
+.sales-hide-desktop {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  /* Visibilidad inversa: el sidebar desaparece, la tab bar aparece. */
+  .sales-hide-mobile {
+    display: none !important;
+  }
+  .sales-hide-desktop {
+    display: block;
+  }
+  .sales-mobile-only {
+    display: block;
+  }
+
+  /* Reserva espacio para la tab bar fija (56px) + safe area iOS. */
+  .sales-main {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Topbar compacto — padding y tipografía más pequeños, breadcrumb oculto.
+     padding-right extra reserva espacio para el MobileProfileAvatar
+     (fixed top-right, ~34px + 14px margen). */
+  .sales-topbar-compact {
+    padding: 14px 60px 10px 16px !important;
+  }
+  .sales-topbar-compact .sales-topbar-title {
+    font-size: 22px !important;
+  }
+  .sales-topbar-compact .sales-topbar-breadcrumb {
+    display: none !important;
+  }
+  .sales-topbar-compact .sales-topbar-right {
+    width: 100%;
+  }
+
+  /* Padding del contenido de la página. */
+  .sales-page-pad {
+    padding: 16px 16px 24px !important;
+  }
+
+  /* Hero del panel: 1.2fr / 1fr → 1 columna. */
+  .sales-grid-hero {
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+  }
+  /* Ring + texto objetivo — apilados. */
+  .sales-ring-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  /* Grids de stats con número fijo de columnas. */
+  .sales-stats-3 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .sales-stats-4 {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* QR + Mensaje en /panel/enlace y /clientes/[slug] — 1 columna. */
+  .sales-qr-grid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  /* Detalle de cliente: dos columnas → una. */
+  .sales-detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  /* Lista de reseñas — el grid 32px 1fr auto se queda en 2 columnas y
+     se permite que la pill caiga debajo (segunda fila). */
+  .sales-review-row {
+    grid-template-columns: 32px 1fr !important;
+    padding: 14px 16px !important;
+  }
+  .sales-review-pill {
+    grid-column: 2 !important;
+    margin-top: 8px;
+  }
+
+  /* RangePicker — el popover de 320px en absolute con right:0 se sale
+     por la izquierda cuando el botón flex-wrappea en mobile. Lo pasamos
+     a position fixed centrado bajo el topbar, ocupando casi todo el
+     ancho del viewport con margen lateral. */
+  .sales-rangepicker-popover {
+    position: fixed !important;
+    top: 88px !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: auto !important;
+    width: auto !important;
+    max-width: 420px !important;
+    margin: 0 auto !important;
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (min-width: 768px) {
+  /* Cualquier elemento marcado como mobile-only no se ve en desktop. */
+  .sales-mobile-only {
+    display: none !important;
+  }
+}
+
+/* /perfil — afinar para mobile. Aplica a cualquier rol que abra /perfil
+   en un viewport ≤767px (en producción solo sales, pero seguro para
+   admin/manager si abren por error). */
+@media (max-width: 767px) {
+  .profile-card {
+    padding: 18px !important;
+  }
+  .profile-field {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+    align-items: flex-start !important;
+  }
+  .profile-session-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .profile-session-row form {
+    width: 100%;
+  }
+  .profile-session-row form button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* /ayuda — pasar de grid 240px+1fr a columna única en mobile.
+     El TOC (sticky en desktop) se convierte en un bloque al principio del
+     contenido para que el lector tenga el índice a mano sin perderse el
+     contenido principal. También reducimos el padding lateral para que el
+     contenido respire en pantallas estrechas (375px). */
+  .ayuda-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    padding: 16px 16px 48px !important;
+  }
+  .ayuda-toc {
+    position: static !important;
+  }
+}

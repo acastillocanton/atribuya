@@ -1,0 +1,17 @@
+[
+  {
+    "date": "2026-05-24",
+    "macrostructure": "Stat-Led",
+    "theme": "custom",
+    "theme_axes": "light / italic-serif / ink-only",
+    "vibe": "editorial-utilitarian B2B SaaS",
+    "display": "Fraunces (variable, opsz+SOFT)",
+    "body": "Geist",
+    "mono": "Geist Mono",
+    "nav": "N5 floating-pill",
+    "footer": "Ft5 statement",
+    "enrichment": "none",
+    "brief": "Atribuya · multi-tenant SaaS for attribution of Google reviews to sales reps · landing comercial (ES + EN)",
+    "studied": false
+  }
+]
