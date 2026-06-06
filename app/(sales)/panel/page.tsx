@@ -10,16 +10,21 @@ export const dynamic = "force-dynamic";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { Ring } from "@/components/charts/Ring";
-import { ComingSoon } from "@/components/ui/ComingSoon";
 import { RangePicker } from "@/components/ui/RangePicker";
+import { BadgesCard } from "@/components/panel/BadgesCard";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentOrgContext } from "@/lib/supabase/org";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { buildShareDisplay, buildShareUrl } from "@/lib/share-link";
+import { getLeaderboard } from "@/lib/leaderboard";
+import { computePanelBadges, type PanelBadge } from "@/lib/panel-badges";
 import {
   parseRange,
   defaultShortcuts,
   isFullNaturalMonth,
   lastMonthRange,
+  thisMonthRange,
+  bucketByMonth,
   type DateRange,
 } from "@/lib/date-range";
 import { CopyLinkButton } from "./CopyLinkButton";
@@ -139,6 +144,81 @@ function parseFromIso(ymd: string): Date {
   return new Date(parts[0] ?? 1970, (parts[1] ?? 1) - 1, parts[2] ?? 1);
 }
 
+/**
+ * Insignias del comercial — calculadas al vuelo (sin tabla). Devuelve null en
+ * modo demo o sin sesión. Las queries de reseñas propias pasan por RLS; el
+ * ranking org-global usa `getLeaderboard(privileged)` porque el rol sales no
+ * puede leer perfiles de sus compañeros.
+ */
+async function loadPanelBadges(now: Date): Promise<PanelBadge[] | null> {
+  if (!isSupabaseConfigured()) {
+    // Modo demo: insignias de ejemplo coherentes con DEMO_DATA (Mateo Salgado:
+    // 74 reseñas del mes, objetivo 80, 2º del equipo de 6).
+    return computePanelBadges({
+      lifetimeCounted: 312,
+      reviewsThisPeriod: 74,
+      goal: 80,
+      monthBuckets: [58, 66, 71, 80, 83, 74],
+      fiveStarCount: 41,
+      rankIndex: 1,
+      teamSize: 6,
+    });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const profileRes = await supabase
+    .from("profiles")
+    .select("monthly_goal")
+    .eq("id", user.id)
+    .maybeSingle<{ monthly_goal: number }>();
+  const orgCtx = await getCurrentOrgContext(supabase);
+  if (!profileRes.data || !orgCtx?.orgId) return null;
+
+  // Reseñas verificadas (counted) históricas del comercial — propias, RLS OK.
+  const countedRes = await supabase
+    .from("reviews")
+    .select("rating, google_created_at")
+    .eq("sales_id", user.id)
+    .is("removed_at", null)
+    .eq("is_duplicate", false)
+    .eq("match_state", "counted")
+    .returns<{ rating: number; google_created_at: string }[]>();
+  const counted = countedRes.data ?? [];
+
+  const monthBuckets = bucketByMonth(
+    counted.map((r) => r.google_created_at),
+    6,
+    now,
+  );
+
+  // Posición en el ranking org-global del mes en curso (métrica counted).
+  const month = thisMonthRange(now);
+  const rows = await getLeaderboard({
+    orgId: orgCtx.orgId,
+    startIso: month.startIso,
+    endIso: month.endIso,
+    currentUserId: user.id,
+    metric: "counted",
+    privileged: true,
+  });
+  const rankIndex = rows.findIndex((r) => r.id === user.id);
+
+  return computePanelBadges({
+    lifetimeCounted: counted.length,
+    reviewsThisPeriod: monthBuckets[monthBuckets.length - 1] ?? 0,
+    goal: profileRes.data.monthly_goal,
+    monthBuckets,
+    fiveStarCount: counted.filter((r) => r.rating >= 5).length,
+    rankIndex: rankIndex >= 0 ? rankIndex : null,
+    teamSize: rows.length,
+  });
+}
+
 function formatRating(value: number | null): string {
   if (value === null) return "—";
   return value.toFixed(1).replace(".", ",");
@@ -209,6 +289,7 @@ export default async function PanelPage({
     now.getTime() < new Date(range.endIso).getTime();
 
   const data = await loadPanelData(range);
+  const badges = await loadPanelBadges(now);
   const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://atribuya.com";
   const link = buildShareDisplay(appBase, data.orgSlug, data.slug);
   const fullUrl = buildShareUrl(appBase, data.orgSlug, data.slug);
@@ -512,12 +593,24 @@ export default async function PanelPage({
           </Card>
         </div>
 
-        <div style={{ marginTop: 16 }}>
-          <ComingSoon
-            title="Histórico, ranking e insignias"
-            description="Próximamente: tu evolución mensual con barras, las últimas reseñas verificadas, tu posición en el ranking del equipo y las insignias conseguidas."
-          />
-        </div>
+        {badges && badges.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <BadgesCard badges={badges} />
+            <div style={{ marginTop: 12, textAlign: "right" }}>
+              <Link
+                href="/panel/ranking"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "var(--ink-3)",
+                  textDecoration: "none",
+                }}
+              >
+                Ver el ranking del equipo →
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
