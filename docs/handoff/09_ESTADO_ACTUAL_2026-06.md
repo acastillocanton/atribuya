@@ -85,7 +85,7 @@ Las rutas autenticadas (`/dashboard`, `/panel`, etc.) **no tienen prefijo de org
 
 Un solo proyecto Supabase `iuiveiznvwjeoyhescmx`. En MVP pre-cliente es suficiente. Crear `atribuya-prod` separado cuando entren 2-3 clientes con tráfico real.
 
-### Migraciones aplicadas (001 → 014)
+### Migraciones aplicadas (001 → 015)
 
 | Migración | Qué hace |
 |---|---|
@@ -94,6 +94,7 @@ Un solo proyecto Supabase `iuiveiznvwjeoyhescmx`. En MVP pre-cliente es suficien
 | 012 | 23 RLS policies — reescritura completa para multi-tenant |
 | 013 | `profiles.slug` pasa a UNIQUE por (org_id, slug) — permite "juan-perez" en dos orgs |
 | 014 | Tabla `leads` — captura formulario de la landing, solo visible para super_admin |
+| 015 | Calidad de reseñas: `is_duplicate`, `low_rating_alerted_at`, `message_templates` + lockdown `profiles_self_update` (congela columnas sensibles, incl. `org_id`) |
 
 ### Datos en BD ahora mismo
 
@@ -242,5 +243,5 @@ curl -X POST https://api.supabase.com/v1/projects/iuiveiznvwjeoyhescmx/database/
 | [lib/cron/process-reviews.ts](../../lib/cron/process-reviews.ts) | Motor de atribución de reseñas |
 | [lib/landing.ts](../../lib/landing.ts) | Lógica de `recordOpenAndRedirect` para la landing pública |
 | [app/actions/submit-lead.ts](../../app/actions/submit-lead.ts) | Server action del formulario de la landing |
-| [supabase/migrations/](../../supabase/migrations/) | Migraciones 001-014 en orden |
+| [supabase/migrations/](../../supabase/migrations/) | Migraciones 001-015 en orden |
 | [docs/tests-multitenancy.md](../tests-multitenancy.md) | 15 tests de aislamiento cross-org — referencia para validar RLS |

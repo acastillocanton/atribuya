@@ -96,6 +96,7 @@ Migraciones SQL: ejecutar en Supabase Dashboard → SQL Editor en orden numéric
 | 12. SEO — sitemap + OG image + Twitter cards | ✅ Hecho (2026-06-06) | Auditoría con skills `web-quality-audit`. `app/sitemap.ts` creado (4 URLs públicas; antes `robots.ts` referenciaba `/sitemap.xml` inexistente → 404 a Googlebot). `app/opengraph-image.tsx` + `app/en/opengraph-image.tsx` generan OG image 1200×630 dinámica via `next/og` (edge ImageResponse, sin PNG estático). `metadataBase` añadido en `app/layout.tsx`. `twitter:card summary_large_image` en ambas landings. |
 | 13. Dominio comercial atribuya.com | ✅ Hecho (2026-06-06) | Comprado en Hostinger. DNS: A `@`→`76.76.21.21`, CNAME `www`→`cname.vercel-dns.com`. Dominio añadido en Vercel. Todas las URLs hardcodeadas migradas `atribuya.vercel.app`→`atribuya.com` (sitemap, metadataBase, canonical, hreflang, OG, terminos). Supabase Auth Site URL → `https://atribuya.com` + redirect allowlist actualizada. `NEXT_PUBLIC_APP_URL` en Vercel → `https://atribuya.com`. Verificado: `atribuya.com` 308→`www.atribuya.com` 200 OK. |
 | Fix infra: repo público | ✅ Hecho (2026-06-06) | Vercel Hobby bloqueaba TODOS los deploys por git push de repos privados ("commit author does not have contributing access"). El redeploy manual desde UI también bloqueado. Solución: repo `acastillocanton/atribuya` pasado a **público** (no hay secretos en el código, todos en env vars de Vercel). Deploys vuelven a pasar. Hay un Deploy Hook creado en Vercel (Settings→Git) como vía alternativa de disparo manual. |
+| 14. Portar mejoras de calidad de reseñas (lote 1) | ✅ Hecho (2026-06-06) | Migración **015** (`is_duplicate`, `low_rating_alerted_at`, `message_templates` + lockdown `profiles_self_update` que congela org_id/role/slug/monthly_goal/location_id/status). 5 features portadas del producto base single-tenant, adaptadas a multi-tenant: **detección de duplicados** (anti-fraude por client_id, `lib/cron/duplicate-detection.ts`), **edit-merge** (reseñas editadas en Google, `lib/cron/edit-merge.ts`), **alertas ≤2★** (`lib/cron/low-rating-alerts.ts` + `lib/email/notify-low-rating.ts`, destinatarios resueltos POR ORG — admin+manager+sales, sin cross-org; quitado el rol "director" del original), **plantillas de mensaje por comercial** (`app/(sales)/panel/plantillas/`), **lockdown RLS**. Filtro `is_duplicate=false` en KPIs (dashboard, panel, comerciales, export). 31 tests nuevos (115/115). Las alertas/plantillas envían email solo cuando Brevo esté configurado (degradan con gracia). |
 
 ---
 
@@ -216,7 +217,7 @@ Creado 2026-05-24. Postgres 17.6, region Europe. Usa el nuevo formato de API key
 
 **Decisión (2026-05-24)**: NO se crea un proyecto Supabase separado para prod. Se reusa este. Razones: MVP pre-cliente, free tier en ambos casos, complejidad operativa de 2 entornos no compensa el aislamiento. Cuando entre cliente #2-3 con tráfico real, creamos `atribuya-staging` y este pasa a ser prod oficial. Nombre del proyecto en el dashboard puede renombrarse a "atribuya" (Settings → General).
 
-**Migraciones aplicadas:** 001 → 012. **Todo el plan SQL del fork (Fases 1 y 2) está en BD.**
+**Migraciones aplicadas:** 001 → 015. La 015 (calidad de reseñas + lockdown auto-update) aplicada vía Dashboard SQL Editor el 2026-06-06.
 
 **Estado actual de datos:**
 - `organizations` — 2 filas: Acme Promotora (active), Beta Apartamentos (trial) — `dev-seeds/01_*`.
@@ -257,7 +258,7 @@ Se creará en la misma cuenta Supabase pero como proyecto aparte (`atribuya-prod
 |---|---|---|
 | Vercel proyecto | ✅ Live | `atribuya.com` (primario) + `atribuya.vercel.app`, plan Hobby, auto-deploy desde `main` de GitHub. Repo **público** (necesario para que Hobby no bloquee deploys — ver Fase 12+). |
 | Vercel env vars | ✅ Configuradas | Supabase URL + keys, CRON_SECRET (= el de `.env.local`; añadido 2026-06-06, antes faltaba en prod), NEXT_PUBLIC_APP_URL=`https://atribuya.com`, GOOGLE_OAUTH_REDIRECT_URI. Google/Brevo vacíos (deferidos). |
-| Supabase | ✅ Operativo | Proyecto `iuiveiznvwjeoyhescmx` (free tier) sirve también de prod. Migraciones 001-014 aplicadas. |
+| Supabase | ✅ Operativo | Proyecto `iuiveiznvwjeoyhescmx` (free tier) sirve también de prod. Migraciones 001-015 aplicadas. |
 | Supabase Auth Site URL | ✅ Correcto | `https://atribuya.com`. Allowlist incluye también `atribuya.vercel.app/**` y `localhost:3000/**`. |
 | Super_admin | ✅ Creado | `a.castillo.esv@gmail.com` (id `b2eab873-…`). Login via OTP. |
 | Logos + favicon | ✅ Atribuya | `public/brand/logo-{cuadrado,horizontal}.png` + `app/{icon,apple-icon}.png` |
