@@ -8,7 +8,8 @@ type AuditInput = {
     | "share_link"
     | "location"
     | "profile"
-    | "organization";
+    | "organization"
+    | "conversation";
   entityId: string;
   action: string;
   payload?: Record<string, unknown>;

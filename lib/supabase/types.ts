@@ -10,6 +10,14 @@ export type ShareSource = "whatsapp" | "email" | "sms" | "qr" | "direct";
 
 export type OrgStatus = "trial" | "active" | "suspended" | "churned";
 
+export type SupportCategory =
+  | "general"
+  | "review_question"
+  | "technical"
+  | "billing";
+
+export type SupportStatus = "open" | "closed";
+
 /**
  * Hand-rolled Database types. Replace with `supabase gen types typescript` output
  * once the project is linked to a Supabase project.
@@ -287,6 +295,72 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["leads"]["Insert"]>;
         Relationships: [];
       };
+      support_conversations: {
+        Row: {
+          id: string;
+          org_id: string;
+          subject: string;
+          category: SupportCategory;
+          status: SupportStatus;
+          opener_id: string;
+          linked_review_id: string | null;
+          linked_client_id: string | null;
+          created_at: string;
+          closed_at: string | null;
+          last_message_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          subject: string;
+          category?: SupportCategory;
+          status?: SupportStatus;
+          opener_id: string;
+          linked_review_id?: string | null;
+          linked_client_id?: string | null;
+          created_at?: string;
+          closed_at?: string | null;
+          last_message_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["support_conversations"]["Insert"]>;
+        Relationships: [];
+      };
+      support_messages: {
+        Row: {
+          id: string;
+          org_id: string;
+          conversation_id: string;
+          author_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          conversation_id: string;
+          author_id: string;
+          body: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["support_messages"]["Insert"]>;
+        Relationships: [];
+      };
+      support_read_receipts: {
+        Row: {
+          user_id: string;
+          conversation_id: string;
+          org_id: string;
+          last_read_at: string;
+        };
+        Insert: {
+          user_id: string;
+          conversation_id: string;
+          org_id: string;
+          last_read_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["support_read_receipts"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -301,6 +375,10 @@ export type Database = {
       current_role: {
         Args: Record<string, never>;
         Returns: Role | null;
+      };
+      support_unread_count: {
+        Args: Record<string, never>;
+        Returns: number;
       };
     };
     Enums: {
