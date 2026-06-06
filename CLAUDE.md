@@ -212,8 +212,8 @@ export async function createX(input: CreateXInput) {
 
 ## 6. Estado real de Supabase
 
-### 6.1 Proyecto único (actúa como prod) — `atribuya-dev` (`iuiveiznvwjeoyhescmx`)
-Creado 2026-05-24. Postgres 17.6, region Europe. Usa el nuevo formato de API keys de Supabase (`sb_publishable_*` / `sb_secret_*`). El SDK `@supabase/ssr` acepta ambos formatos sin tocar código.
+### 6.1 Proyecto único (actúa como prod) — `atribuya` (`iuiveiznvwjeoyhescmx`)
+Creado 2026-05-24. **Renombrado en el dashboard `atribuya-dev` → `atribuya`** (2026-06-06); el ref `iuiveiznvwjeoyhescmx` es el mismo de siempre, no hay dos proyectos. Postgres 17.6, region `eu-central-1` (Frankfurt). Usa el nuevo formato de API keys de Supabase (`sb_publishable_*` / `sb_secret_*`). El SDK `@supabase/ssr` acepta ambos formatos sin tocar código.
 
 **Decisión (2026-05-24)**: NO se crea un proyecto Supabase separado para prod. Se reusa este. Razones: MVP pre-cliente, free tier en ambos casos, complejidad operativa de 2 entornos no compensa el aislamiento. Cuando entre cliente #2-3 con tráfico real, creamos `atribuya-staging` y este pasa a ser prod oficial. Nombre del proyecto en el dashboard puede renombrarse a "atribuya" (Settings → General).
 
@@ -266,7 +266,7 @@ Se creará en la misma cuenta Supabase pero como proyecto aparte (`atribuya-prod
 | SEO | ✅ Completo | `app/sitemap.ts` (4 URLs), OG image dinámica 1200×630 (`app/opengraph-image.tsx` + `/en`), `metadataBase`, Twitter cards, canonical + hreflang en `atribuya.com`. |
 | Cron diario | ✅ Configurado | `vercel.json` define 2 crons (Places + Business Profile). Vercel Hobby permite 2 diarios. |
 | Cron horario | ✅ Operativo (2026-06-06) | `.github/workflows/sync-places-hourly.yml`. Secrets `APP_URL`=`https://atribuya.com` y `CRON_SECRET` configurados vía `gh secret set`. Run manual → success. |
-| Brevo SMTP | ⏳ Código listo, config pendiente | **Código hecho (2026-06-06)**: reply-to global vía `BREVO_REPLY_TO` en `lib/email/brevo.ts`; aviso de leads best-effort (`lib/email/notify-lead.ts` → `submit-lead.ts`) a `LEAD_NOTIFY_EMAIL`; refs `atribuya.es`→`.com` limpiadas. **Pendiente manual**: crear cuenta Brevo, autenticar `atribuya.com` (SPF/DKIM, sin MX), env vars en Vercel, custom SMTP en Supabase Auth. Remitente `notificaciones@atribuya.com`, reply-to `a.castillo.esv@gmail.com`. Ver handoff §7.2. Sin Brevo, Supabase usa su email gratis (~4/h). |
+| Brevo SMTP | ✅ Operativo (2026-06-06) | **Cuenta Brevo reutilizada** (la de Castillo Cantón / newsletter — plan Free 300/día compartido; separar si la newsletter se reactiva). Dominio `atribuya.com` autenticado en Brevo (DKIM `brevo1._domainkey`; DMARC `p=none` lo puso Brevo apuntando a su agregador; **sin SPF ni MX** — solo envío). SMTP key dedicada `atribuya-prod`. Env vars en Vercel + `.env.local`: `BREVO_SMTP_USER=936eb7001@smtp-brevo.com`, `BREVO_SMTP_PASS`, `BREVO_FROM_EMAIL=Atribuya <notificaciones@atribuya.com>`, `BREVO_REPLY_TO`/`LEAD_NOTIFY_EMAIL=a.castillo.esv@gmail.com`. Supabase Auth → Custom SMTP activado (host `smtp-relay.brevo.com:587`, mismas credenciales) + rate limit emails subido a 50/h. Verificado: envío real OK (no spam) y magic link de Auth llega desde el dominio. **Código**: reply-to global `BREVO_REPLY_TO` en `lib/email/brevo.ts`, aviso de leads best-effort (`lib/email/notify-lead.ts` → `submit-lead.ts`). |
 | Google Cloud (OAuth + Places) | ⏳ Diferido | No bloquea hasta que un cliente quiera conectar GBP. |
 | Dominio comercial | ✅ atribuya.com | Comprado en Hostinger. DNS A+CNAME → Vercel. HTTPS OK. |
 | Stripe (billing) | ❌ No aplica todavía | Facturación manual hasta cliente #5-8. |
@@ -287,7 +287,9 @@ Sin resolver hasta que el usuario las decida:
 
 ### 8.1 Camino crítico al primer cliente (técnico)
 
-En orden: **Brevo SMTP → Google Cloud (OAuth + Places) → DPA**. Ver §7 para el detalle de cada uno. Lo demás de §8 son decisiones de negocio, no bloqueantes técnicos.
+En orden: ~~Brevo SMTP~~ (✅ hecho 2026-06-06) → **Google Cloud (OAuth + Places) → DPA**. Ver §7 para el detalle de cada uno. Lo demás de §8 son decisiones de negocio, no bloqueantes técnicos.
+
+**Gotcha de plantillas de email de Supabase Auth**: las plantillas (Magic Link, Invite, Confirm signup, Recovery) NO deben usar el `{{ .ConfirmationURL }}` de fábrica — ese va por el flujo implícito y deja el token en el `#` de la home sin crear sesión. Tienen que apuntar al handler propio: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=<tipo>&next=/` (ver `app/auth/confirm/route.ts`, que hace `verifyOtp` server-side). La plantilla Magic Link branded vive versionada en `supabase/email-templates/magic-link.html`. Las invitaciones por código (`lib/invite.ts`) ya construyen ese link bien; el hueco estaba solo en el magic link de auto-login.
 
 ### 8.2 Roadmap de features pendientes (del producto base)
 

@@ -52,7 +52,7 @@ SaaS B2B multi-tenant que atribuye reseñas de Google Business Profile a comerci
 | 13 | Dominio comercial `atribuya.com` (Hostinger) | ✅ | 2026-06-06 |
 | Fix | Repo público (desbloquea deploys Vercel Hobby) | ✅ | 2026-06-06 |
 
-**Último trabajo (2026-06-06)**: fix del cron horario que fallaba, auditoría SEO con skills `web-quality-audit`, y migración al dominio `atribuya.com`.
+**Último trabajo (2026-06-06)**: Brevo SMTP operativo de punta a punta (cuenta reutilizada de Castillo Cantón, dominio `atribuya.com` autenticado, env vars en Vercel, Custom SMTP en Supabase Auth, rate limit 50/h) + aviso de leads + plantilla de magic link branded y arreglo del flujo de login (`/auth/confirm`). Antes: fix del cron horario, auditoría SEO, y migración al dominio `atribuya.com`.
 
 ---
 
@@ -128,9 +128,12 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=                     # diferido — no bloquea MVP
 GOOGLE_CLIENT_SECRET=                 # diferido
 GOOGLE_OAUTH_REDIRECT_URI=            # diferido
-BREVO_SMTP_HOST=                      # diferido — ver §8
-BREVO_SMTP_USER=
-BREVO_SMTP_PASS=
+# Brevo SMTP — ✅ configurado (host/port hardcodeados en lib/email/brevo.ts)
+BREVO_SMTP_USER=936eb7001@smtp-brevo.com
+BREVO_SMTP_PASS=                      # SMTP key (secreto)
+BREVO_FROM_EMAIL=Atribuya <notificaciones@atribuya.com>
+BREVO_REPLY_TO=a.castillo.esv@gmail.com
+LEAD_NOTIFY_EMAIL=a.castillo.esv@gmail.com
 ```
 
 ---
@@ -145,25 +148,21 @@ El cron de Vercel solo permite 2 diarios (plan Hobby). El cron horario de Places
 
 Verificado con un run manual (`workflow_dispatch`) → success. Si vuelve a fallar: revisar que `CRON_SECRET` coincide entre GitHub Actions y Vercel env vars.
 
-### 7.2 Brevo SMTP — bloqueante antes del primer cliente
+### 7.2 Brevo SMTP — ✅ OPERATIVO (2026-06-06)
 
-Sin Brevo, Supabase usa su email gratuito limitado a ~4/hora. Con eso no funcionan las invitaciones a usuarios en volumen. **Además, desde el lote 1 de mejoras (ver §9) Brevo también es lo que activa el envío real de las alertas ≤2★, los emails de plantillas y el aviso de leads** — hoy el código degrada con gracia (no envía, no rompe).
+Activa el email transaccional (alertas ≤2★, notificación de reseña, aviso de leads) **y** el email de Supabase Auth (magic links / invitaciones). Antes, sin Brevo, Supabase usaba su email gratuito (~4/h), insuficiente.
 
-**Estado: código listo (2026-06-06), config de dashboards pendiente de ejecutar.**
+**Cómo quedó montado:**
+- **Cuenta**: se reutilizó la cuenta Brevo existente de Castillo Cantón (la de la newsletter, que estaba sin uso). Plan Free 300 emails/día — ⚠️ compartido si se reactiva la newsletter; entonces tocaría separar cuenta o subir de plan.
+- **Dominio**: `atribuya.com` autenticado en Brevo (Domains). DKIM `brevo1._domainkey` ✅. DMARC `p=none` (lo añadió Brevo apuntando a su agregador `rua@dmarc.brevo.com`; los informes se ven en el panel de Brevo). **Sin SPF ni MX** — es solo envío; la entrega se valida por DKIM. Remitente `notificaciones@atribuya.com` (no es buzón real → reply-to a Gmail).
+- **SMTP key**: dedicada, nombre `atribuya-prod` (separada de la de la newsletter para poder revocarla aparte). Login `936eb7001@smtp-brevo.com`.
+- **Env vars** (Vercel Production + `.env.local`): `BREVO_SMTP_USER`, `BREVO_SMTP_PASS`, `BREVO_FROM_EMAIL=Atribuya <notificaciones@atribuya.com>`, `BREVO_REPLY_TO=a.castillo.esv@gmail.com`, `LEAD_NOTIFY_EMAIL=a.castillo.esv@gmail.com`.
+- **Supabase Auth**: Authentication → Emails → Custom SMTP activado (host `smtp-relay.brevo.com`, port `587`, mismas credenciales, sender `notificaciones@atribuya.com` / `Atribuya`). Rate limit de emails subido a **50/h** (Authentication → Rate Limits).
+- **Verificado**: email transaccional de prueba llegó a bandeja de entrada (no spam); magic link de Auth llega desde `notificaciones@atribuya.com`.
 
-Decisiones tomadas: remitente `notificaciones@atribuya.com` (solo envío, sin buzón real); reply-to a `a.castillo.esv@gmail.com`; dominio autenticado solo para envío (SPF/DKIM, **sin MX**).
+**Gotcha resuelto — plantillas de Auth**: las plantillas de Supabase NO pueden usar el `{{ .ConfirmationURL }}` de fábrica (flujo implícito → deja el token en el `#` de la home sin loguear). Deben apuntar a `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=<tipo>&next=/` (handler `app/auth/confirm/route.ts`). La plantilla **Magic Link** ya está branded y aplicada; copia versionada en `supabase/email-templates/magic-link.html`. **Pendiente**: replicar el mismo patrón/diseño a las plantillas **Invite user** (`type=invite`), **Confirm signup** (`type=signup`) y **Reset password** (`type=recovery`).
 
-Cambios de código ya hechos:
-- `lib/email/brevo.ts`: reply-to por defecto vía `BREVO_REPLY_TO` (el FROM no es buzón).
-- `lib/email/notify-lead.ts` + `app/actions/submit-lead.ts`: aviso de lead best-effort a `LEAD_NOTIFY_EMAIL` (no rompe la respuesta si el email falla).
-- Limpiadas las refs obsoletas `atribuya.es` → `atribuya.com`.
-
-Pasos manuales pendientes (ver plan en `~/.claude/plans/voy-a-crear-la-fuzzy-cocoa.md`):
-1. Crear cuenta en brevo.com (login con un email de gestión, no con el remitente).
-2. Brevo → Domains → autenticar `atribuya.com`: añadir en Hostinger los DKIM/TXT que muestre Brevo + SPF (`v=spf1 include:spf.brevo.com ~all`) + DMARC (`v=DMARC1; p=none; rua=...`). Solo un SPF por dominio: fusionar si ya existe.
-3. Brevo → SMTP & API → SMTP: copiar Login + generar SMTP key (no API key; se muestra una vez).
-4. Añadir en Vercel y `.env.local`: `BREVO_SMTP_USER`, `BREVO_SMTP_PASS`, `BREVO_FROM_EMAIL`, `BREVO_REPLY_TO`, `LEAD_NOTIFY_EMAIL`.
-5. Supabase Dashboard → Authentication → SMTP Settings → activar custom SMTP + subir el rate limit de Auth.
+**Código** (commit del 2026-06-06): reply-to global vía `BREVO_REPLY_TO` en `lib/email/brevo.ts`; aviso de leads best-effort `lib/email/notify-lead.ts` → `submit-lead.ts`; refs `atribuya.es`→`.com` limpiadas.
 
 ### 7.3 Google Cloud — bloqueante para el primer cliente real
 
@@ -193,7 +192,7 @@ Los `/terminos` y `/privacidad` están completos. Falta el DPA bilateral para fi
 
 ### 7.7 Camino crítico al primer cliente
 
-En orden: **Brevo (§7.2) → Google Cloud (§7.3) → DPA (§7.6)**. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
+En orden: ~~Brevo (§7.2)~~ ✅ → **Google Cloud (§7.3) → DPA (§7.6)**. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
 
 ### 7.8 Mejoras de producto pendientes (lotes del producto base)
 
