@@ -316,3 +316,31 @@ curl -X POST https://api.supabase.com/v1/projects/iuiveiznvwjeoyhescmx/database/
 | [scripts/capture-help.py](../../scripts/capture-help.py) | Captura las pantallas de ayuda desde el modo demo (Playwright) |
 | [supabase/migrations/](../../supabase/migrations/) | Migraciones 001-017 en orden |
 | [docs/tests-multitenancy.md](../tests-multitenancy.md) | 15 tests de aislamiento cross-org — referencia para validar RLS |
+
+---
+
+## 12. Analítica y SEO infra (GA4 + Search Console + dominio) — 2026-06-07
+
+### Google Analytics 4 con consentimiento RGPD
+- **Property / Measurement ID**: `G-GKYPWE3QRK`. Var `NEXT_PUBLIC_GA_ID` (en `.env.local` y en Vercel Production). Se incrusta en build → un cambio de valor exige **redeploy sin caché**.
+- **Alcance**: solo páginas públicas de marketing y legales (`/`, `/en`, `/en/*`, `/gracias`, `/terminos`, `/privacidad`). La app interna autenticada **NO se rastrea** (ni banner ni GA). Los hits reales solo se envían en `NODE_ENV=production` (en dev se ve el banner pero no se contaminan datos).
+- **Consentimiento opt-in (art. 22 LSSI + RGPD/AEPD)**: gtag **no carga** hasta que el usuario pulsa «Aceptar». «Rechazar» igual de visible. Elección persistida en `localStorage` (`atribuya.cookie-consent`). Revocable desde el enlace «Cookies» del footer (dispara el evento `atribuya:open-cookie-consent`).
+  - Orquestador: [components/analytics/Analytics.tsx](../../components/analytics/Analytics.tsx) · banner: [components/analytics/CookieBanner.tsx](../../components/analytics/CookieBanner.tsx) (ES/EN) · constantes: [lib/consent.ts](../../lib/consent.ts) · enlace footer: [components/landing/CookiePrefs.tsx](../../components/landing/CookiePrefs.tsx).
+  - Política de privacidad (`/privacidad`, sección 8) reescrita para declarar GA4, transferencia a EE. UU. y el opt-in/revocación.
+- **GOTCHA CSP**: la `Content-Security-Policy` de [next.config.ts](../../next.config.ts) bloqueaba gtag. Hubo que añadir `https://www.googletagmanager.com` a `script-src` y los endpoints de recogida (`*.google-analytics.com`, `*.analytics.google.com`, etc.) a `connect-src`. Sin esto, el navegador corta gtag aunque el usuario acepte (síntoma: petición a googletagmanager bloqueada por CSP, GA vacío). Si se añaden más servicios de terceros (Ads, Tag Manager, etc.) habrá que ampliar la CSP igual.
+- **Conversión de lead**: el formulario dispara el evento GA4 `generate_lead` en el envío correcto vía helper [lib/gtag.ts](../../lib/gtag.ts) (`trackEvent`, no-op si gtag no está cargado). Funciona ES+EN, cuenta el envío real (no la visita a `/gracias`). **Pendiente menor**: marcarlo como **evento clave** (⭐) en GA4 → Eventos clave cuando aparezca en la lista (la lista de gestión va con retraso ≤24h; en Tiempo real es instantáneo). Quitar también el placeholder `purchase` que metió el asistente de objetivos.
+- **Tráfico interno** excluido en GA4 (regla por IP) y **retención** subida a 14 meses.
+
+### Search Console
+- Propiedad de **tipo Dominio** (`atribuya.com`), verificada por **registro TXT en Hostinger** (`google-site-verification=...`, host `@`). Cubre apex + www + subdominios.
+- **Vinculada a GA4** (Admin → Vinculaciones de productos → Search Console). Los datos de búsqueda orgánica tardan 24-48h en poblarse.
+- **Sitemap enviado**: `sitemap.xml` (generado por [app/sitemap.ts](../../app/sitemap.ts)).
+
+### Dominio canónico → apex (Opción A SEO)
+- Antes `atribuya.com` hacía 308 → `www`. Invertido en **Vercel → Settings → Domains**: ahora `atribuya.com` es **Production/primario** y `www.atribuya.com` hace **308 → apex**.
+- Motivo: alinear el host servido con el canonical de las páginas, el sitemap (URLs sin www) y el Auth Site URL de Supabase (`https://atribuya.com`), que ya eran sin www.
+- **Consecuencia para OAuth (Vía B)**: el `REDIRECT_URI` debe usar el apex sin www (`https://atribuya.com/api/google/oauth/callback`). El apex ya está autorizado en el cliente OAuth. Ver §6 y §7.
+- Aviso «DNS Change Recommended» de Vercel en apex+www: recomendación de DNS pendiente de revisar, no bloquea (la web sirve correctamente).
+
+### LinkedIn
+- Página de empresa creada: `linkedin.com/company/atribuya`. Portadas generadas en [public/brand/](../../public/brand/) (`linkedin-cover-light.png` usada, `linkedin-cover-navy.png` alternativa), 1128×191.

@@ -92,6 +92,8 @@ Migraciones SQL: ejecutar en Supabase Dashboard → SQL Editor en orden numéric
 | —. Reescritura de copy de la landing (ES+EN) a tono beneficio-first — métrica del hero, H1, CTAs por resultado, sectores destacados (detalle → handoff §9) | ✅ 2026-06-07 |
 | —. Pricing definido: por nº de fichas, comerciales ilimitados, 2 tiers (45/149 €) + a medida (3 tarjetas), setup plano 60 € (detalle → §8 / handoff §9) | ✅ 2026-06-07 |
 | —. Formulario de lead: campo **teléfono obligatorio** (mig 017 `leads.phone`), verificado E2E (detalle → handoff §9) | ✅ 2026-06-07 |
+| —. Analítica + SEO infra: GA4 (`G-GKYPWE3QRK`) con banner de consentimiento opt-in RGPD (solo páginas públicas, hits solo en prod), evento de conversión `generate_lead`, Search Console verificado (DNS) + vinculado a GA4 + sitemap enviado, dominio canónico invertido a apex (`www` 308 → `atribuya.com`) (detalle → handoff §12) | ✅ 2026-06-07 |
+| —. Página de empresa en LinkedIn (`linkedin.com/company/atribuya`) | ✅ 2026-06-07 |
 | —. Google OAuth Business Profile (Vía B) — todas las reseñas | ⏳ esperando aprobación Google (caso `7-4031000041620`, ~18-jun; ver §7) |
 
 Extras (detalle → handoff.md): datos fiscales por org en `/super`, rebrand visual (logos/favicon), fix repo público para deploys Vercel Hobby. La fase 6 (routing) es **parcial**: solo la landing pública lleva prefijo `/o/`; las rutas autenticadas no (las protege RLS — ver §5.4).
@@ -257,11 +259,12 @@ Se creará en la misma cuenta Supabase pero como proyecto aparte (`atribuya-prod
 
 | Pieza | Estado |
 |---|---|
-| Vercel | ✅ `atribuya.com` (+ `atribuya.vercel.app`), Hobby, auto-deploy desde `main`. Repo **público** (Hobby bloquea deploys de repos privados). |
+| Vercel | ✅ `atribuya.com` (apex, **dominio canónico/primario**) + `www` 308 → apex + `atribuya.vercel.app`. Hobby, auto-deploy desde `main`. Repo **público** (Hobby bloquea deploys de repos privados). |
 | Supabase | ✅ Proyecto `iuiveiznvwjeoyhescmx` (free tier) = prod. Auth Site URL `https://atribuya.com`. Super_admin `a.castillo.esv@gmail.com` (OTP). |
 | Email (Brevo SMTP) | ✅ Operativo. Transaccional + Supabase Auth Custom SMTP. From `notificaciones@atribuya.com`, reply-to Gmail. Cuenta Free 300/día compartida con la newsletter de Castillo Cantón. Detalle + gotcha de plantillas Auth → handoff §7.2 / §8.1. |
 | Crons | ✅ 2 diarios en `vercel.json` (Places + Business Profile) + horario en `.github/workflows/sync-places-hourly.yml` (secrets `APP_URL`/`CRON_SECRET`). |
-| Legal + SEO | ✅ `/terminos`, `/privacidad`, **DPA** (`docs/legal/dpa.{md,docx}`). sitemap + OG 1200×630 + Twitter cards + canonical/hreflang. |
+| Legal + SEO | ✅ `/terminos`, `/privacidad`, **DPA** (`docs/legal/dpa.{md,docx}`). sitemap + OG 1200×630 + Twitter cards + canonical/hreflang. **Search Console** verificado (TXT en Hostinger) + sitemap enviado. |
+| **Analítica (GA4)** | ✅ `G-GKYPWE3QRK`, `NEXT_PUBLIC_GA_ID` en Vercel. Solo páginas públicas/legales (la app interna NO se rastrea), hits solo en prod. **Banner de consentimiento opt-in RGPD** (`components/analytics/Analytics.tsx` + `CookieBanner.tsx`; gtag no carga hasta «Aceptar»; revocable desde footer). CSP de `next.config.ts` ya permite los dominios de Google. Evento de conversión **`generate_lead`** en el envío del formulario (`lib/gtag.ts`). Vinculado a Search Console. **Pendiente menor**: marcar `generate_lead` como evento clave (⭐) en GA4 cuando aparezca en la lista (≤24h tras el primer evento). |
 | **Google Places (Vía A)** | ✅ Proyecto Cloud `atribuya`, Places API **legacy** (no "New"), key restringida, facturación activa, **cuota 500/día + alerta 10 €/mes**. `GOOGLE_PLACES_API_KEY` en `.env.local` + Vercel. Probado E2E (`scripts/find-place.mjs`). Top-5 reseñas recientes por ficha, datos públicos. |
 | **Google OAuth (Vía B)** | ⏳ Esperando a Google. Configurado: consent Testing, OAuth client (`GOOGLE_CLIENT_ID` `443155173600-…`), APIs Account Management + Business Information, redirect (el cliente OAuth tiene registrados www + apex + localhost). **Solicitud de acceso a Reviews API v4 enviada** → caso `7-4031000041620` (~7-10 días, ≈18-jun). Hasta aprobación, v4 da `PERMISSION_DENIED`. **Tras aprobar**: subir `GOOGLE_CLIENT_ID`/`SECRET`/`REDIRECT_URI` a Vercel + probar OAuth. ⚠️ **Usar el `REDIRECT_URI` SIN www** (`https://atribuya.com/api/google/oauth/callback`): desde 2026-06-07 el host canónico es el apex y `www` hace 308 → apex; los callbacks OAuth no siguen redirecciones. El apex ya está autorizado en el cliente. Recordatorio remoto: `trig_01CBuCBCcBdJuvRfr5VeBpyi` (18-jun). |
 | Stripe (billing) | ❌ No aplica. Facturación manual hasta cliente #5-8. |
