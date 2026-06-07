@@ -526,7 +526,7 @@ export default function HomePage() {
                   <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
                     {plan.tagline}
                   </p>
-                  <p className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
+                  <p className="mb-6 mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
                     <span
                       aria-hidden="true"
                       className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
@@ -562,7 +562,7 @@ export default function HomePage() {
                 <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
                   Cadenas y redes con varias sedes.
                 </p>
-                <p className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
+                <p className="mb-6 mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
                   <span
                     aria-hidden="true"
                     className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
