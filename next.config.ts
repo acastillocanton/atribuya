@@ -16,12 +16,16 @@ import type { NextConfig } from "next";
 const CSP = [
   "default-src 'self'",
   "img-src 'self' https: data: blob:",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  // googletagmanager.com sirve el gtag.js de Google Analytics 4. Solo se carga
+  // tras el consentimiento del usuario (banner) y en páginas públicas.
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
   // fonts.googleapis.com es el CSS de Google Fonts (Inter); fonts.gstatic.com
   // sirve los .woff2 reales.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com",
+  // Google APIs (mybusiness*) + endpoints de recogida de GA4 (g/collect, que
+  // usa subdominios regionales como region1.google-analytics.com).
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
