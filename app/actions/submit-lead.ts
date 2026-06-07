@@ -35,6 +35,8 @@ const MESSAGES = {
     emailInvalid: "Email no válido.",
     companyShort: "Nombre de empresa demasiado corto.",
     companyLong: "Nombre de empresa demasiado largo.",
+    phoneShort: "Teléfono demasiado corto.",
+    phoneInvalid: "Teléfono no válido.",
     messageLong: "Mensaje demasiado largo.",
     reviewFields: "Revisa los datos del formulario.",
     retry: "No se pudo enviar el mensaje. Inténtalo de nuevo en un momento.",
@@ -45,6 +47,8 @@ const MESSAGES = {
     emailInvalid: "Invalid email address.",
     companyShort: "Company name is too short.",
     companyLong: "Company name is too long.",
+    phoneShort: "Phone number is too short.",
+    phoneInvalid: "Invalid phone number.",
     messageLong: "Message is too long.",
     reviewFields: "Please review the form fields.",
     retry: "Could not send the message. Please try again in a moment.",
@@ -57,6 +61,12 @@ function makeSchema(locale: Locale) {
     name: z.string().trim().min(2, m.nameShort).max(120, m.nameLong),
     email: z.string().trim().toLowerCase().email(m.emailInvalid).max(160),
     company: z.string().trim().min(2, m.companyShort).max(200, m.companyLong),
+    phone: z
+      .string()
+      .trim()
+      .min(6, m.phoneShort)
+      .max(30, m.phoneInvalid)
+      .regex(/^[+()\d\s.-]+$/, m.phoneInvalid),
     message: z
       .string()
       .trim()
@@ -90,6 +100,7 @@ export async function submitLead(formData: FormData): Promise<SubmitLeadResult> 
     name: String(formData.get("name") ?? ""),
     email: String(formData.get("email") ?? ""),
     company: String(formData.get("company") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
     message: String(formData.get("message") ?? ""),
   };
 
@@ -118,6 +129,7 @@ export async function submitLead(formData: FormData): Promise<SubmitLeadResult> 
     name: parsed.data.name,
     email: parsed.data.email,
     company: parsed.data.company,
+    phone: parsed.data.phone,
     message: parsed.data.message,
     source: locale === "en" ? "landing-en" : "landing",
     user_agent: userAgent,
@@ -141,6 +153,7 @@ export async function submitLead(formData: FormData): Promise<SubmitLeadResult> 
       name: parsed.data.name,
       email: parsed.data.email,
       company: parsed.data.company,
+      phone: parsed.data.phone,
       message: parsed.data.message,
       source: locale === "en" ? "landing-en" : "landing",
       userAgent,

@@ -18,6 +18,7 @@ export type LeadNotificationInput = {
   name: string;
   email: string;
   company: string;
+  phone: string;
   message: string | null;
   /** "landing" | "landing-en" — de qué versión de la landing vino. */
   source: string;
@@ -61,10 +62,11 @@ function renderText(input: LeadNotificationInput): string {
   return [
     `Nuevo lead recibido en la landing de Atribuya.`,
     "",
-    `Nombre:  ${input.name}`,
-    `Email:   ${input.email}`,
-    `Empresa: ${input.company}`,
-    `Origen:  ${input.source}`,
+    `Nombre:   ${input.name}`,
+    `Email:    ${input.email}`,
+    `Teléfono: ${input.phone}`,
+    `Empresa:  ${input.company}`,
+    `Origen:   ${input.source}`,
     "",
     input.message ? `Mensaje:\n${input.message}` : "(Sin mensaje)",
     "",
@@ -77,6 +79,7 @@ function renderHtml(input: LeadNotificationInput): string {
   const name = escapeHtml(input.name);
   const email = escapeHtml(input.email);
   const company = escapeHtml(input.company);
+  const phone = escapeHtml(input.phone);
   const source = escapeHtml(input.source);
   const message = input.message ? escapeHtml(input.message) : null;
   const ip = input.ip ? escapeHtml(input.ip) : "N/D";
@@ -105,6 +108,7 @@ function renderHtml(input: LeadNotificationInput): string {
             <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#a8a294;font-weight:600;">Contacto</div>
             <div style="margin-top:8px;font-size:15px;font-weight:600;color:#1a1a1a;">${name}</div>
             <div style="margin-top:4px;font-size:13px;color:#8a8478;"><a href="mailto:${email}" style="color:#b35900;text-decoration:none;">${email}</a></div>
+            <div style="margin-top:4px;font-size:13px;color:#8a8478;"><a href="tel:${phone}" style="color:#b35900;text-decoration:none;">${phone}</a></div>
             ${message ? `<p style="margin:14px 0 0;font-size:14px;line-height:1.55;color:#333333;">${message}</p>` : `<p style="margin:14px 0 0;font-size:13px;color:#a8a294;font-style:italic;">(Sin mensaje.)</p>`}
           </div>
 

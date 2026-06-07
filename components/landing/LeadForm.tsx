@@ -27,6 +27,8 @@ const DICTS = {
     companyPh: "Promotora Ejemplo SL",
     email: "Email profesional",
     emailPh: "ana@empresa.com",
+    phone: "Teléfono",
+    phonePh: "600 123 456",
     message: "¿Qué te interesa?",
     messageOpt: "(opcional)",
     messagePh: "Sector, número de comerciales, qué problema queréis resolver…",
@@ -46,6 +48,8 @@ const DICTS = {
     companyPh: "Example Real Estate LLC",
     email: "Work email",
     emailPh: "ana@company.com",
+    phone: "Phone",
+    phonePh: "+34 600 123 456",
     message: "What's your situation?",
     messageOpt: "(optional)",
     messagePh: "Industry, number of sales reps, the problem you want to solve…",
@@ -161,23 +165,43 @@ export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
         </div>
       </div>
 
-      <div>
-        <label htmlFor="lead-email" className={labelClass}>
-          {t.email}
-        </label>
-        <input
-          id="lead-email"
-          type="email"
-          name="email"
-          required
-          autoComplete="email"
-          placeholder={t.emailPh}
-          className={inputClass}
-          disabled={pending}
-        />
-        {fieldErrors.email && (
-          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-        )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="lead-email" className={labelClass}>
+            {t.email}
+          </label>
+          <input
+            id="lead-email"
+            type="email"
+            name="email"
+            required
+            autoComplete="email"
+            placeholder={t.emailPh}
+            className={inputClass}
+            disabled={pending}
+          />
+          {fieldErrors.email && (
+            <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+          )}
+        </div>
+        <div>
+          <label htmlFor="lead-phone" className={labelClass}>
+            {t.phone}
+          </label>
+          <input
+            id="lead-phone"
+            type="tel"
+            name="phone"
+            required
+            autoComplete="tel"
+            placeholder={t.phonePh}
+            className={inputClass}
+            disabled={pending}
+          />
+          {fieldErrors.phone && (
+            <p className="mt-1 text-xs text-red-600">{fieldErrors.phone}</p>
+          )}
+        </div>
       </div>
 
       <div>

@@ -275,6 +275,7 @@ export type Database = {
           name: string;
           email: string;
           company: string;
+          phone: string | null;
           message: string | null;
           source: string;
           user_agent: string | null;
@@ -286,6 +287,7 @@ export type Database = {
           name: string;
           email: string;
           company: string;
+          phone?: string | null;
           message?: string | null;
           source?: string;
           user_agent?: string | null;
