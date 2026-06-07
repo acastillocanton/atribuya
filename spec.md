@@ -239,7 +239,7 @@ El MVP comercial está listo para captar el primer cliente cuando **todas** esta
 2. Dominio definitivo
 3. Path prefix vs subdominio
 4. ~~Pricing tiers exactos~~ — **decidido (2026-06-07, v2)**: se factura **por nº de fichas** (no por comerciales), **comerciales ilimitados** en todos los planes. **2 tiers + a medida** (la mayoría del mercado es de una ficha): Starter (hasta 2 fichas, 45 €/mes, el más vendido), Professional (hasta 10 fichas, 149 €/mes), A medida (+10 / cadenas). Entrada a 45 € porque el coste de infra es de plataforma compartido entre tenants → margen desde el 2º cliente. *Enforcement técnico del tope de fichas pendiente (hoy `organizations.plan` es placeholder sin validación).*
-5. ~~Qué incluye el setup pagado~~ — **decidido (2026-06-07)**: **60 € plano** para todas las fichas. Incluye conexión de fichas, alta del equipo, formación y soporte inicial. El programa Cliente Insignia descuenta solo la suscripción (mitad de precio primer año), no el setup.
+5. ~~Qué incluye el setup pagado~~ — **decidido (2026-06-07)**: **60 € plano** para todas las fichas. Incluye conexión de fichas, alta del equipo, formación y soporte inicial. **Nota (2026-06-07)**: el programa **Cliente Insignia** y la **garantía de 90 días** se retiraron de la landing (ES+EN) y de la FAQ por decisión del usuario.
 6. Cuándo introducir Stripe
 
 ---
