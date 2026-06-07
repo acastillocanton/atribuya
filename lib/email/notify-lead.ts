@@ -42,7 +42,7 @@ export async function notifyLead(input: LeadNotificationInput) {
     return { ok: false as const, skipped: true, reason: "no_recipient" as const };
   }
 
-  const subject = `🆕 Nuevo lead — ${input.company}`;
+  const subject = `🆕 Nuevo lead de ${input.company}`;
 
   const html = renderHtml(input);
   const text = renderText(input);
@@ -68,8 +68,8 @@ function renderText(input: LeadNotificationInput): string {
     "",
     input.message ? `Mensaje:\n${input.message}` : "(Sin mensaje)",
     "",
-    `IP: ${input.ip ?? "—"}`,
-    `UA: ${input.userAgent ?? "—"}`,
+    `IP: ${input.ip ?? "N/D"}`,
+    `UA: ${input.userAgent ?? "N/D"}`,
   ].join("\n");
 }
 
@@ -79,8 +79,8 @@ function renderHtml(input: LeadNotificationInput): string {
   const company = escapeHtml(input.company);
   const source = escapeHtml(input.source);
   const message = input.message ? escapeHtml(input.message) : null;
-  const ip = input.ip ? escapeHtml(input.ip) : "—";
-  const ua = input.userAgent ? escapeHtml(input.userAgent) : "—";
+  const ip = input.ip ? escapeHtml(input.ip) : "N/D";
+  const ua = input.userAgent ? escapeHtml(input.userAgent) : "N/D";
 
   return `<!DOCTYPE html>
 <html lang="es">

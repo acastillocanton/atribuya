@@ -141,25 +141,25 @@ export default function PrivacidadPage() {
       </p>
       <ul style={ul}>
         <li>
-          <strong>Supabase</strong> (Singapur, con datacenters en la UE) —
+          <strong>Supabase</strong> (Singapur, con datacenters en la UE):
           alojamiento de base de datos PostgreSQL y servicio de autenticación.
         </li>
         <li>
-          <strong>Vercel</strong> (EE. UU., con edge nodes en la UE) — hosting
+          <strong>Vercel</strong> (EE. UU., con edge nodes en la UE): hosting
           de la aplicación y ejecución de los crons.
         </li>
         <li>
-          <strong>Google LLC</strong> — proveedor de las APIs de Google Places
+          <strong>Google LLC</strong>: proveedor de las APIs de Google Places
           y Google Business Profile a las que el Cliente conecta sus fichas.
         </li>
         <li>
           <strong>Proveedor SMTP</strong> (actualmente correo transaccional
           gestionado por Supabase Auth; en el futuro Brevo o equivalente,
-          ambos con servidores en la UE) — envío de magic-links y
+          ambos con servidores en la UE): envío de magic-links y
           notificaciones.
         </li>
         <li>
-          <strong>GitHub</strong> (EE. UU., titularidad de Microsoft) — sólo
+          <strong>GitHub</strong> (EE. UU., titularidad de Microsoft): sólo
           para ejecutar el workflow horario que dispara el endpoint público
           de sincronización; no recibe datos personales del Cliente.
         </li>

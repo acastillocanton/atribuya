@@ -8,9 +8,9 @@ import { ReviewProof } from "@/components/landing/ReviewProof";
 // Sobrescribimos los robots heredados de app/layout.tsx (que son noindex global
 // para proteger las rutas autenticadas).
 export const metadata: Metadata = {
-  title: "Atribuya — Atribuye reseñas de Google a cada comercial, en automático",
+  title: "Atribuya: atribuye reseñas de Google a cada comercial, en automático",
   description:
-    "SaaS de atribución de reseñas de Google Business Profile para empresas con red comercial. Cada vendedor recibe el crédito de las reseñas que ha conseguido — sin pedirle el nombre al cliente.",
+    "SaaS de atribución de reseñas de Google Business Profile para empresas con red comercial. Cada vendedor recibe el crédito de las reseñas que ha conseguido, sin pedirle el nombre al cliente.",
   alternates: {
     canonical: "https://atribuya.com/",
     languages: {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Atribuya — Sabe qué comercial te trae cada reseña de Google",
+    title: "Atribuya: sabe qué comercial te trae cada reseña de Google",
     description:
       "Deja de adivinar quién de tu equipo te genera negocio. Sin Excel, sin plantillas, sin pedirle el nombre al cliente. Atribuya lo hace solo.",
     url: "https://atribuya.com/",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Atribuya — Sabe qué comercial te trae cada reseña de Google",
+    title: "Atribuya: sabe qué comercial te trae cada reseña de Google",
     description:
       "Deja de adivinar quién de tu equipo te genera negocio. Sin Excel, sin plantillas y sin discusiones.",
   },
@@ -53,27 +53,27 @@ const STEPS = [
   {
     n: "01",
     title: "Cada comercial tiene su enlace",
-    body: "Atribuya genera un enlace personalizado por comercial — y opcionalmente por cliente. El comercial lo guarda en su firma de email, lo pone en su tarjeta o lo manda por WhatsApp.",
+    body: "Atribuya genera un enlace personalizado por comercial, y opcionalmente por cliente. El comercial lo guarda en su firma de email, lo pone en su tarjeta o lo manda por WhatsApp.",
   },
   {
     n: "02",
     title: "El cliente entra y deja la reseña",
-    body: "El enlace lleva al cliente directo al formulario de reseña de Google de tu ficha — un solo clic. No tiene que buscar nada ni escribir el nombre del comercial.",
+    body: "El enlace lleva al cliente directo al formulario de reseña de Google de tu ficha. Un solo clic. No tiene que buscar nada ni escribir el nombre del comercial.",
   },
   {
     n: "03",
     title: "Sabes al instante quién la trajo",
-    body: "Atribuya cruza la reseña con quién compartió el enlace, la ventana temporal y el nombre del cliente, y la asigna sola. Si algo no encaja, queda en revisión manual con sugerencias — un clic y resuelto. Nunca más adivinar a ojo.",
+    body: "Atribuya cruza la reseña con quién compartió el enlace, la ventana temporal y el nombre del cliente, y la asigna sola. Si algo no encaja, queda en revisión manual con sugerencias: un clic y resuelto. Nunca más adivinar a ojo.",
   },
 ];
 
 const FEATURES = [
   "Funciona con cualquier ficha de Google Business Profile que ya tengas.",
-  "Cada cliente ve solo sus datos — aislamiento total garantizado por RLS de Postgres.",
+  "Cada cliente ve solo sus datos: aislamiento total garantizado por RLS de Postgres.",
   "Tus comerciales se enteran solos: email automático en cuanto consiguen una reseña.",
   "Ves el ranking de tu equipo de un vistazo, sin montar ninguna hoja de Excel.",
   "Te lo llevas todo a Excel cuando quieras: filtrado por comercial, ficha y fechas.",
-  "Cuenta las reseñas con texto y las de solo estrellas — no se te escapa ninguna.",
+  "Cuenta las reseñas con texto y las de solo estrellas. No se te escapa ninguna.",
   "Te avisa si una reseña desaparece, la borre el cliente o la borre Google.",
   "¿Varias oficinas o fichas? Las gestionas todas desde la misma cuenta.",
 ];
@@ -204,7 +204,7 @@ export default function HomePage() {
                   Día 1
                 </dt>
                 <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  ves qué comercial trae cada reseña — y quién no llega.
+                  ves qué comercial trae cada reseña, y quién no llega.
                 </dd>
               </div>
               <div>
@@ -239,7 +239,7 @@ export default function HomePage() {
               >
                 Tus comerciales dejan de discutir. Tú ves quién te hace ganar
                 negocio. Sin Excel, sin plantillas y sin pedirle el nombre del
-                vendedor al cliente — Atribuya lo hace solo.
+                vendedor al cliente. Atribuya lo hace solo.
               </p>
               <div className="mt-8">
                 <a
@@ -293,7 +293,7 @@ export default function HomePage() {
           {/* Atribución del dato del piloto */}
           <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
             Datos del despliegue piloto de Atribuya en una promotora
-            inmobiliaria real — 4 comerciales, 1 ficha de Google Business
+            inmobiliaria real: 4 comerciales, 1 ficha de Google Business
             Profile, primer mes. Sector, tamaño y métricas reales; nombre del
             cliente reservado hasta firma de permiso comercial.
           </p>
@@ -324,7 +324,7 @@ export default function HomePage() {
                 <p className="mt-5 leading-relaxed text-white/70">
                   Bonos mal calculados. Comerciales descontentos. Tiempo perdido
                   en discutir atribuciones. Reseñas que se pierden porque nadie
-                  las sigue. Y al final, la pregunta que ningún admin sabe
+                  las sigue. Al final, la pregunta que ningún admin sabe
                   responder a ojo: ¿de quién era esta?
                 </p>
               </div>
@@ -404,7 +404,7 @@ export default function HomePage() {
                 <strong className="font-semibold text-ink">
                   dos tardes al mes
                 </strong>{" "}
-                atribuyendo reseñas en una hoja de Excel — y aun así había
+                atribuyendo reseñas en una hoja de Excel, y aun así había
                 discusiones sobre a quién pertenecía cada una.
               </p>
               <p>

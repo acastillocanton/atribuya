@@ -56,7 +56,7 @@ export async function notifyLowRating(input: LowRatingNotificationInput) {
   if (input.to.length === 0) {
     return { ok: false as const, skipped: true, reason: "no_recipients" as const };
   }
-  const subject = `⚠️ Reseña ${input.rating}★ recibida — ${input.locationName}`;
+  const subject = `⚠️ Reseña ${input.rating}★ recibida en ${input.locationName}`;
   const verificationUrl = `${input.appBase}/resenas/verificacion`;
   const googleUrl = googleReviewListUrl(input.placeId);
 

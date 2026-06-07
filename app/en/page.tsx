@@ -5,9 +5,9 @@ import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
 
 export const metadata: Metadata = {
-  title: "Atribuya — Attribute Google reviews to each sales rep, automatically",
+  title: "Atribuya: attribute Google reviews to each sales rep, automatically",
   description:
-    "B2B SaaS that attributes Google Business Profile reviews to individual sales reps — without asking the customer to mention the rep's name. For companies with field sales teams.",
+    "B2B SaaS that attributes Google Business Profile reviews to individual sales reps, without asking the customer to mention the rep's name. For companies with field sales teams.",
   alternates: {
     canonical: "https://atribuya.com/en",
     languages: {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Atribuya — Know which rep brings in every Google review",
+    title: "Atribuya: know which rep brings in every Google review",
     description:
       "Stop guessing who on your team drives the business. No spreadsheets, no templates, no asking the customer for the rep's name. Atribuya does it on its own.",
     url: "https://atribuya.com/en",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Atribuya — Know which rep brings in every Google review",
+    title: "Atribuya: know which rep brings in every Google review",
     description:
       "Stop guessing who on your team drives the business. No spreadsheets, no templates, no arguments.",
   },
@@ -50,27 +50,27 @@ const STEPS = [
   {
     n: "01",
     title: "Each rep gets a personal link",
-    body: "Atribuya generates a personalized link per sales rep — and optionally per customer. The rep adds it to their email signature, business card or sends it via WhatsApp.",
+    body: "Atribuya generates a personalized link per sales rep, and optionally per customer. The rep adds it to their email signature, business card or sends it via WhatsApp.",
   },
   {
     n: "02",
     title: "The customer leaves the review",
-    body: "The link takes the customer straight to the Google review form for your listing — one click. They don't have to search for anything or mention the rep's name.",
+    body: "The link takes the customer straight to the Google review form for your listing. One click. They don't have to search for anything or mention the rep's name.",
   },
   {
     n: "03",
     title: "You instantly know who brought it in",
-    body: "Atribuya cross-references the review with whoever shared the link, the time window and the customer's name, and assigns it on its own. If something doesn't fit, it sits in manual review with suggestions — one click and done. No more guessing by eye.",
+    body: "Atribuya cross-references the review with whoever shared the link, the time window and the customer's name, and assigns it on its own. If something doesn't fit, it sits in manual review with suggestions: one click and done. No more guessing by eye.",
   },
 ];
 
 const FEATURES = [
   "Works with any Google Business Profile listing you already have.",
-  "Each customer only sees their own data — full isolation enforced by Postgres RLS.",
+  "Each customer only sees their own data: full isolation enforced by Postgres RLS.",
   "Your reps find out on their own: automatic email the moment they earn a review.",
   "See your team's ranking at a glance, without building any spreadsheet.",
   "Take it all to Excel whenever you want: filtered by rep, listing and dates.",
-  "Counts both text reviews and star-only ratings — none slip through.",
+  "Counts both text reviews and star-only ratings. None slip through.",
   "Warns you if a review disappears, whether the customer or Google removes it.",
   "Several offices or listings? Manage them all from the same account.",
 ];
@@ -199,7 +199,7 @@ export default function HomePageEn() {
                   Day 1
                 </dt>
                 <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  you see which rep brings each review — and who's falling behind.
+                  you see which rep brings each review, and who's falling behind.
                 </dd>
               </div>
               <div>
@@ -233,7 +233,7 @@ export default function HomePageEn() {
               >
                 Your reps stop arguing. You see who drives the business. No
                 spreadsheets, no templates and no asking the customer for the
-                rep's name — Atribuya does it on its own.
+                rep's name. Atribuya does it on its own.
               </p>
               <div className="mt-8">
                 <a
@@ -286,7 +286,7 @@ export default function HomePageEn() {
 
           {/* Pilot data attribution */}
           <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
-            Data from Atribuya's pilot deployment with a real estate developer —
+            Data from Atribuya's pilot deployment with a real estate developer:
             4 sales reps, 1 Google Business Profile listing, first month.
             Industry, size and metrics are real; customer name kept confidential
             pending commercial release.
@@ -318,7 +318,7 @@ export default function HomePageEn() {
                 <p className="mt-5 leading-relaxed text-white/70">
                   Bonuses miscalculated. Reps frustrated. Time wasted arguing
                   over attribution. Reviews that get missed because nobody is
-                  tracking them. And at the end of it all, the question no
+                  tracking them. At the end of it all, the question no
                   admin can answer by eye: whose review was this?
                 </p>
               </div>
@@ -402,7 +402,7 @@ export default function HomePageEn() {
                 <strong className="font-semibold text-ink">
                   two afternoons a month
                 </strong>{" "}
-                attributing reviews in an Excel sheet — and even so, there were
+                attributing reviews in an Excel sheet, and even so, there were
                 arguments about which rep earned what.
               </p>
               <p>
