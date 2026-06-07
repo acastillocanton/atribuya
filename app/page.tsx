@@ -152,7 +152,6 @@ const FAQS: FaqItem[] = [
     q: "¿Hay permanencia?",
     a: [
       "No. La suscripción es mensual sin compromiso. Puedes cancelar cuando quieras y te exportamos todos tus datos.",
-      "Si en 90 días no atribuimos correctamente al menos el 70% de las reseñas pasadas por tus comerciales, te devolvemos la implantación íntegra.",
     ],
   },
   {

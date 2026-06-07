@@ -149,7 +149,6 @@ const FAQS: FaqItem[] = [
     q: "Is there a minimum contract?",
     a: [
       "No. The subscription is monthly with no commitment. You can cancel anytime and we export all your data.",
-      "If within 90 days we haven't correctly attributed at least 70% of the reviews your reps have earned, we refund the setup fee in full.",
     ],
   },
   {
