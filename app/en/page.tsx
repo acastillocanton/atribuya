@@ -3,6 +3,8 @@ import { LeadForm } from "@/components/landing/LeadForm";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
+import { ProductShot } from "@/components/landing/ProductShot";
+import { AttributionAnimation } from "@/components/landing/AttributionAnimation";
 
 export const metadata: Metadata = {
   title: "Atribuya: attribute Google reviews to each sales rep, automatically",
@@ -386,6 +388,12 @@ export default function HomePageEn() {
               </li>
             ))}
           </ol>
+
+          {/* The "money shot" of step 03, in motion: a review comes in with no
+              rep name and Atribuya assigns it on its own (looping animation). */}
+          <div className="mt-14">
+            <AttributionAnimation locale="en" />
+          </div>
         </section>
 
         {/* ============================ Case study ============================ */}
@@ -440,6 +448,72 @@ export default function HomePageEn() {
               Industry, size and metrics are real; customer name kept
               confidential pending commercial release.
             </p>
+          </div>
+        </section>
+
+        {/* ========================= Inside the product ========================= */}
+        <section
+          id="product"
+          aria-label="Inside the product"
+          className="mx-auto max-w-6xl px-5 py-16 sm:py-24"
+        >
+          <div className="max-w-2xl">
+            <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+              Inside the product
+            </p>
+            <h2
+              className="mt-3 font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
+              style={{ fontSize: "var(--text-h2)" }}
+            >
+              See it from the inside.
+              <br />
+              <em className="font-light text-ink-2">No mockups.</em>
+            </h2>
+            <p className="mt-5 leading-relaxed text-ink-2">
+              Real screens from the product. The admin sees the whole team at a
+              glance. Each rep sees only their own. Click any one to enlarge it.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-8 md:grid-cols-2">
+            <ProductShot
+              locale="en"
+              className="md:col-span-2"
+              src="/landing/dashboard.png"
+              width={2880}
+              height={1800}
+              url="atribuya.com/dashboard"
+              alt="Atribuya admin dashboard with the team overview, conversion and leaderboard"
+              caption="The admin dashboard: reviews, conversion, average rating and the whole team on one screen."
+            />
+            <ProductShot
+              locale="en"
+              className="md:col-span-2"
+              src="/landing/ranking.png"
+              width={2880}
+              height={1800}
+              url="atribuya.com/ranking"
+              alt="Sales team ranking in Atribuya, sorted by reviews earned"
+              caption="Live team ranking. Who hits their target and who doesn't, without building a spreadsheet."
+            />
+            <ProductShot
+              locale="en"
+              src="/landing/enlace-qr.png"
+              width={2880}
+              height={1800}
+              url="atribuya.com/panel/enlace"
+              alt="Sales rep screen with their personalized link and QR code to share"
+              caption="Each rep generates their own link and QR code to share with the customer in one tap."
+            />
+            <ProductShot
+              locale="en"
+              src="/landing/mis-resenas.png"
+              width={2880}
+              height={1800}
+              url="atribuya.com/panel/resenas"
+              alt="Sales rep screen with the list of reviews they have earned"
+              caption="The rep sees the reviews they've earned and their progress toward the target."
+            />
           </div>
         </section>
 

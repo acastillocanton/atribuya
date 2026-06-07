@@ -94,6 +94,7 @@ Migraciones SQL: ejecutar en Supabase Dashboard → SQL Editor en orden numéric
 | —. Formulario de lead: campo **teléfono obligatorio** (mig 017 `leads.phone`), verificado E2E (detalle → handoff §9) | ✅ 2026-06-07 |
 | —. Analítica + SEO infra: GA4 (`G-GKYPWE3QRK`) con banner de consentimiento opt-in RGPD (solo páginas públicas, hits solo en prod), evento de conversión `generate_lead`, Search Console verificado (DNS) + vinculado a GA4 + sitemap enviado, dominio canónico invertido a apex (`www` 308 → `atribuya.com`) (detalle → handoff §12) | ✅ 2026-06-07 |
 | —. Página de empresa en LinkedIn (`linkedin.com/company/atribuya`) | ✅ 2026-06-07 |
+| —. Landing: muestra el producto. Capturas reales del admin (`/dashboard`, `/ranking`) + comercial (`/panel/enlace`, `/panel/resenas`) en `public/landing/` con marco de navegador y lightbox (`components/landing/ProductShot.tsx`), más una animación CSS del paso 03 (la atribución resolviéndose, `AttributionAnimation.tsx`, sin vídeo). Script `scripts/capture-landing.py` (modo demo, limpia chrome de dev). ES+EN | ✅ 2026-06-07 |
 | —. Google OAuth Business Profile (Vía B) — todas las reseñas | ⏳ esperando aprobación Google (caso `7-4031000041620`, ~18-jun; ver §7) |
 
 Extras (detalle → handoff.md): datos fiscales por org en `/super`, rebrand visual (logos/favicon), fix repo público para deploys Vercel Hobby. La fase 6 (routing) es **parcial**: solo la landing pública lleva prefijo `/o/`; las rutas autenticadas no (las protege RLS — ver §5.4).

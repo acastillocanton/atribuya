@@ -3,6 +3,8 @@ import { LeadForm } from "@/components/landing/LeadForm";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
+import { ProductShot } from "@/components/landing/ProductShot";
+import { AttributionAnimation } from "@/components/landing/AttributionAnimation";
 
 // La landing comercial es la ÚNICA página del producto que queremos indexada.
 // Sobrescribimos los robots heredados de app/layout.tsx (que son noindex global
@@ -391,6 +393,12 @@ export default function HomePage() {
               </li>
             ))}
           </ol>
+
+          {/* El "money shot" del paso 03, en movimiento: una reseña entra sin el
+              nombre del comercial y Atribuya la asigna sola (animación en bucle). */}
+          <div className="mt-14">
+            <AttributionAnimation locale="es" />
+          </div>
         </section>
 
         {/* ============================= Caso real ============================= */}
@@ -441,6 +449,73 @@ export default function HomePage() {
               Sector, tamaño y métricas reales; nombre del cliente reservado
               hasta firma de permiso comercial.
             </p>
+          </div>
+        </section>
+
+        {/* ====================== Ver Atribuya por dentro ====================== */}
+        <section
+          id="producto"
+          aria-label="El producto por dentro"
+          className="mx-auto max-w-6xl px-5 py-16 sm:py-24"
+        >
+          <div className="max-w-2xl">
+            <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+              El producto por dentro
+            </p>
+            <h2
+              className="mt-3 font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
+              style={{ fontSize: "var(--text-h2)" }}
+            >
+              Míralo por dentro.
+              <br />
+              <em className="font-light text-ink-2">Sin maquetar.</em>
+            </h2>
+            <p className="mt-5 leading-relaxed text-ink-2">
+              Pantallas reales del producto. El administrador ve a todo el equipo
+              de un vistazo. Cada comercial ve solo lo suyo. Clic en cualquiera
+              para ampliarla.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-8 md:grid-cols-2">
+            <ProductShot
+              locale="es"
+              className="md:col-span-2"
+              src="/landing/dashboard.png"
+              width={2880}
+              height={1800}
+              url="atribuya.com/dashboard"
+              alt="Panel del administrador de Atribuya con el resumen del equipo, la conversión y el leaderboard"
+              caption="El panel del administrador: reseñas, conversión, valoración media y el equipo entero en una pantalla."
+            />
+            <ProductShot
+              locale="es"
+              className="md:col-span-2"
+              src="/landing/ranking.png"
+              width={2880}
+              height={1800}
+              url="atribuya.com/ranking"
+              alt="Ranking del equipo comercial en Atribuya, ordenado por reseñas conseguidas"
+              caption="Ranking del equipo en tiempo real. Quién llega al objetivo y quién no, sin montar una hoja de cálculo."
+            />
+            <ProductShot
+              locale="es"
+              src="/landing/enlace-qr.png"
+              width={2880}
+              height={1800}
+              url="atribuya.com/panel/enlace"
+              alt="Pantalla del comercial con su enlace personalizado y su código QR para compartir"
+              caption="Cada comercial genera su enlace y su QR para compartir con el cliente en un toque."
+            />
+            <ProductShot
+              locale="es"
+              src="/landing/mis-resenas.png"
+              width={2880}
+              height={1800}
+              url="atribuya.com/panel/resenas"
+              alt="Pantalla del comercial con la lista de reseñas que ha conseguido"
+              caption="El comercial ve sus reseñas conseguidas y su progreso hacia el objetivo."
+            />
           </div>
         </section>
 
