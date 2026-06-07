@@ -2,7 +2,7 @@
 
 > Documento de retorno rápido. Para cuando no hayas tocado el proyecto en semanas y necesitas saber exactamente dónde estás y qué hacer a continuación.
 >
-> Actualizado: 2026-06-06
+> Actualizado: 2026-06-07
 
 ---
 
@@ -53,8 +53,13 @@ SaaS B2B multi-tenant que atribuye reseñas de Google Business Profile a comerci
 | Fix | Repo público (desbloquea deploys Vercel Hobby) | ✅ | 2026-06-06 |
 | 14 | Lote 1 — calidad de reseñas (mig 015) | ✅ | 2026-06-06 |
 | 15 | Lote 2 — features para vender (ranking, soporte, excel, parte por ficha) | ✅ | 2026-06-06 |
+| 16 | Google Cloud — Places API (Vía A) | ✅ | `f755644` · 2026-06-07 |
+| — | Google Cloud — OAuth Business Profile (Vía B) | ⏳ esperando a Google | 2026-06-07 |
+| 8 | DPA finalizado + plantilla `.docx` firmable | ✅ | `6b3d598` · 2026-06-07 |
 
-**Último trabajo (2026-06-06) — lote 2 "para vender"**: portadas 4 features del producto base, adaptadas a multi-tenant (sin rol director ni departamentos): **(2.1) ranking + insignias** (`/ranking`, `/panel/ranking`, insignias en el panel), **(2.2) helpdesk de soporte** intra-org (migración **016** aplicada; `/soporte`), **(2.3) Excel individual por comercial** (`/api/export/sales/[id]`, aislado por `org_id`), **(2.4) parte por ficha** (3ª hoja en el export de reseñas). Además: borrador de **DPA** (`docs/legal/dpa.md`), stub `/ajustes` eliminado, **modo demo poblado** en las páginas del comercial y **7/9 capturas de ayuda** regeneradas con branding Atribuya. 174 tests, typecheck y build OK. Antes (mismo día): Brevo SMTP de punta a punta, fix cron horario, SEO y dominio `atribuya.com`.
+**Último trabajo (2026-06-07)**: cerrados **dos** bloqueantes del camino crítico. **(1) Google Places API (Vía A)**: proyecto Cloud `atribuya`, Places API legacy habilitada, API key restringida, facturación activa + cuota 500/día + alerta 10 €/mes; `GOOGLE_PLACES_API_KEY` en `.env.local` y Vercel; probado E2E (Telepizza Benicàssim). Es la vía pública de respaldo (top-5 reseñas recientes por ficha). **(2) DPA finalizado**: `docs/legal/dpa.md` pulido (datos del Encargado unificados, plazos rellenos, jurisdicción = Castellón) + plantilla firmable `docs/legal/dpa.docx`. Además: **OAuth Vía B** dejada configurada (consent screen Testing, OAuth client, APIs habilitadas) y **solicitud de acceso a la Reviews API v4 enviada** (caso Google `7-4031000041620`, ~7-10 días hábiles) — con recordatorio remoto programado para el 18-jun (`trig_01CBuCBCcBdJuvRfr5VeBpyi`).
+
+**Trabajo previo (2026-06-06) — lote 2 "para vender"**: portadas 4 features del producto base, adaptadas a multi-tenant (sin rol director ni departamentos): **(2.1) ranking + insignias** (`/ranking`, `/panel/ranking`, insignias en el panel), **(2.2) helpdesk de soporte** intra-org (migración **016** aplicada; `/soporte`), **(2.3) Excel individual por comercial** (`/api/export/sales/[id]`, aislado por `org_id`), **(2.4) parte por ficha** (3ª hoja en el export de reseñas). Además: borrador de **DPA**, stub `/ajustes` eliminado, **modo demo poblado** en las páginas del comercial y **7/9 capturas de ayuda** regeneradas con branding Atribuya. 174 tests, typecheck y build OK. Antes (mismo día): Brevo SMTP de punta a punta, fix cron horario, SEO y dominio `atribuya.com`.
 
 ---
 
@@ -130,9 +135,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 CRON_SECRET=                          # distinto en local y prod
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-GOOGLE_CLIENT_ID=                     # diferido — no bloquea MVP
-GOOGLE_CLIENT_SECRET=                 # diferido
-GOOGLE_OAUTH_REDIRECT_URI=            # diferido
+GOOGLE_PLACES_API_KEY=                # ✅ configurada (Vía A) — en .env.local y Vercel
+GOOGLE_CLIENT_ID=                     # ✅ configurada (Vía B) — empieza por 443155173600-…
+GOOGLE_CLIENT_SECRET=                 # ✅ configurada (Vía B) — empieza por GOCSPX-
+GOOGLE_OAUTH_REDIRECT_URI=            # local: localhost; Vercel: https://www.atribuya.com/api/google/oauth/callback (subir tras aprobación Google)
 # Brevo SMTP — ✅ configurado (host/port hardcodeados en lib/email/brevo.ts)
 BREVO_SMTP_USER=936eb7001@smtp-brevo.com
 BREVO_SMTP_PASS=                      # SMTP key (secreto)
@@ -169,13 +175,12 @@ Activa el email transaccional (alertas ≤2★, notificación de reseña, aviso 
 
 **Código** (commit del 2026-06-06): reply-to global vía `BREVO_REPLY_TO` en `lib/email/brevo.ts`; aviso de leads best-effort `lib/email/notify-lead.ts` → `submit-lead.ts`; refs `atribuya.es`→`.com` limpiadas.
 
-### 7.3 Google Cloud — bloqueante para el primer cliente real
+### 7.3 Google Cloud — Vía A ✅ / Vía B ⏳ (2026-06-07)
 
-Cada org cliente necesita conectar su GBP con OAuth propio. Hasta que no entre un cliente, esto no bloquea. Cuando llegue:
-1. Crear proyecto en Google Cloud Console
-2. Activar Places API (New) + Business Profile API
-3. Configurar OAuth consent screen (modo Testing para los primeros 100 test users)
-4. Añadir credenciales a Vercel env vars
+Dos integraciones de Google, ambas en el proyecto Cloud `atribuya`:
+
+- **Vía A — Places API (legacy) ✅ OPERATIVA**. Lee datos **públicos** (no requiere ser admin de la ficha), pero solo las **5 reseñas más recientes** por ficha. Habilitada la "Places API" **legacy** (NO la "New" — necesitamos `reviews_sort=newest`). API key `atribuya-places` restringida a Places API. Facturación activa y vinculada (obligatoria en Maps Platform aunque el uso entre en tramo gratis). Redes de seguridad: **cuota 500 req/día** + **alerta de presupuesto 10 €/mes**. `GOOGLE_PLACES_API_KEY` en `.env.local` y Vercel. Probado E2E con `scripts/find-place.mjs` / `scripts/test-places-key.mjs`.
+- **Vía B — OAuth Business Profile ⏳ ESPERANDO A GOOGLE**. Trae **todas** las reseñas, pero exige que el cliente sea admin de su ficha y conecte su cuenta (OAuth). Ya configurado: consent screen modo **Testing** (External, test user `a.castillo.esv@gmail.com`), scope `business.manage`, OAuth client "Web application" (redirect `https://www.atribuya.com/api/google/oauth/callback` + apex + localhost), APIs **Account Management** + **Business Information** habilitadas. **Falta solo la aprobación de Google**: se envió la solicitud de acceso a las Business Profile APIs (desbloquea la Reviews API v4) el 2026-06-07 → caso de soporte **`7-4031000041620`**, revisión 7-10 días hábiles. Hasta que aprueben, la v4 da `PERMISSION_DENIED` y cubre el hueco la Vía A. **Tras aprobación**: subir `GOOGLE_CLIENT_ID`/`SECRET`/`REDIRECT_URI` (con la de www) a Vercel + redeploy + probar OAuth. Hay un **recordatorio remoto programado** para el 18-jun: `trig_01CBuCBCcBdJuvRfr5VeBpyi`.
 
 ### 7.4 Dominio comercial ✅ RESUELTO (2026-06-06)
 
@@ -191,13 +196,13 @@ Alta manual desde `/super`:
 3. "Invitar admin" → email del admin de la org
 4. El admin recibe magic link, entra, conecta su GBP
 
-### 7.6 DPA (Data Processing Agreement) — ✅ BORRADOR LISTO (2026-06-06)
+### 7.6 DPA (Data Processing Agreement) — ✅ FINALIZADO (2026-06-07)
 
-Los `/terminos` y `/privacidad` están completos. El DPA (Acuerdo de Encargado del Tratamiento, art. 28 RGPD) está redactado en **`docs/legal/dpa.md`** — 15 cláusulas + 3 anexos, modelo Responsable (cliente) / Encargado (Castillo Cantón), subencargados reales (Supabase Fráncfort, Vercel, Brevo, Google), con placeholders `[...]` para los datos del cliente. ⚠️ **Pendiente: revisión por un profesional legal** antes de firmar el primer contrato.
+Los `/terminos` y `/privacidad` están completos. El DPA (Acuerdo de Encargado del Tratamiento, art. 28 RGPD) está **finalizado** en **`docs/legal/dpa.md`** — 15 cláusulas + 3 anexos, modelo Responsable (cliente) / Encargado (Castillo Cantón), subencargados reales (Supabase Fráncfort, Vercel, Brevo, Google + nota de GitHub como no-subencargado). Datos del Encargado unificados con los otros docs legales (dirección completa + `alejandro@castillocanton.com`); plazos rellenos (oposición subencargados 30 d, devolución/supresión 60 d, auditoría 30 d); jurisdicción = tribunales de Castellón. Solo quedan los corchetes del **lado Cliente** para rellenar al firmar. Plantilla firmable en **`docs/legal/dpa.docx`** (Word editable, branding Atribuya). **Sin página pública `/dpa`** (anexo contractual privado, decisión del usuario). No lleva aviso de revisión legal (criterio del titular) — un repaso por un asesor de protección de datos antes del primer uso sería recomendable pero queda a su criterio.
 
 ### 7.7 Camino crítico al primer cliente
 
-En orden: ~~Brevo (§7.2)~~ ✅ → **Google Cloud (§7.3)** (único bloqueante técnico que queda) → ~~DPA~~ (borrador listo, falta revisión legal §7.6). Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
+En orden: ~~Brevo (§7.2)~~ ✅ → ~~Google Places Vía A (§7.3)~~ ✅ → ~~DPA (§7.6)~~ ✅ → **solo queda Google OAuth Vía B (§7.3)**, esperando aprobación de Google (caso `7-4031000041620`, ~18-jun). Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas. **El camino crítico está técnicamente cerrado salvo la aprobación de Google, que no depende de nosotros.**
 
 ### 7.8 Mejoras de producto pendientes (lotes del producto base)
 
@@ -280,7 +285,9 @@ curl -X POST https://api.supabase.com/v1/projects/iuiveiznvwjeoyhescmx/database/
 | [app/(profile)/soporte/](../../app/(profile)/soporte/) | Helpdesk de soporte (lote 2) — pages + `actions.ts` |
 | [app/api/export/sales/[id]/route.ts](../../app/api/export/sales/%5Bid%5D/route.ts) | Excel individual por comercial (lote 2), aislado por `org_id` |
 | [app/api/export/reviews/route.ts](../../app/api/export/reviews/route.ts) | Export de reseñas — 3 hojas (Reseñas, Resumen, Parte por ficha) |
-| [docs/legal/dpa.md](../legal/dpa.md) | Borrador del DPA (art. 28 RGPD) — pendiente revisión legal |
+| [docs/legal/dpa.md](../legal/dpa.md) | DPA finalizado (art. 28 RGPD) — corchetes del lado Cliente para rellenar al firmar |
+| [docs/legal/dpa.docx](../legal/dpa.docx) | Plantilla DPA firmable en Word (branding Atribuya) — la que se envía a cada cliente |
+| [scripts/find-place.mjs](../../scripts/find-place.mjs) | Probar la Places API (Vía A): busca un negocio y lista sus reseñas recientes |
 | [scripts/capture-help.py](../../scripts/capture-help.py) | Captura las pantallas de ayuda desde el modo demo (Playwright) |
 | [supabase/migrations/](../../supabase/migrations/) | Migraciones 001-016 en orden |
 | [docs/tests-multitenancy.md](../tests-multitenancy.md) | 15 tests de aislamiento cross-org — referencia para validar RLS |
