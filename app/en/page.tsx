@@ -513,7 +513,7 @@ export default function HomePageEn() {
                   <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
                     {plan.name} plan
                   </p>
-                  <p className="mt-4 flex items-baseline gap-x-1.5">
+                  <p className="mt-4 flex min-h-[2.5rem] items-baseline gap-x-1.5 sm:min-h-[3rem]">
                     <span className="font-display text-[2.5rem] font-medium leading-none tracking-tight text-ink sm:text-[3rem]">
                       €{plan.price}
                     </span>
@@ -550,8 +550,10 @@ export default function HomePageEn() {
                 <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
                   Custom plan
                 </p>
-                <p className="mt-4 font-display text-[1.75rem] font-medium leading-none tracking-tight text-ink sm:text-[2rem]">
-                  Custom
+                <p className="mt-4 flex min-h-[2.5rem] items-end sm:min-h-[3rem]">
+                  <span className="font-display text-[1.75rem] font-medium leading-none tracking-tight text-ink sm:text-[2rem]">
+                    Custom
+                  </span>
                 </p>
                 <p className="mt-3 text-[14.5px] font-medium text-ink">
                   More than 10 Google listings
