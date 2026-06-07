@@ -251,6 +251,8 @@ La landing (`app/page.tsx`) está en producción con:
 - **Sectores ("Hecho para")**: pasó de footnote gris diminuto a bloque destacado (gancho «¿Tienes red comercial y reseñas de Google? Esto es para ti.» + chips), reusando el array `SECTORS`.
 - Footer statement, meta OG/Twitter, features (feature→beneficio) y FAQ de precio realineados al mismo mensaje. Verificado: typecheck OK, `/` y `/en` 200.
 
+**Pase de diseño (2026-06-07)**: el diseño era elegante pero "modo galería" — no comunicaba la categoría (reseñas/Google/SaaS). Añadido `components/landing/ReviewProof.tsx`: tarjeta de reseña de Google de ejemplo (★★★★★ + "G" de Google) **conectada a su atribución a un comercial** (`↳ Atribuida a Mateo Salgado · +1 reseña`), que ancla la categoría y demuestra el producto en un solo elemento. Reusa `components/ui/Stars.tsx` y `components/ui/Avatar.tsx` (mismo lenguaje visual que el producto autenticado). Colocada en la 2ª fila del hero (claim+CTA izq col-7 / tarjeta der col-5; apila en móvil), ES+EN. Además: padding horizontal en el acordeón de FAQ (el texto iba pegado al borde del recuadro al abrir).
+
 Los leads se guardan en tabla `leads` (BD). El email de notificación al super_admin **ya está implementado** (`lib/email/notify-lead.ts`, invocado best-effort desde `app/actions/submit-lead.ts`): se envía a `LEAD_NOTIFY_EMAIL` cuando Brevo está configurado, y degrada con gracia si no (el lead se guarda igual).
 
 ---

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { LeadForm } from "@/components/landing/LeadForm";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
+import { ReviewProof } from "@/components/landing/ReviewProof";
 
 export const metadata: Metadata = {
   title: "Atribuya — Attribute Google reviews to each sales rep, automatically",
@@ -217,8 +218,8 @@ export default function HomePageEn() {
 
           <hr className="my-12 border-line sm:my-14" />
 
-          <div className="grid items-start gap-y-8 gap-x-12 md:grid-cols-12">
-            <div className="md:col-span-8">
+          <div className="grid items-center gap-y-10 gap-x-12 md:grid-cols-12">
+            <div className="md:col-span-7">
               <h1
                 className="text-balance font-display font-medium leading-[1.04] tracking-[-0.02em] text-ink"
                 style={{ fontSize: "var(--text-display)" }}
@@ -234,28 +235,31 @@ export default function HomePageEn() {
                 spreadsheets, no templates and no asking the customer for the
                 rep's name — Atribuya does it on its own.
               </p>
-            </div>
-            <div className="md:col-span-4 md:pt-2">
-              <a
-                href="#contact"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
-              >
-                Show me who drives my business
-                <svg
-                  className="h-3.5 w-3.5 shrink-0"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  aria-hidden="true"
+              <div className="mt-8">
+                <a
+                  href="#contact"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
                 >
-                  <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
-                </svg>
-              </a>
-              <p className="mt-3 text-[13px] text-ink-3">
-                No commitment. We show you who drives your business.
-              </p>
+                  Show me who drives my business
+                  <svg
+                    className="h-3.5 w-3.5 shrink-0"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
+                  </svg>
+                </a>
+                <p className="mt-3 text-[13px] text-ink-3">
+                  No commitment. We show you who drives your business.
+                </p>
+              </div>
+            </div>
+            <div className="md:col-span-5">
+              <ReviewProof locale="en" />
             </div>
           </div>
 
@@ -623,7 +627,7 @@ export default function HomePageEn() {
                 name="faq"
                 className="group open:bg-white"
               >
-                <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-5 [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-6 px-5 py-5 [&::-webkit-details-marker]:hidden sm:px-6">
                   <span className="font-display text-[17px] font-medium leading-snug tracking-tight text-ink sm:text-[18px]">
                     {q}
                   </span>
@@ -642,7 +646,7 @@ export default function HomePageEn() {
                     />
                   </svg>
                 </summary>
-                <div className="space-y-3 pb-6 text-[15px] leading-relaxed text-ink-2">
+                <div className="space-y-3 px-5 pb-6 text-[15px] leading-relaxed text-ink-2 sm:px-6">
                   {a.map((p, i) => (
                     <p key={i}>{p}</p>
                   ))}
