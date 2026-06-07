@@ -57,7 +57,10 @@ import { submitLead } from "../submit-lead";
 
 function buildForm(fields: Record<string, string>): FormData {
   const fd = new FormData();
-  for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+  // Teléfono válido por defecto (campo obligatorio desde 2026-06-07). Los
+  // tests que validan el propio teléfono lo sobreescriben explícitamente.
+  const withDefaults: Record<string, string> = { phone: "600123456", ...fields };
+  for (const [k, v] of Object.entries(withDefaults)) fd.set(k, v);
   return fd;
 }
 
@@ -74,6 +77,7 @@ describe("submitLead", () => {
       name: "  Ana Pérez  ",
       email: "  ANA@Empresa.COM ",
       company: "  Promotora Ejemplo SL  ",
+      phone: "  600 123 456  ",
       message: "  Hola, somos 6 comerciales en Castellón.  ",
     });
     const res = await submitLead(fd);
@@ -83,6 +87,7 @@ describe("submitLead", () => {
       name: "Ana Pérez",
       email: "ana@empresa.com",
       company: "Promotora Ejemplo SL",
+      phone: "600 123 456",
       message: "Hola, somos 6 comerciales en Castellón.",
       source: "landing",
       user_agent: "Mozilla/5.0 (test)",
@@ -160,6 +165,48 @@ describe("submitLead", () => {
     if (!res.ok) {
       expect(res.fieldErrors?.message).toBeTruthy();
     }
+  });
+
+  it("rechaza teléfono ausente (obligatorio) con fieldErrors.phone", async () => {
+    const fd = buildForm({
+      name: "Ana",
+      email: "a@b.com",
+      company: "Acme SL",
+      phone: "",
+    });
+    const res = await submitLead(fd);
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.fieldErrors?.phone).toBeTruthy();
+    }
+    expect(captured.rows).toHaveLength(0);
+  });
+
+  it("rechaza teléfono con caracteres no válidos", async () => {
+    const fd = buildForm({
+      name: "Ana",
+      email: "a@b.com",
+      company: "Acme SL",
+      phone: "no-es-un-telefono",
+    });
+    const res = await submitLead(fd);
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.fieldErrors?.phone).toBeTruthy();
+    }
+    expect(captured.rows).toHaveLength(0);
+  });
+
+  it("acepta teléfono con prefijo internacional y separadores", async () => {
+    const fd = buildForm({
+      name: "Ana",
+      email: "a@b.com",
+      company: "Acme SL",
+      phone: "+34 (600) 123-456",
+    });
+    const res = await submitLead(fd);
+    expect(res).toEqual({ ok: true });
+    expect(captured.rows[0]?.phone).toBe("+34 (600) 123-456");
   });
 
   it("si el INSERT a Supabase falla, devuelve mensaje genérico (no filtra detalles)", async () => {
@@ -250,6 +297,7 @@ describe("submitLead", () => {
       name: "Ana Pérez",
       email: "ana@empresa.com",
       company: "Promotora Ejemplo SL",
+      phone: "600123456",
       message: "Hola, somos 6 comerciales.",
       source: "landing",
     });

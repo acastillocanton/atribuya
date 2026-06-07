@@ -261,6 +261,8 @@ Primero se probó con **3 tiers** (Starter 147 / Professional 347 / Multi 597). 
 
 **Formulario de lead verificado E2E (2026-06-07)**: probado con Playwright contra el proyecto Supabase de prod. Validación Zod OK, inserción real en `leads` OK, UI de éxito OK, aviso por email a `LEAD_NOTIFY_EMAIL` (`a.castillo.esv@gmail.com`) vía Brevo. Flujo: `app/actions/submit-lead.ts` (service-role + honeypot) a `lib/email/notify-lead.ts`. El lead de prueba se insertó y se borró; la BD queda limpia.
 
+**Campo teléfono añadido (2026-06-07)**: el formulario recoge ahora **teléfono obligatorio** junto al email (fila 2: email + teléfono, igual que nombre + empresa). Obligatorio en HTML + Zod (regex `^[+()\d\s.-]+$`, mín. 6). Se guarda en `leads.phone` (migración 017, nullable en BD; la obligatoriedad es de app) y se incluye en el email de aviso con enlace `tel:`. Tipos Supabase actualizados a mano en `lib/supabase/types.ts`. Re-verificado E2E con Playwright contra prod: rechaza envío sin teléfono (error de campo), acepta con teléfono y persiste el valor en `leads.phone`; lead de prueba insertado y borrado. Tests unitarios de `submit-lead` ampliados (teléfono ausente / inválido / válido con prefijo): 177/177 pasan.
+
 Los leads se guardan en tabla `leads` (BD). El email de notificación al super_admin **ya está implementado** (`lib/email/notify-lead.ts`, invocado best-effort desde `app/actions/submit-lead.ts`): se envía a `LEAD_NOTIFY_EMAIL` cuando Brevo está configurado, y degrada con gracia si no (el lead se guarda igual).
 
 ---
