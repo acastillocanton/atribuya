@@ -106,6 +106,7 @@ Extras (detalle → handoff.md): datos fiscales por org en `/super`, rebrand vis
 - Filtrar siempre por `org_id` en server actions, incluso aunque RLS también filtre. Defensa en profundidad.
 - `npm run typecheck` antes de cerrar tarea. `npm test` también si se ha tocado matcher, RLS o multi-tenancy.
 - Actualizar `spec.md` cuando una decisión cambie.
+- **Estilo de copy de cara al usuario** (landing, app, emails, legal): nunca usar guiones largos (— / –) como puntuación literaria (usar punto, coma o dos puntos) ni empezar oraciones con «Y». Norma de marca permanente; ya aplicada a landing + legal + emails (resto de UI pendiente).
 
 ### Ask first
 - Migraciones de DB nuevas.
