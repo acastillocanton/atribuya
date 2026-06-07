@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@/components/analytics/Analytics";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -47,7 +48,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${fraunces.variable} ${geist.variable} ${geistMono.variable}`}
     >
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

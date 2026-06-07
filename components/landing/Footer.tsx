@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { CookiePrefs } from "./CookiePrefs";
 
 type Locale = "es" | "en";
 
@@ -11,6 +12,7 @@ const STRINGS = {
     altLangLabel: "English",
     terms: { href: "/terminos", label: "Términos" },
     privacy: { href: "/privacidad", label: "Privacidad" },
+    cookies: "Cookies",
     login: "Iniciar sesión",
   },
   en: {
@@ -20,6 +22,7 @@ const STRINGS = {
     altLangLabel: "Español",
     terms: { href: "/terminos", label: "Terms" },
     privacy: { href: "/privacidad", label: "Privacy" },
+    cookies: "Cookies",
     login: "Sign in",
   },
 } as const;
@@ -66,6 +69,7 @@ export function Footer({ locale }: { locale: Locale }) {
             <Link href={t.privacy.href} className="transition hover:text-ink">
               {t.privacy.label}
             </Link>
+            <CookiePrefs label={t.cookies} />
             <Link href="/login" className="transition hover:text-ink">
               {t.login}
             </Link>

@@ -11,7 +11,7 @@ export default function PrivacidadPage() {
     <>
       <h1 style={h1}>Política de Privacidad</h1>
       <p style={lede}>
-        Última actualización: 24 de mayo de 2026.
+        Última actualización: 7 de junio de 2026.
       </p>
 
       <p style={p}>
@@ -246,12 +246,42 @@ export default function PrivacidadPage() {
 
       <h2 style={h2}>8. Cookies y tecnologías similares</h2>
       <p style={p}>
-        Atribuya utiliza exclusivamente cookies técnicas estrictamente
-        necesarias para mantener la sesión del usuario autenticado y para el
-        correcto funcionamiento del servicio. No se utilizan cookies de
-        terceros, ni cookies analíticas, ni cookies publicitarias. Por ese
-        motivo no se muestra banner de cookies (no aplica la obligación del
-        art. 22 LSSI).
+        <strong>Cookies técnicas.</strong> En el área autenticada del Servicio,
+        Atribuya utiliza cookies técnicas estrictamente necesarias para mantener
+        la sesión del usuario y para el correcto funcionamiento de la
+        plataforma. Estas cookies no requieren consentimiento conforme al art.
+        22.2 LSSI.
+      </p>
+      <p style={p}>
+        <strong>Cookies analíticas de terceros.</strong> En las páginas públicas
+        de marketing (la web atribuya.com), Atribuya utiliza Google Analytics 4,
+        un servicio de analítica web de Google Ireland Limited, para conocer de
+        forma agregada cómo se usa el sitio y mejorarlo. Google Analytics instala
+        cookies y puede transferir datos a Google LLC (EE. UU.), amparada en las
+        cláusulas contractuales tipo de la Comisión Europea y en el marco de
+        privacidad de datos UE-EE. UU.
+      </p>
+      <p style={p}>
+        Estas cookies analíticas <strong>solo se cargan si prestas tu
+        consentimiento previo</strong> mediante el banner que se muestra al
+        entrar. Hasta que pulses «Aceptar» no se ejecuta ningún script de Google
+        ni se instala ninguna cookie analítica. Puedes rechazarlas sin que ello
+        afecte a la navegación, y revocar o cambiar tu elección en cualquier
+        momento desde el enlace «Cookies» del pie de página, con el mismo grado
+        de facilidad con el que la otorgaste.
+      </p>
+      <p style={p}>
+        No se utilizan cookies publicitarias ni de perfilado comercial. Más
+        información sobre el tratamiento de datos por parte de Google en{" "}
+        <a
+          href="https://policies.google.com/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: "underline" }}
+        >
+          policies.google.com/privacy
+        </a>
+        .
       </p>
 
       <h2 style={h2}>9. Datos públicos de reseñas de Google</h2>
