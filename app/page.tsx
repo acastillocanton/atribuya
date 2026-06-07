@@ -82,22 +82,15 @@ const PLANS = [
   {
     name: "Starter",
     fichas: "Hasta 2 fichas de Google",
-    price: "147",
+    price: "45",
     tagline: "Una clínica, una promoción, un local.",
-    featured: false,
-  },
-  {
-    name: "Professional",
-    fichas: "Hasta 8 fichas de Google",
-    price: "347",
-    tagline: "La promotora o la red en pleno crecimiento.",
     featured: true,
   },
   {
-    name: "Multi",
-    fichas: "Hasta 20 fichas de Google",
-    price: "597",
-    tagline: "Cadenas y redes con varias sedes.",
+    name: "Professional",
+    fichas: "Hasta 10 fichas de Google",
+    price: "149",
+    tagline: "La promotora o la red con varias sedes.",
     featured: false,
   },
 ];
@@ -149,8 +142,8 @@ const FAQS: FaqItem[] = [
   {
     q: "¿Cuánto cuesta?",
     a: [
-      "La suscripción mensual va según el número de fichas de Google que gestiones: desde 147€/mes (hasta 2 fichas), 347€/mes (hasta 8) o 597€/mes (hasta 20). Los comerciales son ilimitados en todos los planes, así que tu equipo crece sin pagar más. Si tienes más de 20 fichas, lo vemos a medida.",
-      "A eso se suma una implantación llave en mano que incluye conexión de tus fichas, alta de tu equipo, formación a comerciales y soporte intensivo las primeras semanas. Sin permanencia. Para el encaje exacto de tu caso reservamos una llamada de 20 minutos.",
+      "La suscripción mensual va según el número de fichas de Google que gestiones: desde 45€/mes (hasta 2 fichas) o 149€/mes (hasta 10). Los comerciales son ilimitados en todos los planes, así que tu equipo crece sin pagar más. Si tienes más de 10 fichas o eres una cadena, lo vemos a medida.",
+      "A eso se suma una implantación llave en mano de 60€ (pago único) que incluye conexión de tus fichas, alta de tu equipo, formación a comerciales y soporte las primeras semanas. Sin permanencia. Para el encaje exacto de tu caso reservamos una llamada de 20 minutos.",
     ],
   },
   {
@@ -502,8 +495,8 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Tres planes por nº de fichas — el del medio destacado */}
-            <div className="mt-12 grid gap-5 sm:grid-cols-3">
+            {/* Dos planes por nº de fichas — Starter destacado */}
+            <div className="mt-12 grid gap-5 sm:max-w-3xl sm:grid-cols-2">
               {PLANS.map((plan) => (
                 <article
                   key={plan.name}
@@ -555,15 +548,15 @@ export default function HomePage() {
             </div>
 
             <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
-              A cualquier plan se suma una implantación llave en mano única, sin
-              permanencia.
+              A cualquier plan se suma una implantación llave en mano de 60 €
+              (pago único), sin permanencia.
             </p>
 
-            {/* A medida — cadenas y más de 20 fichas */}
+            {/* A medida — cadenas y más de 10 fichas */}
             <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-2xl border border-line bg-white px-7 py-6 sm:flex-row sm:items-center">
               <div>
                 <p className="font-display text-[17px] font-medium text-ink">
-                  ¿Más de 20 fichas o una cadena?
+                  ¿Más de 10 fichas o una cadena?
                 </p>
                 <p className="mt-1 text-[14px] leading-relaxed text-ink-2">
                   Montamos un plan a medida con el mismo modelo: pagas por
@@ -630,12 +623,6 @@ export default function HomePage() {
                   empresas que entren ahora, condiciones especiales.
                 </p>
                 <dl className="mt-6 space-y-4 text-[14.5px] leading-relaxed text-ink-2">
-                  <div className="flex justify-between gap-4 border-b border-line pb-3">
-                    <dt>Implantación</dt>
-                    <dd className="text-right">
-                      <span className="font-semibold text-ink">50&nbsp;% de descuento</span>
-                    </dd>
-                  </div>
                   <div className="flex justify-between gap-4 border-b border-line pb-3">
                     <dt>
                       Suscripción

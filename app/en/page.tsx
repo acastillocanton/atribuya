@@ -79,22 +79,15 @@ const PLANS = [
   {
     name: "Starter",
     fichas: "Up to 2 Google listings",
-    price: "147",
+    price: "45",
     tagline: "A clinic, a development, a single location.",
-    featured: false,
-  },
-  {
-    name: "Professional",
-    fichas: "Up to 8 Google listings",
-    price: "347",
-    tagline: "The growing developer or sales network.",
     featured: true,
   },
   {
-    name: "Multi",
-    fichas: "Up to 20 Google listings",
-    price: "597",
-    tagline: "Chains and networks with several sites.",
+    name: "Professional",
+    fichas: "Up to 10 Google listings",
+    price: "149",
+    tagline: "The developer or network with several sites.",
     featured: false,
   },
 ];
@@ -146,8 +139,8 @@ const FAQS: FaqItem[] = [
   {
     q: "How much does it cost?",
     a: [
-      "The monthly subscription scales with the number of Google listings you manage: from €147/month (up to 2 listings), €347/month (up to 8) or €597/month (up to 20). Sales reps are unlimited on every plan, so your team grows without paying more. More than 20 listings? We tailor a plan with you.",
-      "On top of that there's a one-time turnkey setup that includes connecting your listings, onboarding your team, training your sales reps and intensive support during the first weeks. No minimum contract. For an exact assessment of your case we book a 20-minute call.",
+      "The monthly subscription scales with the number of Google listings you manage: from €45/month (up to 2 listings) or €149/month (up to 10). Sales reps are unlimited on every plan, so your team grows without paying more. More than 10 listings or a chain? We tailor a plan with you.",
+      "On top of that there's a one-time €60 turnkey setup that includes connecting your listings, onboarding your team, training your sales reps and support during the first weeks. No minimum contract. For an exact assessment of your case we book a 20-minute call.",
     ],
   },
   {
@@ -501,8 +494,8 @@ export default function HomePageEn() {
               </p>
             </div>
 
-            {/* Three plans by number of listings — the middle one highlighted */}
-            <div className="mt-12 grid gap-5 sm:grid-cols-3">
+            {/* Two plans by number of listings — Starter highlighted */}
+            <div className="mt-12 grid gap-5 sm:max-w-3xl sm:grid-cols-2">
               {PLANS.map((plan) => (
                 <article
                   key={plan.name}
@@ -554,15 +547,15 @@ export default function HomePageEn() {
             </div>
 
             <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
-              A one-time turnkey setup is added to any plan. No minimum
+              A one-time €60 turnkey setup is added to any plan. No minimum
               contract.
             </p>
 
-            {/* Custom — chains and more than 20 listings */}
+            {/* Custom — chains and more than 10 listings */}
             <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-2xl border border-line bg-white px-7 py-6 sm:flex-row sm:items-center">
               <div>
                 <p className="font-display text-[17px] font-medium text-ink">
-                  More than 20 listings or a chain?
+                  More than 10 listings or a chain?
                 </p>
                 <p className="mt-1 text-[14px] leading-relaxed text-ink-2">
                   We tailor a plan on the same model: you pay by listings, reps
@@ -628,12 +621,6 @@ export default function HomePageEn() {
                   companies that join now, special terms.
                 </p>
                 <dl className="mt-6 space-y-4 text-[14.5px] leading-relaxed text-ink-2">
-                  <div className="flex justify-between gap-4 border-b border-line pb-3">
-                    <dt>Setup</dt>
-                    <dd className="text-right">
-                      <span className="font-semibold text-ink">50% off</span>
-                    </dd>
-                  </div>
                   <div className="flex justify-between gap-4 border-b border-line pb-3">
                     <dt>
                       Subscription
