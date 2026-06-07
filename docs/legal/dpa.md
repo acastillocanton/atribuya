@@ -1,6 +1,6 @@
 # Acuerdo de Encargado del Tratamiento (DPA)
 
-> **⚠️ Borrador para revisión.** Documento técnico-jurídico preparado para Atribuya. **Debe ser revisado y validado por un profesional legal** antes de firmarse con un cliente. No constituye asesoramiento jurídico. Los campos entre `[corchetes]` se completan con los datos del cliente al cerrar el contrato.
+> Los campos entre `[corchetes]` se completan con los datos del Cliente al cerrar el contrato.
 
 Acuerdo de Tratamiento de Datos Personales (en adelante, el **«Acuerdo»** o **«DPA»**) que regula el tratamiento de datos personales por cuenta del Responsable, en el marco del Reglamento (UE) 2016/679 (**RGPD**) y la Ley Orgánica 3/2018 (**LOPDGDD**), como anexo y parte inseparable del contrato de prestación del servicio **Atribuya** (en adelante, el **«Contrato Principal»**).
 
@@ -17,8 +17,9 @@ Acuerdo de Tratamiento de Datos Personales (en adelante, el **«Acuerdo»** o **
 **Encargado del tratamiento** (el **«Encargado»** o **«Atribuya»**):
 - Titular: **Alejandro Castillo Cantón**
 - NIF: **55418862V**
-- Domicilio: Benicàssim (Castellón), España
-- Contacto a efectos de protección de datos: **a.castillo.esv@gmail.com**
+- Domicilio: **Calle Leopoldo Querol 53, 3, 12560 Benicàssim, Castellón, España**
+- Teléfono: **+34 644 295 159**
+- Contacto a efectos de protección de datos: **alejandro@castillocanton.com**
 - Nombre comercial del servicio: **Atribuya** (atribuya.com), desarrollado por Castillo Cantón.
 
 Ambas partes se reconocen capacidad suficiente para suscribir el presente Acuerdo.
@@ -59,7 +60,7 @@ Este Acuerdo entra en vigor en la fecha de firma del Contrato Principal y perman
 
 El Encargado se obliga a:
 
-a) Tratar los datos personales únicamente conforme a las **instrucciones documentadas** del Responsable, incluidas las transferencias internacionales, salvo obligación legal que se comunicará al Responsable salvo prohibición legal.
+a) Tratar los datos personales únicamente conforme a las **instrucciones documentadas** del Responsable, incluidas las transferencias internacionales, salvo que el Derecho de la Unión Europea o español lo exija, en cuyo caso el Encargado informará al Responsable de esa exigencia legal antes del tratamiento, salvo que tal Derecho lo prohíba por razones importantes de interés público.
 
 b) Garantizar que las personas autorizadas para tratar los datos se han comprometido a respetar la **confidencialidad** (cláusula 6).
 
@@ -116,7 +117,7 @@ El Responsable **autoriza de forma general** al Encargado a recurrir a los sigui
 
 El Encargado impone a cada subencargado, mediante contrato, obligaciones de protección de datos equivalentes a las del presente Acuerdo.
 
-El Encargado **informará al Responsable de cualquier cambio** previsto en la incorporación o sustitución de subencargados, otorgando al Responsable la posibilidad de **oponerse** por motivos razonables relacionados con la protección de datos en un plazo de `[15]` días. La oposición fundada que impida la prestación del servicio facultará a cualquiera de las partes a resolver el Contrato Principal sin penalización.
+El Encargado **informará al Responsable de cualquier cambio** previsto en la incorporación o sustitución de subencargados, otorgando al Responsable la posibilidad de **oponerse** por motivos razonables relacionados con la protección de datos en un plazo de **30 días**. La oposición fundada que impida la prestación del servicio facultará a cualquiera de las partes a resolver el Contrato Principal sin penalización.
 
 ---
 
@@ -139,13 +140,13 @@ A la finalización de la prestación del servicio, el Encargado, **a elección d
 - Devolverá al Responsable los datos personales en un formato estructurado y de uso común; y/o
 - Suprimirá los datos personales y las copias existentes,
 
-en un plazo máximo de `[30]` días, salvo que la normativa exija su conservación, en cuyo caso se informará al Responsable de dicha obligación. El Encargado certificará por escrito la supresión a solicitud del Responsable.
+en un plazo máximo de **60 días**, salvo que la normativa exija su conservación, en cuyo caso se informará al Responsable de dicha obligación. El Encargado certificará por escrito la supresión a solicitud del Responsable.
 
 ---
 
 ## 12. Auditorías
 
-El Encargado pondrá a disposición del Responsable la información necesaria para demostrar el cumplimiento de las obligaciones del artículo 28 del RGPD, y permitirá y contribuirá a la realización de **auditorías**, incluidas inspecciones, por parte del Responsable o de un auditor autorizado por este, con preaviso razonable de `[30]` días, sin perturbar de forma desproporcionada la actividad del Encargado y respetando la confidencialidad de los datos de otros clientes (multi-tenant).
+El Encargado pondrá a disposición del Responsable la información necesaria para demostrar el cumplimiento de las obligaciones del artículo 28 del RGPD, y permitirá y contribuirá a la realización de **auditorías**, incluidas inspecciones, por parte del Responsable o de un auditor autorizado por este, con preaviso razonable de **30 días**, sin perturbar de forma desproporcionada la actividad del Encargado y respetando la confidencialidad de los datos de otros clientes (multi-tenant).
 
 ---
 
@@ -163,7 +164,7 @@ En la medida en que algún subencargado (p. ej. Vercel o Google) trate datos fue
 
 ## 15. Ley aplicable y jurisdicción
 
-Este Acuerdo se rige por la legislación española y por el RGPD. Para cualquier controversia, las partes se someten a los juzgados y tribunales que correspondan conforme a la normativa aplicable y a lo previsto en el Contrato Principal.
+Este Acuerdo se rige por la legislación española y por el RGPD. Para cualquier controversia, las partes se someten a los **juzgados y tribunales de Castellón**, salvo que una norma imperativa disponga otro fuero, y conforme a lo previsto en el Contrato Principal.
 
 ---
 
@@ -185,3 +186,5 @@ Ver cláusula 7 (aislamiento multi-tenant por `org_id`, RLS de PostgreSQL, cifra
 
 ### Anexo III — Subencargados autorizados
 Ver cláusula 8 (Supabase, Vercel, Brevo, Google).
+
+*Nota:* el servicio utiliza adicionalmente **GitHub, Inc.** únicamente para programar el disparo de un proceso periódico de sincronización (invoca un endpoint del Encargado en un horario predefinido). GitHub **no recibe, almacena ni trata datos personales** del Responsable ni de sus interesados, por lo que no tiene la condición de subencargado del tratamiento a efectos del artículo 28 del RGPD.
