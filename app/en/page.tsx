@@ -494,8 +494,8 @@ export default function HomePageEn() {
               </p>
             </div>
 
-            {/* Two plans by number of listings — Starter highlighted */}
-            <div className="mt-12 grid gap-5 sm:max-w-3xl sm:grid-cols-2">
+            {/* Two plans by number of listings + custom — Starter highlighted */}
+            <div className="mt-12 grid gap-5 sm:grid-cols-3">
               {PLANS.map((plan) => (
                 <article
                   key={plan.name}
@@ -544,31 +544,41 @@ export default function HomePageEn() {
                   </a>
                 </article>
               ))}
+
+              {/* Custom card — chains and more than 10 listings */}
+              <article className="relative flex flex-col rounded-2xl border border-line bg-white p-7 sm:p-8">
+                <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+                  Custom plan
+                </p>
+                <p className="mt-4 font-display text-[1.75rem] font-medium leading-none tracking-tight text-ink sm:text-[2rem]">
+                  Custom
+                </p>
+                <p className="mt-3 text-[14.5px] font-medium text-ink">
+                  More than 10 Google listings
+                </p>
+                <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
+                  Chains and networks with several sites.
+                </p>
+                <p className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
+                  />
+                  Unlimited sales reps
+                </p>
+                <a
+                  href="#contact"
+                  className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
+                >
+                  Let's talk
+                </a>
+              </article>
             </div>
 
             <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
               A one-time €60 turnkey setup is added to any plan. No minimum
               contract.
             </p>
-
-            {/* Custom — chains and more than 10 listings */}
-            <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-2xl border border-line bg-white px-7 py-6 sm:flex-row sm:items-center">
-              <div>
-                <p className="font-display text-[17px] font-medium text-ink">
-                  More than 10 listings or a chain?
-                </p>
-                <p className="mt-1 text-[14px] leading-relaxed text-ink-2">
-                  We tailor a plan on the same model: you pay by listings, reps
-                  always unlimited.
-                </p>
-              </div>
-              <a
-                href="#contact"
-                className="inline-flex shrink-0 items-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
-              >
-                Let's talk
-              </a>
-            </div>
 
             {/* What every plan includes */}
             <div className="mt-12">

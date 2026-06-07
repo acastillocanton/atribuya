@@ -495,8 +495,8 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Dos planes por nº de fichas — Starter destacado */}
-            <div className="mt-12 grid gap-5 sm:max-w-3xl sm:grid-cols-2">
+            {/* Dos planes por nº de fichas + a medida — Starter destacado */}
+            <div className="mt-12 grid gap-5 sm:grid-cols-3">
               {PLANS.map((plan) => (
                 <article
                   key={plan.name}
@@ -545,31 +545,41 @@ export default function HomePage() {
                   </a>
                 </article>
               ))}
+
+              {/* Tarjeta a medida — cadenas y más de 10 fichas */}
+              <article className="relative flex flex-col rounded-2xl border border-line bg-white p-7 sm:p-8">
+                <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+                  Plan a medida
+                </p>
+                <p className="mt-4 font-display text-[1.75rem] font-medium leading-none tracking-tight text-ink sm:text-[2rem]">
+                  A medida
+                </p>
+                <p className="mt-3 text-[14.5px] font-medium text-ink">
+                  Más de 10 fichas de Google
+                </p>
+                <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
+                  Cadenas y redes con varias sedes.
+                </p>
+                <p className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
+                  />
+                  Comerciales ilimitados
+                </p>
+                <a
+                  href="#contacto"
+                  className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
+                >
+                  Hablemos
+                </a>
+              </article>
             </div>
 
             <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
               A cualquier plan se suma una implantación llave en mano de 60 €
               (pago único), sin permanencia.
             </p>
-
-            {/* A medida — cadenas y más de 10 fichas */}
-            <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-2xl border border-line bg-white px-7 py-6 sm:flex-row sm:items-center">
-              <div>
-                <p className="font-display text-[17px] font-medium text-ink">
-                  ¿Más de 10 fichas o una cadena?
-                </p>
-                <p className="mt-1 text-[14px] leading-relaxed text-ink-2">
-                  Montamos un plan a medida con el mismo modelo: pagas por
-                  fichas, comerciales siempre ilimitados.
-                </p>
-              </div>
-              <a
-                href="#contacto"
-                className="inline-flex shrink-0 items-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
-              >
-                Hablemos
-              </a>
-            </div>
 
             {/* Lo que incluyen todos los planes */}
             <div className="mt-12">
