@@ -196,10 +196,10 @@ export default function HomePageEn() {
                   className="font-display font-light italic leading-none tracking-tight text-ink"
                   style={{ fontSize: "var(--text-stat-sm)" }}
                 >
-                  +8&nbsp;h<span className="not-italic">/mo</span>
+                  Day 1
                 </dt>
                 <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  you get back. They used to vanish into spreadsheets.
+                  you see which rep brings each review — and who's falling behind.
                 </dd>
               </div>
               <div>

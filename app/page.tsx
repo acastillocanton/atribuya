@@ -201,10 +201,10 @@ export default function HomePage() {
                   className="font-display font-light italic leading-none tracking-tight text-ink"
                   style={{ fontSize: "var(--text-stat-sm)" }}
                 >
-                  +8&nbsp;h<span className="not-italic">/mes</span>
+                  Día 1
                 </dt>
                 <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  que recuperas. Antes se iban en Excel.
+                  ves qué comercial trae cada reseña — y quién no llega.
                 </dd>
               </div>
               <div>
