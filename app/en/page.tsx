@@ -75,9 +75,32 @@ const FEATURES = [
   "Several offices or listings? Manage them all from the same account.",
 ];
 
+const PLANS = [
+  {
+    name: "Starter",
+    fichas: "Up to 2 Google listings",
+    price: "147",
+    tagline: "A clinic, a development, a single location.",
+    featured: false,
+  },
+  {
+    name: "Professional",
+    fichas: "Up to 8 Google listings",
+    price: "347",
+    tagline: "The growing developer or sales network.",
+    featured: true,
+  },
+  {
+    name: "Multi",
+    fichas: "Up to 20 Google listings",
+    price: "597",
+    tagline: "Chains and networks with several sites.",
+    featured: false,
+  },
+];
+
 const PRICING_INCLUDED = [
-  "Up to 8 Google Business Profile listings connected",
-  "Up to 20 active sales reps",
+  "Unlimited sales reps, no per-user cost",
   "Automatic review attribution by time window and name similarity",
   "Admin dashboard with per-rep, per-listing metrics and ranking",
   "Personal panel for each rep with their target and earned reviews",
@@ -123,8 +146,8 @@ const FAQS: FaqItem[] = [
   {
     q: "How much does it cost?",
     a: [
-      "€990 turnkey setup and €397/month subscription, no minimum contract. Includes connecting your Google listings, onboarding your team, training your sales reps and intensive support during the first weeks.",
-      "Think of it as what it saves you: zero spreadsheet afternoons a month and zero arguments over who earned which review. For an exact assessment of your case we book a 20-minute call.",
+      "The monthly subscription scales with the number of Google listings you manage: from €147/month (up to 2 listings), €347/month (up to 8) or €597/month (up to 20). Sales reps are unlimited on every plan, so your team grows without paying more. More than 20 listings? We tailor a plan with you.",
+      "On top of that there's a one-time turnkey setup that includes connecting your listings, onboarding your team, training your sales reps and intensive support during the first weeks. No minimum contract. For an exact assessment of your case we book a 20-minute call.",
     ],
   },
   {
@@ -466,90 +489,129 @@ export default function HomePageEn() {
                 className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
                 style={{ fontSize: "var(--text-h2)" }}
               >
-                One plan, <em className="font-light">no surprises.</em>
+                One plan <em className="font-light">for every size.</em>
               </h2>
               <p
                 className="mt-5 leading-relaxed text-ink-2"
                 style={{ fontSize: "var(--text-lead)" }}
               >
-                Turnkey setup and monthly subscription. Cancel anytime.
+                You pay by the number of Google listings you manage. Sales reps
+                are unlimited on every plan. Turnkey setup, monthly
+                subscription, cancel anytime.
               </p>
             </div>
 
+            {/* Three plans by number of listings — the middle one highlighted */}
+            <div className="mt-12 grid gap-5 sm:grid-cols-3">
+              {PLANS.map((plan) => (
+                <article
+                  key={plan.name}
+                  className={
+                    plan.featured
+                      ? "relative flex flex-col rounded-2xl border border-ink/15 bg-bg p-7 shadow-card sm:p-8"
+                      : "relative flex flex-col rounded-2xl border border-line bg-white p-7 sm:p-8"
+                  }
+                >
+                  {plan.featured && (
+                    <span className="absolute -top-3 left-7 rounded-full bg-ink px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
+                      Most popular
+                    </span>
+                  )}
+                  <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+                    {plan.name} plan
+                  </p>
+                  <p className="mt-4 flex items-baseline gap-x-1.5">
+                    <span className="font-display text-[2.5rem] font-medium leading-none tracking-tight text-ink sm:text-[3rem]">
+                      €{plan.price}
+                    </span>
+                    <span className="text-[14px] text-ink-3">/ month</span>
+                  </p>
+                  <p className="mt-3 text-[14.5px] font-medium text-ink">
+                    {plan.fichas}
+                  </p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
+                    {plan.tagline}
+                  </p>
+                  <p className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
+                    <span
+                      aria-hidden="true"
+                      className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
+                    />
+                    Unlimited sales reps
+                  </p>
+                  <a
+                    href="#contact"
+                    className={
+                      plan.featured
+                        ? "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2"
+                        : "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
+                    }
+                  >
+                    Get started
+                  </a>
+                </article>
+              ))}
+            </div>
+
+            <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
+              A one-time turnkey setup is added to any plan. No minimum
+              contract.
+            </p>
+
+            {/* Custom — chains and more than 20 listings */}
+            <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-2xl border border-line bg-white px-7 py-6 sm:flex-row sm:items-center">
+              <div>
+                <p className="font-display text-[17px] font-medium text-ink">
+                  More than 20 listings or a chain?
+                </p>
+                <p className="mt-1 text-[14px] leading-relaxed text-ink-2">
+                  We tailor a plan on the same model: you pay by listings, reps
+                  always unlimited.
+                </p>
+              </div>
+              <a
+                href="#contact"
+                className="inline-flex shrink-0 items-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
+              >
+                Let's talk
+              </a>
+            </div>
+
+            {/* What every plan includes */}
+            <div className="mt-12">
+              <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+                Every plan includes
+              </p>
+              <ul className="mt-4 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+                {PRICING_INCLUDED.map((it) => (
+                  <li key={it} className="flex items-start gap-2.5">
+                    <span
+                      aria-hidden="true"
+                      className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
+                    />
+                    <span className="text-[14.5px] leading-relaxed text-ink-2">
+                      {it}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             <div className="mt-12 grid items-start gap-10 md:grid-cols-12">
-              <article className="md:col-span-7 md:col-start-1">
-                <div className="overflow-hidden rounded-2xl border border-ink/15 bg-bg shadow-card">
-                  <div className="border-b border-line bg-white px-7 py-7 sm:px-9 sm:py-8">
-                    <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-                      Professional plan
-                    </p>
-                    <p className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="font-display text-[2.75rem] font-medium leading-none tracking-tight text-ink sm:text-[3.5rem]">
-                        €990
-                      </span>
-                      <span className="text-[14px] text-ink-3">
-                        turnkey setup
-                      </span>
-                    </p>
-                    <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="font-display text-[1.625rem] font-medium leading-none tracking-tight text-ink sm:text-[2rem]">
-                        + €397
-                      </span>
-                      <span className="text-[14px] text-ink-3">/ month</span>
-                    </p>
-                    <a
-                      href="#contact"
-                      className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
-                    >
-                      I want this for my team
-                      <svg
-                        className="h-3.5 w-3.5"
-                        viewBox="0 0 14 14"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.75"
-                        strokeLinecap="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
-                      </svg>
-                    </a>
-                    <p className="mt-3 text-center text-[13px] text-ink-3">
-                      No commitment.
-                    </p>
-                  </div>
-                  <div className="px-7 py-7 sm:px-9 sm:py-8">
-                    <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-                      Includes
-                    </p>
-                    <ul className="mt-4 space-y-2.5">
-                      {PRICING_INCLUDED.map((it) => (
-                        <li key={it} className="flex items-start gap-2.5">
-                          <span
-                            aria-hidden="true"
-                            className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
-                          />
-                          <span className="text-[14.5px] leading-relaxed text-ink-2">
-                            {it}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="mt-7 border-t border-line pt-6">
-                      <p className="font-display text-[16px] font-medium text-ink sm:text-[17px]">
-                        <em className="font-light">Guarantee:</em> if it
-                        doesn't work, we refund the setup in full.
-                      </p>
-                      <p className="mt-2 text-[14px] leading-relaxed text-ink-2">
-                        If within the first 90 days Atribuya doesn't correctly
-                        attribute at least 70% of the reviews coming through
-                        your reps' links, we refund the €990 in full. No
-                        questions asked.
-                      </p>
-                    </div>
-                  </div>
+              <div className="md:col-span-7">
+                <div className="rounded-2xl border border-line bg-white px-7 py-7 sm:px-9 sm:py-8">
+                  <p className="font-display text-[16px] font-medium text-ink sm:text-[17px]">
+                    <em className="font-light">Guarantee:</em> if it doesn't
+                    work, we refund the setup in full.
+                  </p>
+                  <p className="mt-2 text-[14px] leading-relaxed text-ink-2">
+                    If within the first 90 days Atribuya doesn't correctly
+                    attribute at least 70% of the reviews coming through your
+                    reps' links, we refund the setup in full. No questions
+                    asked.
+                  </p>
                 </div>
-              </article>
+              </div>
 
               <aside
                 aria-label="Founding Customer Program"
@@ -569,8 +631,7 @@ export default function HomePageEn() {
                   <div className="flex justify-between gap-4 border-b border-line pb-3">
                     <dt>Setup</dt>
                     <dd className="text-right">
-                      <span className="font-semibold text-ink">€490</span>{" "}
-                      <span className="text-ink-4">instead of €990</span>
+                      <span className="font-semibold text-ink">50% off</span>
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4 border-b border-line pb-3">
@@ -580,14 +641,14 @@ export default function HomePageEn() {
                       <span className="text-[13px] text-ink-3">first year</span>
                     </dt>
                     <dd className="text-right">
-                      <span className="font-semibold text-ink">€197/mo</span>{" "}
-                      <span className="text-ink-4">instead of €397</span>
+                      <span className="font-semibold text-ink">half price</span>{" "}
+                      <span className="text-ink-4">on the plan you choose</span>
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt>From month&nbsp;13</dt>
                     <dd className="text-right text-ink-3">
-                      standard €397/mo
+                      standard rate for your plan
                     </dd>
                   </div>
                 </dl>

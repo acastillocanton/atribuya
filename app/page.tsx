@@ -78,9 +78,32 @@ const FEATURES = [
   "¿Varias oficinas o fichas? Las gestionas todas desde la misma cuenta.",
 ];
 
+const PLANS = [
+  {
+    name: "Starter",
+    fichas: "Hasta 2 fichas de Google",
+    price: "147",
+    tagline: "Una clínica, una promoción, un local.",
+    featured: false,
+  },
+  {
+    name: "Professional",
+    fichas: "Hasta 8 fichas de Google",
+    price: "347",
+    tagline: "La promotora o la red en pleno crecimiento.",
+    featured: true,
+  },
+  {
+    name: "Multi",
+    fichas: "Hasta 20 fichas de Google",
+    price: "597",
+    tagline: "Cadenas y redes con varias sedes.",
+    featured: false,
+  },
+];
+
 const PRICING_INCLUDED = [
-  "Conexión de hasta 8 fichas de Google Business Profile",
-  "Hasta 20 comerciales activos",
+  "Comerciales ilimitados, sin coste por usuario",
   "Atribución automática de reseñas por ventana temporal y similitud de nombre",
   "Dashboard de admin con métricas por comercial, ficha y ranking",
   "Panel personal de cada comercial con su objetivo y reseñas conseguidas",
@@ -126,8 +149,8 @@ const FAQS: FaqItem[] = [
   {
     q: "¿Cuánto cuesta?",
     a: [
-      "Implantación llave en mano de 990€ y suscripción mensual de 397€, sin permanencia. Incluye conexión de tus fichas de Google, alta de tu equipo, formación a comerciales y soporte intensivo las primeras semanas.",
-      "Piénsalo en lo que te ahorra: cero tardes de Excel al mes y cero discusiones sobre a quién pertenece cada reseña. Para el encaje exacto de tu caso reservamos una llamada de 20 minutos.",
+      "La suscripción mensual va según el número de fichas de Google que gestiones: desde 147€/mes (hasta 2 fichas), 347€/mes (hasta 8) o 597€/mes (hasta 20). Los comerciales son ilimitados en todos los planes, así que tu equipo crece sin pagar más. Si tienes más de 20 fichas, lo vemos a medida.",
+      "A eso se suma una implantación llave en mano que incluye conexión de tus fichas, alta de tu equipo, formación a comerciales y soporte intensivo las primeras semanas. Sin permanencia. Para el encaje exacto de tu caso reservamos una llamada de 20 minutos.",
     ],
   },
   {
@@ -467,92 +490,129 @@ export default function HomePage() {
                 className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
                 style={{ fontSize: "var(--text-h2)" }}
               >
-                Un plan, <em className="font-light">sin sorpresas.</em>
+                Un plan <em className="font-light">para cada tamaño.</em>
               </h2>
               <p
                 className="mt-5 leading-relaxed text-ink-2"
                 style={{ fontSize: "var(--text-lead)" }}
               >
-                Implantación llave en mano y suscripción mensual. Cancelas
-                cuando quieras.
+                Pagas según las fichas de Google que gestionas. Los comerciales
+                son ilimitados en todos los planes. Implantación llave en mano,
+                suscripción mensual, cancelas cuando quieras.
               </p>
             </div>
 
+            {/* Tres planes por nº de fichas — el del medio destacado */}
+            <div className="mt-12 grid gap-5 sm:grid-cols-3">
+              {PLANS.map((plan) => (
+                <article
+                  key={plan.name}
+                  className={
+                    plan.featured
+                      ? "relative flex flex-col rounded-2xl border border-ink/15 bg-bg p-7 shadow-card sm:p-8"
+                      : "relative flex flex-col rounded-2xl border border-line bg-white p-7 sm:p-8"
+                  }
+                >
+                  {plan.featured && (
+                    <span className="absolute -top-3 left-7 rounded-full bg-ink px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
+                      Más elegido
+                    </span>
+                  )}
+                  <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+                    Plan {plan.name}
+                  </p>
+                  <p className="mt-4 flex items-baseline gap-x-1.5">
+                    <span className="font-display text-[2.5rem] font-medium leading-none tracking-tight text-ink sm:text-[3rem]">
+                      {plan.price}&nbsp;€
+                    </span>
+                    <span className="text-[14px] text-ink-3">/ mes</span>
+                  </p>
+                  <p className="mt-3 text-[14.5px] font-medium text-ink">
+                    {plan.fichas}
+                  </p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
+                    {plan.tagline}
+                  </p>
+                  <p className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
+                    <span
+                      aria-hidden="true"
+                      className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
+                    />
+                    Comerciales ilimitados
+                  </p>
+                  <a
+                    href="#contacto"
+                    className={
+                      plan.featured
+                        ? "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2"
+                        : "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
+                    }
+                  >
+                    Empezar
+                  </a>
+                </article>
+              ))}
+            </div>
+
+            <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
+              A cualquier plan se suma una implantación llave en mano única, sin
+              permanencia.
+            </p>
+
+            {/* A medida — cadenas y más de 20 fichas */}
+            <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-2xl border border-line bg-white px-7 py-6 sm:flex-row sm:items-center">
+              <div>
+                <p className="font-display text-[17px] font-medium text-ink">
+                  ¿Más de 20 fichas o una cadena?
+                </p>
+                <p className="mt-1 text-[14px] leading-relaxed text-ink-2">
+                  Montamos un plan a medida con el mismo modelo: pagas por
+                  fichas, comerciales siempre ilimitados.
+                </p>
+              </div>
+              <a
+                href="#contacto"
+                className="inline-flex shrink-0 items-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
+              >
+                Hablemos
+              </a>
+            </div>
+
+            {/* Lo que incluyen todos los planes */}
+            <div className="mt-12">
+              <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+                Todos los planes incluyen
+              </p>
+              <ul className="mt-4 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+                {PRICING_INCLUDED.map((it) => (
+                  <li key={it} className="flex items-start gap-2.5">
+                    <span
+                      aria-hidden="true"
+                      className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
+                    />
+                    <span className="text-[14.5px] leading-relaxed text-ink-2">
+                      {it}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             <div className="mt-12 grid items-start gap-10 md:grid-cols-12">
-              {/* Card destacada — único nivel "elevado" del page */}
-              <article className="md:col-span-7 md:col-start-1">
-                <div className="overflow-hidden rounded-2xl border border-ink/15 bg-bg shadow-card">
-                  <div className="border-b border-line bg-white px-7 py-7 sm:px-9 sm:py-8">
-                    <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-                      Plan Professional
-                    </p>
-                    <p className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="font-display text-[2.75rem] font-medium leading-none tracking-tight text-ink sm:text-[3.5rem]">
-                        990&nbsp;€
-                      </span>
-                      <span className="text-[14px] text-ink-3">
-                        implantación llave en mano
-                      </span>
-                    </p>
-                    <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="font-display text-[1.625rem] font-medium leading-none tracking-tight text-ink sm:text-[2rem]">
-                        + 397&nbsp;€
-                      </span>
-                      <span className="text-[14px] text-ink-3">/ mes</span>
-                    </p>
-                    <a
-                      href="#contacto"
-                      className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
-                    >
-                      Quiero esto para mi equipo
-                      <svg
-                        className="h-3.5 w-3.5"
-                        viewBox="0 0 14 14"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.75"
-                        strokeLinecap="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
-                      </svg>
-                    </a>
-                    <p className="mt-3 text-center text-[13px] text-ink-3">
-                      Sin permanencia.
-                    </p>
-                  </div>
-                  <div className="px-7 py-7 sm:px-9 sm:py-8">
-                    <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-                      Incluye
-                    </p>
-                    <ul className="mt-4 space-y-2.5">
-                      {PRICING_INCLUDED.map((it) => (
-                        <li key={it} className="flex items-start gap-2.5">
-                          <span
-                            aria-hidden="true"
-                            className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
-                          />
-                          <span className="text-[14.5px] leading-relaxed text-ink-2">
-                            {it}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="mt-7 border-t border-line pt-6">
-                      <p className="font-display text-[16px] font-medium text-ink sm:text-[17px]">
-                        <em className="font-light">Garantía:</em> si no
-                        funciona, te devolvemos la implantación íntegra.
-                      </p>
-                      <p className="mt-2 text-[14px] leading-relaxed text-ink-2">
-                        Si en los primeros 90 días Atribuya no atribuye
-                        correctamente al menos el 70&nbsp;% de las reseñas
-                        pasadas por enlaces de tus comerciales, te devolvemos
-                        los 990&nbsp;€ íntegros. Sin preguntas.
-                      </p>
-                    </div>
-                  </div>
+              <div className="md:col-span-7">
+                <div className="rounded-2xl border border-line bg-white px-7 py-7 sm:px-9 sm:py-8">
+                  <p className="font-display text-[16px] font-medium text-ink sm:text-[17px]">
+                    <em className="font-light">Garantía:</em> si no funciona, te
+                    devolvemos la implantación íntegra.
+                  </p>
+                  <p className="mt-2 text-[14px] leading-relaxed text-ink-2">
+                    Si en los primeros 90 días Atribuya no atribuye
+                    correctamente al menos el 70&nbsp;% de las reseñas pasadas
+                    por enlaces de tus comerciales, te devolvemos la implantación
+                    íntegra. Sin preguntas.
+                  </p>
                 </div>
-              </article>
+              </div>
 
               {/* Bloque Insignia — separado, calmado, sin badge ni border-gold */}
               <aside
@@ -573,8 +633,7 @@ export default function HomePage() {
                   <div className="flex justify-between gap-4 border-b border-line pb-3">
                     <dt>Implantación</dt>
                     <dd className="text-right">
-                      <span className="font-semibold text-ink">490 €</span>{" "}
-                      <span className="text-ink-4">en lugar de 990 €</span>
+                      <span className="font-semibold text-ink">50&nbsp;% de descuento</span>
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4 border-b border-line pb-3">
@@ -586,14 +645,14 @@ export default function HomePage() {
                       </span>
                     </dt>
                     <dd className="text-right">
-                      <span className="font-semibold text-ink">197&nbsp;€/mes</span>{" "}
-                      <span className="text-ink-4">en lugar de 397&nbsp;€</span>
+                      <span className="font-semibold text-ink">a mitad de precio</span>{" "}
+                      <span className="text-ink-4">sobre el plan que elijas</span>
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt>A partir del mes&nbsp;13</dt>
                     <dd className="text-right text-ink-3">
-                      tarifa estándar de 397&nbsp;€/mes
+                      tarifa estándar de tu plan
                     </dd>
                   </div>
                 </dl>

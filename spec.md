@@ -238,8 +238,8 @@ El MVP comercial está listo para captar el primer cliente cuando **todas** esta
 1. Nombre comercial definitivo
 2. Dominio definitivo
 3. Path prefix vs subdominio
-4. Pricing tiers exactos
-5. Qué incluye el setup pagado
+4. ~~Pricing tiers exactos~~ — **decidido (2026-06-07)**: se factura **por nº de fichas** (no por comerciales), **comerciales ilimitados** en todos los planes. Tres tiers + a medida: Starter (hasta 2 fichas, 147 €/mes), Professional (hasta 8, 347 €/mes, el destacado), Multi (hasta 20, 597 €/mes), A medida (+20 / cadenas). Cifras de partida (variante "Captación"), ajustables. *Enforcement técnico del tope de fichas pendiente (hoy `organizations.plan` es placeholder sin validación).*
+5. Qué incluye el setup pagado — pendiente. El importe del setup se replantea en una 2ª pasada (en la landing se expresa como descuento relativo para el programa Cliente Insignia, no como cifra fija acoplada).
 6. Cuándo introducir Stripe
 
 ---

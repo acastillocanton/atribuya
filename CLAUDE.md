@@ -270,12 +270,12 @@ Se creará en la misma cuenta Supabase pero como proyecto aparte (`atribuya-prod
 
 Sin resolver hasta que el usuario las decida (decisiones de negocio, no técnicas):
 
-1. **Pricing tiers**: en bruto, 397-797€/mes según fichas y comerciales. Definir tabla exacta antes del primer cierre.
-2. **Setup pagado**: 1.500-2.500€ inicial. Definir qué incluye exactamente.
+1. ~~**Pricing tiers**~~: **decidido (2026-06-07)**. Se factura **por nº de fichas**, **comerciales ilimitados** en todos los planes (no penalizar el crecimiento del equipo). Tabla de partida (variante "Captación", cifras ajustables): Starter hasta 2 fichas 147 €/mes · Professional hasta 8 fichas 347 €/mes (destacado) · Multi hasta 20 fichas 597 €/mes · A medida +20/cadenas. Aplicado a la landing (ES+EN). **Pendiente**: enforcement del tope de fichas por plan (hoy `organizations.plan` es placeholder `text` sin validación; requiere migración → "ask first").
+2. **Setup pagado**: importe pendiente de 2ª pasada. En la landing el descuento Cliente Insignia se expresa ahora como relativo (50 % / mitad de precio) para no acoplarlo a una cifra fija. Definir qué incluye exactamente.
 3. **Billing**: primeros 5-8 clientes facturación manual con Holded. Stripe a partir del cliente 6-8.
 4. **Mover rutas autenticadas bajo `/o/[orgSlug]/...`**: deferred en Fase 6. Reevaluar cuando llegue al cliente #5.
 
-*Ya decididas*: nombre **Atribuya**, dominio **atribuya.com**, routing por path-prefix `/o/[orgSlug]/c/...`.
+*Ya decididas*: nombre **Atribuya**, dominio **atribuya.com**, routing por path-prefix `/o/[orgSlug]/c/...`, **modelo de pricing (por fichas, comerciales ilimitados, 3 tiers + a medida)**.
 
 ### 8.1 Camino crítico al primer cliente (técnico)
 
