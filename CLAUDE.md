@@ -75,30 +75,23 @@ Migraciones SQL: ejecutar en Supabase Dashboard → SQL Editor en orden numéric
 
 ## 3. Estado del proyecto
 
-| Fase | Estado | Notas |
-|---|---|---|
-| 0. Fork inicial del repo | ✅ Hecho (2026-05-24) | Commit `4170a48`. Repo en `github.com/acastillocanton/atribuya`. |
-| 1. Migración 011 — organizations + org_id | ✅ Hecho (2026-05-24) | Aplicada en Supabase atribuya-dev. Helpers `current_org_id()` e `is_super_admin()` operativos. Seed con 2 orgs ficticias (Acme Promotora, Beta Apartamentos) + 4 locations en `supabase/dev-seeds/01_*`. Aislamiento por `org_id` verificado a nivel SQL (sin RLS todavía). |
-| 2. Migración 012 — RLS rewrite multi-tenant | ✅ Hecho (2026-05-24) | Aplicada en atribuya-dev. 23 policies activas (18 reescritas + 4 nuevas + 1 inalterada). Aislamiento validado con 15/15 tests en `docs/tests-multitenancy.md` usando 5 test profiles sintéticos en `supabase/dev-seeds/02_*`. |
-| 3. Helper `current_org_id()` + middleware | ✅ Hecho (2026-05-24) | TS wrapper `lib/supabase/org.ts` con `getCurrentOrgContext()` y `requireOrgContext()`. Middleware ahora lee `org_id` + `is_super_admin`, redirige a `/login?error=no-org` si el user no tiene ninguno. 4 server actions críticas (createLocation, inviteSales, inviteReviewsManager, createClientRecord) y `recordAudit` ahora estampan `org_id` explícitamente. 8 tests unitarios. |
-| 4. Adaptar cron Places y Business Profile | ✅ Hecho (2026-05-24) | Ambos crons + `lib/google/sync-places.ts` filtran por `organizations.status IN ('active','trial')`. `lib/cron/process-reviews.ts` ahora requiere `org_id` en `LocationCtx` y lo estampa en `reviews` + `audit_log` (notify_failed). `lib/landing.ts` setea `org_id` en `share_links` derivado del perfil del sales. 2 tests nuevos validan la propagación de `org_id` con fixture de 2 orgs. |
-| 5. Panel `/super` (super-admin) | ✅ Hecho (2026-05-24) | Layout `app/(super)/layout.tsx` con guard `is_super_admin`. Página `/super` lista orgs vía RLS (policy `organizations_super_admin_all`). Server actions: `createOrg`, `setOrgStatus`, `deleteOrg`, `inviteOrgAdmin` — todas con `assertSuperAdmin()` + audit_log explícito. Middleware redirige super_admins a `/super` como home y les bloquea `/dashboard` etc. |
-| 6. Routing path-prefix `/o/[orgSlug]/...` | ✅ Hecho (parcial, 2026-05-24) | **Alcance acotado al caso crítico**: la landing pública migrada a `/o/[orgSlug]/c/[salesSlug][/clientSlug]` + migración 013 (`profiles.slug` UNIQUE por org). Las rutas autenticadas (`/dashboard`, `/panel`, etc.) SIGUEN sin prefijo — RLS las protege; mover físicamente todas las carpetas es trabajo masivo con bajo beneficio práctico. Reevaluar antes del cliente #5 si la ambigüedad de URL en la UI es un problema. |
-| 7. Branding Atribuya en toda la app | ✅ Hecho (2026-05-24) | Marca "Atribuya" en CLAUDE.md/spec.md/README.md/super layout. Fixtures en `lib/demo-data.ts` ahora "Acme Promotora" / "Beta Apartamentos". `package.json` name = "atribuya". README.md reescrito. **NO toqué**: capturas en `public/help/*.png` (UI con branding antiguo — regenerar cuando llegue rebrand visual) ni plantillas Auth en Dashboard Supabase. |
-| 8. Términos legales nuevos | ✅ Hecho (2026-06-07) | `/terminos` + `/privacidad` (✅ 2026-05-24) **y DPA cerrado** (2026-06-07): `docs/legal/dpa.md` finalizado (sin banner de borrador; datos del Encargado unificados con los otros dos docs legales — dirección completa + `alejandro@castillocanton.com`; plazos rellenos: oposición subencargados 30 d, devolución/supresión 60 d para casar con Términos cláusula 11, preaviso auditoría 30 d; jurisdicción concreta = tribunales de Castellón; subencargados Supabase/Vercel/Brevo/Google + nota de GitHub como no-subencargado). Plantilla firmable `docs/legal/dpa.docx` (Word editable, branding Atribuya, corchetes del lado Cliente para rellenar por contrato). **Sin página pública `/dpa`** (anexo contractual privado, decisión del usuario). No lleva aviso de revisión legal (criterio del titular). |
-| 9. Landing comercial mínima | ⏳ Pendiente | Una sola página con caso anonimizado |
-| 9. Despliegue Vercel + Supabase prod | ✅ Hecho (2026-05-24) | App live en `https://atribuya.vercel.app`. Decisión: **un solo proyecto Supabase** (el original `atribuya-dev` actúa también como prod) para mantener free tier. Vercel Hobby. Login OTP funcional, super_admin `a.castillo.esv@gmail.com` operativo. Smoke tests 4/4 OK (/login, /super, /api/cron sin auth, /api/cron con auth). Fixes adicionales: git history reescrita (los 12 commits tenían author `usuario@usuarios-MacBook-Pro.local`, Vercel los bloqueaba; ahora todos son `Alejandro Castillo <a.castillo.esv@gmail.com>` y los deploys pasan). Supabase Auth Site URL + redirect allowlist actualizado vía Management API a `https://atribuya.vercel.app`. |
-| 8. Legal — datos del responsable y rewrite comercial | ✅ Hecho (2026-05-24) — fuera de orden | `/terminos` y `/privacidad` reescritos íntegramente como SaaS comercial multi-tenant (14 + 11 secciones), modelo correcto Responsable/Encargado del RGPD. Banner "Borrador técnico" eliminado. Datos del responsable: Alejandro Castillo Cantón, NIF 55418862V, Benicàssim. **Texto consultado por el usuario y aprobado**. Pendiente DPA por separado cuando entre primer cliente. |
-| 7.b Rebrand visual y favicon | ✅ Hecho (2026-05-24) | Logos reales (`logo-cuadrado.png` 564×564 y `logo-horizontal.png` 704×282) en `public/brand/`. `app/icon.png` y `app/apple-icon.png` actualizados (favicon + apple-touch). Header de `/super` ahora muestra el logo (antes solo wordmark texto). Email template `notify-new-review.ts` arreglado: logo URL apuntaba a `atribuya.es` (placeholder 404); pie tenía `Reseña<span>Hub</span>` partido en spans que el sed no capturó — ambos limpios. |
-| Feat extra: datos fiscales por org | ✅ Hecho (2026-05-24) | `createOrg` en `/super` ahora pide opcionalmente legal_name, tax_id, dirección, CP, ciudad, provincia, país; se guardan en `organizations.fiscal_data`. Listado en `/super` muestra badge "Fiscales ✓ / parciales / pendientes" con tooltip de campos faltantes. |
-| 10. Landing comercial mínima | ✅ Hecho (2026-05-24) | `app/page.tsx` reescrita: hero + sectores + problema + 3 pasos + caso anonimizado ("promotora en Costa de Castellón") + features + formulario lead + footer. Migración 014 añade tabla `leads` (pre-org, super_admin-only, INSERT vía service-role). Server action `app/actions/submit-lead.ts` con Zod + honeypot (campo `website`) + captura UA/IP. 9 tests nuevos (81/81 total). Middleware actualizado: bots permitidos en `/`, `/terminos`, `/privacidad`, `/robots.txt`, `/sitemap.xml` (antes 403 a TODA la app — pre-existing bug que rompía indexación). `app/robots.ts` reescrito: allow las 3 públicas, disallow las 14 privadas. Landing prerenderiza estática (6.98 kB). Sin Calendly: CTA es formulario embebido — los leads notifican por email cuando Brevo esté listo (hoy solo BD). |
-| 11. Cron horario operativo | ✅ Hecho (2026-06-06) | `.github/workflows/sync-places-hourly.yml` fallaba cada hora (emails de "All jobs have failed"). Causa: secrets `APP_URL` y `CRON_SECRET` nunca configurados en GitHub → env vacías → endpoint devolvía 401. Fix: `gh secret set APP_URL=https://atribuya.com` + `CRON_SECRET=<el de .env.local>`. Además se añadió `CRON_SECRET` en Vercel env vars (antes faltaba en prod → el endpoint rechazaba TODA llamada con 401). Run manual `workflow_dispatch` → success. |
-| 12. SEO — sitemap + OG image + Twitter cards | ✅ Hecho (2026-06-06) | Auditoría con skills `web-quality-audit`. `app/sitemap.ts` creado (4 URLs públicas; antes `robots.ts` referenciaba `/sitemap.xml` inexistente → 404 a Googlebot). `app/opengraph-image.tsx` + `app/en/opengraph-image.tsx` generan OG image 1200×630 dinámica via `next/og` (edge ImageResponse, sin PNG estático). `metadataBase` añadido en `app/layout.tsx`. `twitter:card summary_large_image` en ambas landings. |
-| 13. Dominio comercial atribuya.com | ✅ Hecho (2026-06-06) | Comprado en Hostinger. DNS: A `@`→`76.76.21.21`, CNAME `www`→`cname.vercel-dns.com`. Dominio añadido en Vercel. Todas las URLs hardcodeadas migradas `atribuya.vercel.app`→`atribuya.com` (sitemap, metadataBase, canonical, hreflang, OG, terminos). Supabase Auth Site URL → `https://atribuya.com` + redirect allowlist actualizada. `NEXT_PUBLIC_APP_URL` en Vercel → `https://atribuya.com`. Verificado: `atribuya.com` 308→`www.atribuya.com` 200 OK. |
-| Fix infra: repo público | ✅ Hecho (2026-06-06) | Vercel Hobby bloqueaba TODOS los deploys por git push de repos privados ("commit author does not have contributing access"). El redeploy manual desde UI también bloqueado. Solución: repo `acastillocanton/atribuya` pasado a **público** (no hay secretos en el código, todos en env vars de Vercel). Deploys vuelven a pasar. Hay un Deploy Hook creado en Vercel (Settings→Git) como vía alternativa de disparo manual. |
-| 14. Portar mejoras de calidad de reseñas (lote 1) | ✅ Hecho (2026-06-06) | Migración **015** (`is_duplicate`, `low_rating_alerted_at`, `message_templates` + lockdown `profiles_self_update` que congela org_id/role/slug/monthly_goal/location_id/status). 5 features portadas del producto base single-tenant, adaptadas a multi-tenant: **detección de duplicados** (anti-fraude por client_id, `lib/cron/duplicate-detection.ts`), **edit-merge** (reseñas editadas en Google, `lib/cron/edit-merge.ts`), **alertas ≤2★** (`lib/cron/low-rating-alerts.ts` + `lib/email/notify-low-rating.ts`, destinatarios resueltos POR ORG — admin+manager+sales, sin cross-org; quitado el rol "director" del original), **plantillas de mensaje por comercial** (`app/(sales)/panel/plantillas/`), **lockdown RLS**. Filtro `is_duplicate=false` en KPIs (dashboard, panel, comerciales, export). 31 tests nuevos (115/115). Las alertas/plantillas envían email solo cuando Brevo esté configurado (degradan con gracia). |
-| 15. Portar features para vender (lote 2) | ✅ Hecho (2026-06-06) | 4 features del producto base portadas y adaptadas a multi-tenant + limpieza de stub. **(2.1) Ranking + insignias**: `lib/leaderboard.ts` (org-scoped, sin rol director; el panel del comercial usa service-role filtrado por `org_id` porque un `sales` no puede leer perfiles de compañeros vía RLS), `lib/panel-badges.ts` + `lib/panel-motivation.ts` + `bucketByMonth` en `lib/date-range.ts`, componentes `components/{ranking,panel}/*` + `components/ui/Badge.tsx`, páginas `/ranking` (admin/manager) y `/panel/ranking` (sales, ya no stub) + insignias reales en `/panel`. Fallbacks demo en las 3 vistas (probar sin BD: `NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= npm run dev`). **(2.2) Helpdesk de soporte** (intra-org): migración **016** (`support_conversations`/`support_messages`/`support_read_receipts` con `org_id` + RLS multi-tenant + `support_unread_count()`), `app/(profile)/soporte/*`, `components/soporte/*`, `lib/email/notify-support.ts` (respondedores resueltos POR ORG). Enlace "Soporte" en sidebar (sin badge de no-leídos todavía — añadir tras confirmar uso). **(2.3) Excel individual por comercial**: `lib/reports/sales-report.ts` + `app/api/export/sales/[id]/route.ts` (aislamiento por `org_id` en queries service-role), botones en `/panel/resenas` y `/comerciales/[slug]`. **(2.4) Parte por ficha**: 3ª hoja "Parte por ficha" en `/api/export/reviews` (mes anterior vs mes actual por comercial agrupado por ficha; sin migración — se descartó la caché de rating por innecesaria). **(1.3)** Stub `/ajustes` eliminado. Sin rol `office_director` ni departamentos (específicos del cliente original). 56 tests nuevos (174/174). |
-| 16. Google Cloud — Places API (Vía A) | ✅ Hecho (2026-06-07) | Proyecto Cloud `atribuya` + Places API legacy habilitada + API key restringida + facturación activa + cuota 500/día + alerta 10 €/mes. Key en `.env.local` y Vercel. Probado E2E (Telepizza Benicàssim → 5 reseñas recientes OK). Es la vía pública de respaldo (solo top-5 recientes por ficha); la Vía B (OAuth, todas las reseñas) queda pendiente. Detalle en §7. |
+> **Historia detallada** (qué entregó cada fase, ficheros, commits, fixes) → [docs/handoff/handoff.md](docs/handoff/handoff.md). Aquí solo el estado resumido; las **reglas durables** están en §4-§6.
+
+| Fase | Estado |
+|---|---|
+| 0-7. Fork + multi-tenancy (mig 011-013) + RLS (23 policies) + `/super` + crons multi-tenant + routing público `/o/[orgSlug]/c/...` + branding | ✅ 2026-05-24 |
+| 8. Legal: `/terminos` + `/privacidad` + **DPA finalizado** (`docs/legal/dpa.{md,docx}`, ver §7) | ✅ 2026-06-07 |
+| 9. Despliegue Vercel + Supabase prod (proyecto único) | ✅ 2026-05-24 |
+| 10. Landing comercial + lead capture (mig 014 `leads`) | ✅ 2026-05-24 |
+| 11. Cron horario operativo (GitHub Actions) | ✅ 2026-06-06 |
+| 12. SEO (sitemap + OG image 1200×630 + Twitter cards) | ✅ 2026-06-06 |
+| 13. Dominio `atribuya.com` (Hostinger) | ✅ 2026-06-06 |
+| 14. Lote 1 — calidad de reseñas (mig 015: duplicados, alertas ≤2★, plantillas, lockdown RLS) | ✅ 2026-06-06 |
+| 15. Lote 2 — para vender (ranking, helpdesk mig 016, excel individual, parte por ficha) | ✅ 2026-06-06 |
+| 16. Google Places API (Vía A) — vía pública de respaldo, top-5 reseñas recientes (ver §7) | ✅ 2026-06-07 |
+| —. Google OAuth Business Profile (Vía B) — todas las reseñas | ⏳ esperando aprobación Google (caso `7-4031000041620`, ~18-jun; ver §7) |
+
+Extras (detalle → handoff.md): datos fiscales por org en `/super`, rebrand visual (logos/favicon), fix repo público para deploys Vercel Hobby. La fase 6 (routing) es **parcial**: solo la landing pública lleva prefijo `/o/`; las rutas autenticadas no (las protege RLS — ver §5.4).
 
 ---
 
@@ -256,37 +249,31 @@ Se creará en la misma cuenta Supabase pero como proyecto aparte (`atribuya-prod
 
 **App live**: `https://atribuya.com` (Vercel Hobby, team `acastillocantons-projects`). `atribuya.vercel.app` sigue activo como dominio secundario.
 
-| Pieza | Estado | Detalle |
-|---|---|---|
-| Vercel proyecto | ✅ Live | `atribuya.com` (primario) + `atribuya.vercel.app`, plan Hobby, auto-deploy desde `main` de GitHub. Repo **público** (necesario para que Hobby no bloquee deploys — ver Fase 12+). |
-| Vercel env vars | ✅ Configuradas | Supabase URL + keys, CRON_SECRET (= el de `.env.local`; añadido 2026-06-06, antes faltaba en prod), NEXT_PUBLIC_APP_URL=`https://atribuya.com`, GOOGLE_OAUTH_REDIRECT_URI. Google/Brevo vacíos (deferidos). |
-| Supabase | ✅ Operativo | Proyecto `iuiveiznvwjeoyhescmx` (free tier) sirve también de prod. Migraciones 001-015 aplicadas. |
-| Supabase Auth Site URL | ✅ Correcto | `https://atribuya.com`. Allowlist incluye también `atribuya.vercel.app/**` y `localhost:3000/**`. |
-| Super_admin | ✅ Creado | `a.castillo.esv@gmail.com` (id `b2eab873-…`). Login via OTP. |
-| Logos + favicon | ✅ Atribuya | `public/brand/logo-{cuadrado,horizontal}.png` + `app/{icon,apple-icon}.png` |
-| Páginas legales | ✅ Comerciales | `/terminos` y `/privacidad` completas. Datos del responsable rellenos. |
-| SEO | ✅ Completo | `app/sitemap.ts` (4 URLs), OG image dinámica 1200×630 (`app/opengraph-image.tsx` + `/en`), `metadataBase`, Twitter cards, canonical + hreflang en `atribuya.com`. |
-| Cron diario | ✅ Configurado | `vercel.json` define 2 crons (Places + Business Profile). Vercel Hobby permite 2 diarios. |
-| Cron horario | ✅ Operativo (2026-06-06) | `.github/workflows/sync-places-hourly.yml`. Secrets `APP_URL`=`https://atribuya.com` y `CRON_SECRET` configurados vía `gh secret set`. Run manual → success. |
-| Brevo SMTP | ✅ Operativo (2026-06-06) | **Cuenta Brevo reutilizada** (la de Castillo Cantón / newsletter — plan Free 300/día compartido; separar si la newsletter se reactiva). Dominio `atribuya.com` autenticado en Brevo (DKIM `brevo1._domainkey`; DMARC `p=none` lo puso Brevo apuntando a su agregador; **sin SPF ni MX** — solo envío). SMTP key dedicada `atribuya-prod`. Env vars en Vercel + `.env.local`: `BREVO_SMTP_USER=936eb7001@smtp-brevo.com`, `BREVO_SMTP_PASS`, `BREVO_FROM_EMAIL=Atribuya <notificaciones@atribuya.com>`, `BREVO_REPLY_TO`/`LEAD_NOTIFY_EMAIL=a.castillo.esv@gmail.com`. Supabase Auth → Custom SMTP activado (host `smtp-relay.brevo.com:587`, mismas credenciales) + rate limit emails subido a 50/h. Verificado: envío real OK (no spam) y magic link de Auth llega desde el dominio. **Código**: reply-to global `BREVO_REPLY_TO` en `lib/email/brevo.ts`, aviso de leads best-effort (`lib/email/notify-lead.ts` → `submit-lead.ts`). |
-| Google Cloud — Places API (Vía A) | ✅ Hecho (2026-06-07) | Proyecto Cloud `atribuya`. **Places API legacy** (NO "New" — necesitamos `reviews_sort=newest`) habilitada. API key `atribuya-places` restringida a Places API. Facturación activa y vinculada al proyecto (obligatoria en Maps Platform aunque el uso entre en tramo gratis). Redes de seguridad: tope de cuota **500 req/día** + alerta de presupuesto **10 €/mes**. Key en `.env.local` y en Vercel (Prod+Preview+Dev) como `GOOGLE_PLACES_API_KEY`. Probado E2E con Telepizza Benicàssim (`scripts/find-place.mjs` y `scripts/test-places-key.mjs` quedan como diagnóstico; leen la key de `.env.local`, sin secretos commiteados). |
-| Google Cloud — OAuth Business Profile (Vía B) | ⏳ En curso — esperando a Google (2026-06-07) | **Configurado**: consent screen modo Testing (External), test user `a.castillo.esv@gmail.com` añadido; scope `business.manage` declarado; OAuth client "Web application" creado (`GOOGLE_CLIENT_ID` empieza por `443155173600-…`, en `.env.local`; redirect URIs registradas: `https://www.atribuya.com/api/google/oauth/callback` + apex + `localhost:3000`); APIs habilitadas: Account Management + Business Information. **Falta**: la **solicitud de acceso a las Business Profile APIs** (desbloquea la Reviews API v4) se envió el 2026-06-07 → **caso de soporte `7-4031000041620`, revisión 7-10 días hábiles** (≈ 18-19 jun). Hasta que Google apruebe, leer reseñas vía v4 da `PERMISSION_DENIED`; Vía A (Places) cubre el hueco. **Pendiente tras aprobación**: subir `GOOGLE_CLIENT_ID`/`SECRET`/`REDIRECT_URI` (con la de www) a Vercel y probar el flujo entero. **Recordatorio programado** (routine remota one-shot) para el 2026-06-18 09:00 Madrid que revisa la aprobación y lista el checklist de cierre: `trig_01CBuCBCcBdJuvRfr5VeBpyi` (https://claude.ai/code/routines/trig_01CBuCBCcBdJuvRfr5VeBpyi). |
-| Dominio comercial | ✅ atribuya.com | Comprado en Hostinger. DNS A+CNAME → Vercel. HTTPS OK. |
-| Stripe (billing) | ❌ No aplica todavía | Facturación manual hasta cliente #5-8. |
+> **Detalle operativo completo** (config de Brevo, DNS, gotchas, pasos de cada pieza) → [docs/handoff/handoff.md](docs/handoff/handoff.md) §7. Aquí solo el estado.
+
+| Pieza | Estado |
+|---|---|
+| Vercel | ✅ `atribuya.com` (+ `atribuya.vercel.app`), Hobby, auto-deploy desde `main`. Repo **público** (Hobby bloquea deploys de repos privados). |
+| Supabase | ✅ Proyecto `iuiveiznvwjeoyhescmx` (free tier) = prod. Auth Site URL `https://atribuya.com`. Super_admin `a.castillo.esv@gmail.com` (OTP). |
+| Email (Brevo SMTP) | ✅ Operativo. Transaccional + Supabase Auth Custom SMTP. From `notificaciones@atribuya.com`, reply-to Gmail. Cuenta Free 300/día compartida con la newsletter de Castillo Cantón. Detalle + gotcha de plantillas Auth → handoff §7.2 / §8.1. |
+| Crons | ✅ 2 diarios en `vercel.json` (Places + Business Profile) + horario en `.github/workflows/sync-places-hourly.yml` (secrets `APP_URL`/`CRON_SECRET`). |
+| Legal + SEO | ✅ `/terminos`, `/privacidad`, **DPA** (`docs/legal/dpa.{md,docx}`). sitemap + OG 1200×630 + Twitter cards + canonical/hreflang. |
+| **Google Places (Vía A)** | ✅ Proyecto Cloud `atribuya`, Places API **legacy** (no "New"), key restringida, facturación activa, **cuota 500/día + alerta 10 €/mes**. `GOOGLE_PLACES_API_KEY` en `.env.local` + Vercel. Probado E2E (`scripts/find-place.mjs`). Top-5 reseñas recientes por ficha, datos públicos. |
+| **Google OAuth (Vía B)** | ⏳ Esperando a Google. Configurado: consent Testing, OAuth client (`GOOGLE_CLIENT_ID` `443155173600-…`), APIs Account Management + Business Information, redirect `https://www.atribuya.com/api/google/oauth/callback`. **Solicitud de acceso a Reviews API v4 enviada** → caso `7-4031000041620` (~7-10 días, ≈18-jun). Hasta aprobación, v4 da `PERMISSION_DENIED`. **Tras aprobar**: subir `GOOGLE_CLIENT_ID`/`SECRET`/`REDIRECT_URI` a Vercel + probar OAuth. Recordatorio remoto: `trig_01CBuCBCcBdJuvRfr5VeBpyi` (18-jun). |
+| Stripe (billing) | ❌ No aplica. Facturación manual hasta cliente #5-8. |
 
 ---
 
 ## 8. Open questions
 
-Sin resolver hasta que el usuario las decida:
+Sin resolver hasta que el usuario las decida (decisiones de negocio, no técnicas):
 
-1. ~~**Nombre comercial definitivo**~~ → **Atribuya** (decidido 2026-05-24).
-2. ~~**Dominio comercial propio**~~ → **atribuya.com** (comprado en Hostinger, live 2026-06-06).
-3. ~~**Path prefix vs subdominio**~~ → path prefix `/o/[orgSlug]/c/...` (Fase 6).
-4. **Pricing tiers**: en bruto, 397-797€/mes según fichas y comerciales. Definir tabla exacta antes del primer cierre.
-5. **Setup pagado**: 1.500-2.500€ inicial. Definir qué incluye exactamente.
-6. **Billing**: primeros 5-8 clientes facturación manual con Holded. Stripe a partir del cliente 6-8.
-7. **Mover rutas autenticadas bajo `/o/[orgSlug]/...`**: deferred en Fase 6. Reevaluar cuando llegue al cliente #5.
+1. **Pricing tiers**: en bruto, 397-797€/mes según fichas y comerciales. Definir tabla exacta antes del primer cierre.
+2. **Setup pagado**: 1.500-2.500€ inicial. Definir qué incluye exactamente.
+3. **Billing**: primeros 5-8 clientes facturación manual con Holded. Stripe a partir del cliente 6-8.
+4. **Mover rutas autenticadas bajo `/o/[orgSlug]/...`**: deferred en Fase 6. Reevaluar cuando llegue al cliente #5.
+
+*Ya decididas*: nombre **Atribuya**, dominio **atribuya.com**, routing por path-prefix `/o/[orgSlug]/c/...`.
 
 ### 8.1 Camino crítico al primer cliente (técnico)
 
@@ -296,20 +283,22 @@ En orden: ~~Brevo SMTP~~ (✅ hecho 2026-06-06) → ~~Google Cloud Places (Vía 
 
 ### 8.2 Roadmap de features pendientes (del producto base)
 
-El lote 1 (calidad de reseñas) está hecho (Fase 14). El **lote 2** (Fase 15, 2026-06-06) portó: **ranking + insignias**, **helpdesk de soporte** (migración 016), **Excel individual por comercial** y **parte por ficha** (hoja en el export). Quedan, por portar desde el producto base single-tenant:
-- **Lote 🟡** (medio): comisiones por reseña, ~~caché de rating por ficha~~ (innecesaria — el export calcula la valoración al vuelo), suite E2E Playwright.
-- **Lote 🟠** (grande / toca multi-tenant): rol "director de oficina" (rediseño RLS), verificación multi-rol. ~~helpdesk~~ ✅, ~~parte semanal~~ ✅ (como parte por ficha), ~~Excel individual~~ ✅.
-- **Pendiente del helpdesk**: badge de no-leídos en el sidebar (requiere llamar `support_unread_count()` en el layout) + acceso a Soporte en mobile (el footer del sidebar no existe en mobile).
-- **Descartadas**: multi-marca por ficha, `monthly_goal` default 5.
-- **Capturas `public/help/*.png`**: 7 de 9 regeneradas con branding Atribuya (2026-06-06) capturando el **modo demo** con Playwright (`scripts/capture-help.py`). Para ello se poblaron con datos de ejemplo las páginas del comercial en modo demo (`/clientes`, `/clientes/[slug]`, `/panel/enlace`, `/panel/resenas`, `/perfil`) — también mejora las demos comerciales. Pendientes 01 (email del magic link) y 06 (diagrama de flujo): no son pantallas de la app, requieren regenerarse a mano/diseño.
+Lotes 1 y 2 hechos (Fases 14-15). Pendiente de portar desde el producto base single-tenant (detalle → handoff §7.8):
+- **🟡 medio**: comisiones por reseña, suite E2E Playwright. *(Caché de rating por ficha: descartada, innecesaria.)*
+- **🟠 grande / toca multi-tenant**: rol "director de oficina" (rediseño RLS), verificación multi-rol.
+- **Pendiente menor del helpdesk**: badge de no-leídos en el sidebar (`support_unread_count()` en el layout) + acceso a Soporte en mobile.
+- **Capturas `public/help/*.png`**: 7/9 regeneradas (modo demo + Playwright, `scripts/capture-help.py`). Pendientes 01 (email magic link) y 06 (diagrama) — se hacen a mano.
 
 ---
 
 ## 9. Mantenimiento de este archivo
 
+**Reparto de docs** (importante): este archivo se **autocarga en cada sesión**, así que se mantiene **lean** — solo reglas durables (§4-§6), estado resumido (§3, §7) y decisiones pendientes (§8). La **historia detallada** (qué entregó cada fase, ficheros tocados, fixes, pasos de config) vive en [docs/handoff/handoff.md](docs/handoff/handoff.md), que se lee bajo demanda. No reintroducir narrativa larga en §3/§7 — va a handoff.
+
 Cada vez que termine una fase significativa:
-1. Marcar fase como ✅ en la tabla de §3.
-2. Si surge un workaround nuevo, documentarlo en una sección §10+ (siguiendo el patrón del CLAUDE.md original).
+1. Añadir/marcar la fila en §3 con **una línea**; la narrativa detallada → handoff.md.
+2. Si surge un workaround/gotcha durable, documentarlo en §8.1 o una sección §10+.
 3. Si la BD cambia, actualizar §6.
-4. Si se cierran open questions, marcarlas en §8 y mover decisiones a la sección correspondiente.
-5. Commit + push.
+4. Si se cierran open questions, actualizar §8.
+5. Actualizar handoff.md (estado, env vars, fases) si cambió algo relevante.
+6. Commit + push.
