@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { submitLead, type SubmitLeadResult } from "@/app/actions/submit-lead";
+import { trackEvent } from "@/lib/gtag";
 
 export type LeadFormLocale = "es" | "en";
 
@@ -75,6 +76,8 @@ export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
       setState({ kind: "submitting" });
       const res: SubmitLeadResult = await submitLead(formData);
       if (res.ok) {
+        // Conversión: lead capturado. No-op si el usuario no aceptó cookies.
+        trackEvent("generate_lead", { locale });
         // Mostramos el éxito inline como fallback inmediato y navegamos a la
         // página de gracias (URL propia: medible como conversión).
         setState({ kind: "success" });
