@@ -117,14 +117,14 @@ export function AttributionAnimation({ locale }: { locale: Locale }) {
 // visible, buscando oculta) sin animar.
 const CSS = `
 @keyframes atrMatch {
-  0%,30% { opacity:1 }
-  40%,90% { opacity:0 }
-  96%,100% { opacity:1 }
+  0%,28% { opacity:1 }
+  36%,92% { opacity:0 }
+  97%,100% { opacity:1 }
 }
 @keyframes atrShow {
-  0%,36% { opacity:0; transform:translateY(8px) }
-  48%,88% { opacity:1; transform:translateY(0) }
-  94%,100% { opacity:0; transform:translateY(8px) }
+  0%,40% { opacity:0; transform:translateY(8px) }
+  52%,90% { opacity:1; transform:translateY(0) }
+  95%,100% { opacity:0; transform:translateY(8px) }
 }
 @keyframes atrSpin { to { transform:rotate(360deg) } }
 .atr-match { animation: atrMatch 6.5s ease-in-out infinite; }
