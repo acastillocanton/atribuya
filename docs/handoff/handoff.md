@@ -93,7 +93,7 @@ Las rutas autenticadas (`/dashboard`, `/panel`, etc.) **no tienen prefijo de org
 
 Un solo proyecto Supabase `iuiveiznvwjeoyhescmx`. En MVP pre-cliente es suficiente. Crear `atribuya-prod` separado cuando entren 2-3 clientes con tráfico real.
 
-### Migraciones aplicadas (001 → 016)
+### Migraciones aplicadas (001 → 017)
 
 | Migración | Qué hace |
 |---|---|
@@ -104,8 +104,9 @@ Un solo proyecto Supabase `iuiveiznvwjeoyhescmx`. En MVP pre-cliente es suficien
 | 014 | Tabla `leads` — captura formulario de la landing, solo visible para super_admin |
 | 015 | Calidad de reseñas: `is_duplicate`, `low_rating_alerted_at`, `message_templates` + lockdown `profiles_self_update` (congela columnas sensibles, incl. `org_id`) |
 | 016 | Helpdesk de soporte multi-tenant: `support_conversations`/`support_messages`/`support_read_receipts` (todas con `org_id`) + RLS intra-org + función `support_unread_count()` |
+| 017 | `leads.phone text` (nullable) — teléfono del formulario de la landing. Obligatorio a nivel app (HTML + Zod), nullable en BD para no romper leads históricos. Aplicada 2026-06-07 |
 
-> Nota: el plan reservaba una 017 para "caché de rating por ficha", pero no fue necesaria (el parte por ficha calcula la valoración al vuelo). No existe.
+> Nota: el número 017 que el plan original reservaba para "caché de rating por ficha" nunca se creó (innecesaria; el parte por ficha calcula la valoración al vuelo). El 017 actual es `leads.phone`.
 
 ### Datos en BD ahora mismo
 
@@ -225,8 +226,8 @@ El producto base single-tenant tiene features que aún no se han portado a Atrib
 | Pregunta | Notas |
 |---|---|
 | ~~Dominio comercial~~ | ✅ `atribuya.com` (Hostinger, live 2026-06-06) |
-| Pricing exacto | En bruto 397-797€/mes según fichas y comerciales. Definir tabla antes del primer cierre |
-| Setup pagado | 1.500-2.500€ inicial. Definir qué incluye |
+| ~~Pricing exacto~~ | ✅ 2026-06-07: por nº de fichas, comerciales ilimitados, 2 tiers (Starter 45 € / Professional 149 €) + a medida. Detalle en §9 |
+| ~~Setup pagado~~ | ✅ 2026-06-07: **60 € plano** para todas las fichas. Falta detallar entregables exactos |
 | Billing | Manual con Holded hasta cliente 6-8, luego Stripe |
 | Rutas autenticadas con prefijo `/o/[orgSlug]/...` | Deferred. Reevaluar en cliente #5 |
 
@@ -309,5 +310,5 @@ curl -X POST https://api.supabase.com/v1/projects/iuiveiznvwjeoyhescmx/database/
 | [docs/legal/dpa.docx](../legal/dpa.docx) | Plantilla DPA firmable en Word (branding Atribuya) — la que se envía a cada cliente |
 | [scripts/find-place.mjs](../../scripts/find-place.mjs) | Probar la Places API (Vía A): busca un negocio y lista sus reseñas recientes |
 | [scripts/capture-help.py](../../scripts/capture-help.py) | Captura las pantallas de ayuda desde el modo demo (Playwright) |
-| [supabase/migrations/](../../supabase/migrations/) | Migraciones 001-016 en orden |
+| [supabase/migrations/](../../supabase/migrations/) | Migraciones 001-017 en orden |
 | [docs/tests-multitenancy.md](../tests-multitenancy.md) | 15 tests de aislamiento cross-org — referencia para validar RLS |
