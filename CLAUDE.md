@@ -214,7 +214,7 @@ Creado 2026-05-24. **Renombrado en el dashboard `atribuya-dev` → `atribuya`** 
 
 **Decisión (2026-05-24)**: NO se crea un proyecto Supabase separado para prod. Se reusa este. Razones: MVP pre-cliente, free tier en ambos casos, complejidad operativa de 2 entornos no compensa el aislamiento. Cuando entre cliente #2-3 con tráfico real, creamos `atribuya-staging` y este pasa a ser prod oficial. Nombre del proyecto en el dashboard puede renombrarse a "atribuya" (Settings → General).
 
-**Migraciones aplicadas:** 001 → 016. La 015 (calidad de reseñas + lockdown auto-update) aplicada el 2026-06-06. La **016** (helpdesk de soporte multi-tenant — 3 tablas `support_*` + RLS + `support_unread_count()`) aplicada el 2026-06-06. La **017** (`leads_phone` — añade `leads.phone text` nullable para el teléfono del formulario de la landing) está **creada pero PENDIENTE de aplicar** (2026-06-07): aplicar el `alter table` en el SQL Editor o con `supabase db push --linked`, o el insert de leads fallará en prod. El número 017 que el plan original reservaba para la caché de rating nunca se creó (descartada).
+**Migraciones aplicadas:** 001 → 017. La 015 (calidad de reseñas + lockdown auto-update) aplicada el 2026-06-06. La **016** (helpdesk de soporte multi-tenant — 3 tablas `support_*` + RLS + `support_unread_count()`) aplicada el 2026-06-06. La **017** (`leads_phone` — añade `leads.phone text` nullable para el teléfono del formulario de la landing, obligatorio a nivel app) aplicada el 2026-06-07. El número 017 que el plan original reservaba para la caché de rating nunca se creó (descartada).
 
 **Estado actual de datos:**
 - `organizations` — 2 filas: Acme Promotora (active), Beta Apartamentos (trial) — `dev-seeds/01_*`.
