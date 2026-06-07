@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { submitLead, type SubmitLeadResult } from "@/app/actions/submit-lead";
 
 export type LeadFormLocale = "es" | "en";
@@ -37,6 +38,7 @@ const DICTS = {
     consent1: "Al enviar aceptas que te contactemos por email para coordinar la demo. No compartimos tus datos con terceros. Más en nuestra",
     consent2: "política de privacidad",
     privacyHref: "/privacidad",
+    thanksHref: "/gracias",
   },
   en: {
     successTitle: "✓ Thanks. We'll get back to you within 24h.",
@@ -58,11 +60,13 @@ const DICTS = {
     consent1: "By submitting you accept that we contact you by email to schedule the demo. We don't share your data with third parties. More in our",
     consent2: "privacy policy",
     privacyHref: "/privacidad",
+    thanksHref: "/en/thanks",
   },
 } as const;
 
 export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
   const t = DICTS[locale];
+  const router = useRouter();
   const [state, setState] = useState<FormState>({ kind: "idle" });
   const [pending, startTransition] = useTransition();
 
@@ -71,7 +75,10 @@ export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
       setState({ kind: "submitting" });
       const res: SubmitLeadResult = await submitLead(formData);
       if (res.ok) {
+        // Mostramos el éxito inline como fallback inmediato y navegamos a la
+        // página de gracias (URL propia: medible como conversión).
         setState({ kind: "success" });
+        router.push(t.thanksHref);
         return;
       }
       setState({

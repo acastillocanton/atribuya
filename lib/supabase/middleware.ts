@@ -55,6 +55,7 @@ function isBlockedBot(ua: string | null): boolean {
 //  - /api/cron/        cron endpoints (self-authenticated via CRON_SECRET)
 //  - /api/google/oauth/callback  OAuth return from Google Business Profile
 //  - /privacidad, /terminos  legal pages linked from OAuth consent
+//  - /gracias          confirmación tras enviar el formulario de la landing
 //  - /_next, /favicon  framework + static assets
 const PUBLIC_PREFIXES = [
   "/login",
@@ -64,6 +65,7 @@ const PUBLIC_PREFIXES = [
   "/api/google/oauth/callback",
   "/privacidad",
   "/terminos",
+  "/gracias",
   "/en",
   "/robots.txt",
   "/sitemap.xml",
