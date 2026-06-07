@@ -56,10 +56,10 @@ export default function ThanksPage() {
         <p className="mt-4 text-[15px] leading-relaxed text-ink-3">
           Want to get ahead? Write to us directly at{" "}
           <a
-            href="mailto:a.castillo.esv@gmail.com"
+            href="mailto:hola@atribuya.com"
             className="font-medium text-ink underline"
           >
-            a.castillo.esv@gmail.com
+            hola@atribuya.com
           </a>
           .
         </p>

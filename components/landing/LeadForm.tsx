@@ -96,10 +96,10 @@ export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
         <p className="mt-2 text-sm text-ink-2">
           {t.successBody}{" "}
           <a
-            href="mailto:a.castillo.esv@gmail.com"
+            href="mailto:hola@atribuya.com"
             className="font-medium text-ink underline"
           >
-            a.castillo.esv@gmail.com
+            hola@atribuya.com
           </a>
           .
         </p>
