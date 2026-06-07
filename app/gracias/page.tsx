@@ -53,17 +53,6 @@ export default function GraciasPage() {
           Atribuya en tu empresa. Sin compromiso.
         </p>
 
-        <p className="mt-4 text-[15px] leading-relaxed text-ink-3">
-          ¿Quieres adelantar algo? Escríbenos directamente a{" "}
-          <a
-            href="mailto:hola@atribuya.com"
-            className="font-medium text-ink underline"
-          >
-            hola@atribuya.com
-          </a>
-          .
-        </p>
-
         <Link
           href="/"
           className="mt-10 inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2"

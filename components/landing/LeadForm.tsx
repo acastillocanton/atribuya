@@ -20,7 +20,7 @@ const labelClass = "block text-[13px] font-semibold text-ink-2 mb-1.5";
 const DICTS = {
   es: {
     successTitle: "✓ Gracias. Te contactamos en menos de 24h.",
-    successBody: "Hemos recibido tu mensaje. Mientras tanto, si quieres adelantar algo puedes escribir directamente a",
+    successBody: "Hemos recibido tu solicitud. Te escribimos en breve para coordinar una llamada.",
     honeypotLabel: "No rellenes este campo",
     name: "Tu nombre",
     namePh: "Ana Pérez",
@@ -42,7 +42,7 @@ const DICTS = {
   },
   en: {
     successTitle: "✓ Thanks. We'll get back to you within 24h.",
-    successBody: "We received your message. Meanwhile, feel free to write directly to",
+    successBody: "We received your request. We'll be in touch shortly to set up a call.",
     honeypotLabel: "Do not fill this field",
     name: "Your name",
     namePh: "Ana Pérez",
@@ -93,16 +93,7 @@ export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
     return (
       <div className="rounded-lg border border-ok bg-ok-bg p-6">
         <p className="text-base font-semibold text-ok">{t.successTitle}</p>
-        <p className="mt-2 text-sm text-ink-2">
-          {t.successBody}{" "}
-          <a
-            href="mailto:hola@atribuya.com"
-            className="font-medium text-ink underline"
-          >
-            hola@atribuya.com
-          </a>
-          .
-        </p>
+        <p className="mt-2 text-sm text-ink-2">{t.successBody}</p>
       </div>
     );
   }
