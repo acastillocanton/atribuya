@@ -16,9 +16,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Atribuya — Automatic attribution of Google reviews to sales reps",
+    title: "Atribuya — Know which rep brings in every Google review",
     description:
-      "Give every sales rep credit for the Google reviews they earn. No spreadsheets, no disputes, no asking the customer for the rep's name.",
+      "Stop guessing who on your team drives the business. No spreadsheets, no templates, no asking the customer for the rep's name. Atribuya does it on its own.",
     url: "https://atribuya.com/en",
     siteName: "Atribuya",
     locale: "en_US",
@@ -26,9 +26,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Atribuya — Automatic attribution of Google reviews to sales reps",
+    title: "Atribuya — Know which rep brings in every Google review",
     description:
-      "Give every sales rep credit for the Google reviews they earn. No spreadsheets, no disputes.",
+      "Stop guessing who on your team drives the business. No spreadsheets, no templates, no arguments.",
   },
   robots: {
     index: true,
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 const SECTORS = [
-  "Real estate developers",
+  "Real estate developers with a model home",
   "Vacation rentals",
   "Clinics and medical practices",
   "B2B services with field sales",
@@ -58,20 +58,20 @@ const STEPS = [
   },
   {
     n: "03",
-    title: "We attribute the review automatically",
-    body: "Atribuya cross-references the review with whoever shared the link, the time window and the customer's name. If there's a match, it's attributed. If not, it sits in manual review with suggestions.",
+    title: "You instantly know who brought it in",
+    body: "Atribuya cross-references the review with whoever shared the link, the time window and the customer's name, and assigns it on its own. If something doesn't fit, it sits in manual review with suggestions — one click and done. No more guessing by eye.",
   },
 ];
 
 const FEATURES = [
-  "Works with any Google Business Profile listing.",
-  "Multi-tenant isolation: each customer only sees their own data, enforced by Postgres RLS.",
-  "Automatic email to the rep when a new attributed review arrives.",
-  "Aggregated dashboard for admins with rep leaderboard.",
-  "Excel export filterable by rep, location and date range.",
-  "Captures both text reviews and star-only ratings.",
-  "Detects reviews removed by the user or by Google.",
-  "Multi-location support: one org can manage several listings.",
+  "Works with any Google Business Profile listing you already have.",
+  "Each customer only sees their own data — full isolation enforced by Postgres RLS.",
+  "Your reps find out on their own: automatic email the moment they earn a review.",
+  "See your team's ranking at a glance, without building any spreadsheet.",
+  "Take it all to Excel whenever you want: filtered by rep, listing and dates.",
+  "Counts both text reviews and star-only ratings — none slip through.",
+  "Warns you if a review disappears, whether the customer or Google removes it.",
+  "Several offices or listings? Manage them all from the same account.",
 ];
 
 const PRICING_INCLUDED = [
@@ -122,8 +122,8 @@ const FAQS: FaqItem[] = [
   {
     q: "How much does it cost?",
     a: [
-      "€990 turnkey setup and €397/month subscription. The setup includes connecting your Google listings, onboarding your team, training your sales reps and intensive support during the first weeks.",
-      "For an exact assessment of your case we book a 20-minute call.",
+      "€990 turnkey setup and €397/month subscription, no minimum contract. Includes connecting your Google listings, onboarding your team, training your sales reps and intensive support during the first weeks.",
+      "Think of it as what it saves you: zero spreadsheet afternoons a month and zero arguments over who earned which review. For an exact assessment of your case we book a 20-minute call.",
     ],
   },
   {
@@ -184,8 +184,8 @@ export default function HomePageEn() {
                 100<span className="not-italic font-normal">%</span>
               </p>
               <p className="mt-4 max-w-md text-[15px] leading-snug text-ink-2 sm:text-[16px]">
-                of verified reviews attributed to their sales rep in the
-                pilot's first month, with no manual intervention.
+                of verified reviews, attributed on their own in the pilot's
+                first month. Without lifting a finger.
               </p>
             </div>
 
@@ -195,10 +195,10 @@ export default function HomePageEn() {
                   className="font-display font-light italic leading-none tracking-tight text-ink"
                   style={{ fontSize: "var(--text-stat-sm)" }}
                 >
-                  ≈8h<span className="not-italic">/mo</span>
+                  +8&nbsp;h<span className="not-italic">/mo</span>
                 </dt>
                 <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  saved vs. manual attribution in spreadsheets.
+                  you get back. They used to vanish into spreadsheets.
                 </dd>
               </div>
               <div>
@@ -206,10 +206,10 @@ export default function HomePageEn() {
                   className="font-display font-light italic leading-none tracking-tight text-ink"
                   style={{ fontSize: "var(--text-stat-sm)" }}
                 >
-                  zero
+                  0
                 </dt>
                 <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  internal disputes over review ownership.
+                  arguments over &ldquo;whose review was this?&rdquo;
                 </dd>
               </div>
             </dl>
@@ -223,16 +223,16 @@ export default function HomePageEn() {
                 className="text-balance font-display font-medium leading-[1.04] tracking-[-0.02em] text-ink"
                 style={{ fontSize: "var(--text-display)" }}
               >
-                Attribute every Google review to the sales rep
-                who earned it.
+                Stop guessing which rep brings in your
+                Google reviews.
               </h1>
               <p
                 className="mt-6 max-w-xl text-pretty leading-relaxed text-ink-2"
                 style={{ fontSize: "var(--text-lead)" }}
               >
-                Without asking the customer to mention the rep's name. No
-                spreadsheets. No internal disputes. Atribuya matches every new
-                review to whoever earned it and assigns it automatically.
+                Your reps stop arguing. You see who drives the business. No
+                spreadsheets, no templates and no asking the customer for the
+                rep's name — Atribuya does it on its own.
               </p>
             </div>
             <div className="md:col-span-4 md:pt-2">
@@ -240,9 +240,9 @@ export default function HomePageEn() {
                 href="#contact"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
               >
-                Request demo
+                Show me who drives my business
                 <svg
-                  className="h-3.5 w-3.5"
+                  className="h-3.5 w-3.5 shrink-0"
                   viewBox="0 0 14 14"
                   fill="none"
                   stroke="currentColor"
@@ -254,36 +254,39 @@ export default function HomePageEn() {
                 </svg>
               </a>
               <p className="mt-3 text-[13px] text-ink-3">
-                20-minute call. No commitment.
+                No commitment. We show you who drives your business.
               </p>
             </div>
           </div>
 
-          <p className="mt-12 text-[12px] leading-relaxed text-ink-4 sm:mt-14">
+          {/* Sectors — point at the customer, don't hide them */}
+          <div className="mt-12 border-t border-line pt-10 sm:mt-14">
+            <p
+              className="max-w-2xl font-display font-medium leading-snug tracking-tight text-ink"
+              style={{ fontSize: "var(--text-h3)" }}
+            >
+              Got a sales team and Google reviews?{" "}
+              <em className="font-light text-ink-2">This is for you.</em>
+            </p>
+            <ul className="mt-5 flex flex-wrap gap-2.5">
+              {SECTORS.map((s) => (
+                <li
+                  key={s}
+                  className="rounded-full border border-line bg-white px-3.5 py-1.5 text-[14px] font-medium text-ink-2"
+                >
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Pilot data attribution */}
+          <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
             Data from Atribuya's pilot deployment with a real estate developer —
             4 sales reps, 1 Google Business Profile listing, first month.
             Industry, size and metrics are real; customer name kept confidential
             pending commercial release.
           </p>
-
-          <div className="mt-10">
-            <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-              Built for
-            </p>
-            <p className="mt-3 text-[15px] leading-relaxed text-ink-2 sm:text-[16px]">
-              {SECTORS.map((s, i) => (
-                <span key={s}>
-                  {s}
-                  {i < SECTORS.length - 1 && (
-                    <span className="mx-2 text-ink-4" aria-hidden="true">
-                      ·
-                    </span>
-                  )}
-                </span>
-              ))}
-              .
-            </p>
-          </div>
         </section>
 
         {/* ============================= Problem ============================= */}
@@ -408,9 +411,9 @@ export default function HomePageEn() {
               </p>
               <p className="text-ink-3">
                 For reference: roughly{" "}
-                <span className="tabular-nums">8 hours/month</span> saved over
-                manual attribution, and zero internal disputes about review
-                ownership.
+                <span className="tabular-nums">8 hours/month</span> they got
+                back over manual attribution, and zero internal disputes about
+                review ownership.
               </p>
             </div>
             <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
@@ -494,7 +497,7 @@ export default function HomePageEn() {
                       href="#contact"
                       className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
                     >
-                      Request demo
+                      I want this for my team
                       <svg
                         className="h-3.5 w-3.5"
                         viewBox="0 0 14 14"
@@ -666,9 +669,9 @@ export default function HomePageEn() {
               className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
               style={{ fontSize: "var(--text-h2)" }}
             >
-              <em className="font-light">Interested?</em>
+              <em className="font-light">Want to know</em>
               <br />
-              Tell us a bit about your team.
+              who on your team drives the business?
             </h2>
             <p
               className="mt-5 max-w-xl leading-relaxed text-ink-2"

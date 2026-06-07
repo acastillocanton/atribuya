@@ -89,6 +89,7 @@ Migraciones SQL: ejecutar en Supabase Dashboard → SQL Editor en orden numéric
 | 14. Lote 1 — calidad de reseñas (mig 015: duplicados, alertas ≤2★, plantillas, lockdown RLS) | ✅ 2026-06-06 |
 | 15. Lote 2 — para vender (ranking, helpdesk mig 016, excel individual, parte por ficha) | ✅ 2026-06-06 |
 | 16. Google Places API (Vía A) — vía pública de respaldo, top-5 reseñas recientes (ver §7) | ✅ 2026-06-07 |
+| —. Reescritura de copy de la landing (ES+EN) a tono beneficio-first — métrica del hero, H1, CTAs por resultado, sectores destacados (detalle → handoff §9) | ✅ 2026-06-07 |
 | —. Google OAuth Business Profile (Vía B) — todas las reseñas | ⏳ esperando aprobación Google (caso `7-4031000041620`, ~18-jun; ver §7) |
 
 Extras (detalle → handoff.md): datos fiscales por org en `/super`, rebrand visual (logos/favicon), fix repo público para deploys Vercel Hobby. La fase 6 (routing) es **parcial**: solo la landing pública lleva prefijo `/o/`; las rutas autenticadas no (las protege RLS — ver §5.4).

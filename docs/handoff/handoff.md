@@ -56,6 +56,7 @@ SaaS B2B multi-tenant que atribuye reseñas de Google Business Profile a comerci
 | 16 | Google Cloud — Places API (Vía A) | ✅ | `f755644` · 2026-06-07 |
 | — | Google Cloud — OAuth Business Profile (Vía B) | ⏳ esperando a Google | 2026-06-07 |
 | 8 | DPA finalizado + plantilla `.docx` firmable | ✅ | `6b3d598` · 2026-06-07 |
+| — | Reescritura de copy de la landing (tono beneficio-first) | ✅ | 2026-06-07 |
 
 **Último trabajo (2026-06-07)**: cerrados **dos** bloqueantes del camino crítico. **(1) Google Places API (Vía A)**: proyecto Cloud `atribuya`, Places API legacy habilitada, API key restringida, facturación activa + cuota 500/día + alerta 10 €/mes; `GOOGLE_PLACES_API_KEY` en `.env.local` y Vercel; probado E2E (Telepizza Benicàssim). Es la vía pública de respaldo (top-5 reseñas recientes por ficha). **(2) DPA finalizado**: `docs/legal/dpa.md` pulido (datos del Encargado unificados, plazos rellenos, jurisdicción = Castellón) + plantilla firmable `docs/legal/dpa.docx`. Además: **OAuth Vía B** dejada configurada (consent screen Testing, OAuth client, APIs habilitadas) y **solicitud de acceso a la Reviews API v4 enviada** (caso Google `7-4031000041620`, ~7-10 días hábiles) — con recordatorio remoto programado para el 18-jun (`trig_01CBuCBCcBdJuvRfr5VeBpyi`).
 
@@ -242,6 +243,13 @@ La landing (`app/page.tsx`) está en producción con:
 - Versión en inglés en `/en`
 - SEO: `robots.ts`, `sitemap.xml`, JSON-LD `FAQPage`
 - Tipografía: Fraunces (headings) + Geist (body)
+
+**Reescritura de copy (2026-06-07, tono beneficio-first)**: a raíz de feedback externo, se realineó todo el copy de la landing (ES + EN, en espejo) del registro descriptivo al **beneficio directo y punchy**. Cambios durables a conservar al editar copy:
+- **Métrica del hero** reordenada y reetiquetada para leerse como tres victorias: `100%` atribuido solo · `+8 h/mes` *que recuperas* (el `+` y "recuperas" evitan que se lea como un coste) · `0` discusiones. Mantiene los datos reales del piloto — no inventar cifras de € (4 comerciales, 1 ficha, 100% verificadas, ~8h, 0 disputas es el único caso real).
+- **H1**: «Deja de adivinar qué comercial te trae las reseñas de Google.» (EN: "Stop guessing which rep brings in your Google reviews.")
+- **CTAs por resultado, no "demo"/"tiempo"**: hero "Quiero saber quién me genera negocio" / header+pricing "Quiero esto" / form submit en `LeadForm.tsx`. EN: "Show me who drives my business" / "I want this". Los labels viven en `app/page.tsx`, `app/en/page.tsx`, `components/landing/Header.tsx` (`STRINGS[*].cta`), `components/landing/LeadForm.tsx` (`DICTS[*].cta`).
+- **Sectores ("Hecho para")**: pasó de footnote gris diminuto a bloque destacado (gancho «¿Tienes red comercial y reseñas de Google? Esto es para ti.» + chips), reusando el array `SECTORS`.
+- Footer statement, meta OG/Twitter, features (feature→beneficio) y FAQ de precio realineados al mismo mensaje. Verificado: typecheck OK, `/` y `/en` 200.
 
 Los leads se guardan en tabla `leads` (BD). El email de notificación al super_admin **ya está implementado** (`lib/email/notify-lead.ts`, invocado best-effort desde `app/actions/submit-lead.ts`): se envía a `LEAD_NOTIFY_EMAIL` cuando Brevo está configurado, y degrada con gracia si no (el lead se guarda igual).
 

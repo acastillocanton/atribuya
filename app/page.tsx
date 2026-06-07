@@ -19,9 +19,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Atribuya — Atribución automática de reseñas de Google a comerciales",
+    title: "Atribuya — Sabe qué comercial te trae cada reseña de Google",
     description:
-      "Atribuye cada reseña de Google al comercial que la ha conseguido. Sin Excel, sin disputas, sin pedirle el nombre al cliente.",
+      "Deja de adivinar quién de tu equipo te genera negocio. Sin Excel, sin plantillas, sin pedirle el nombre al cliente. Atribuya lo hace solo.",
     url: "https://atribuya.com/",
     siteName: "Atribuya",
     locale: "es_ES",
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Atribuya — Atribución automática de reseñas de Google a comerciales",
+    title: "Atribuya — Sabe qué comercial te trae cada reseña de Google",
     description:
-      "Atribuye cada reseña de Google al comercial que la ha conseguido. Sin Excel, sin disputas.",
+      "Deja de adivinar quién de tu equipo te genera negocio. Sin Excel, sin plantillas y sin discusiones.",
   },
   robots: {
     index: true,
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 const SECTORS = [
-  "Promotoras inmobiliarias",
+  "Promotoras inmobiliarias con piso piloto",
   "Apartamentos turísticos",
   "Clínicas y centros médicos",
   "Servicios B2B con visita comercial",
@@ -61,20 +61,20 @@ const STEPS = [
   },
   {
     n: "03",
-    title: "Atribuimos la reseña en automático",
-    body: "Atribuya cruza la reseña con quién compartió el enlace, la ventana temporal y el nombre del cliente. Si hay coincidencia, queda atribuida. Si no, queda en revisión manual con sugerencias.",
+    title: "Sabes al instante quién la trajo",
+    body: "Atribuya cruza la reseña con quién compartió el enlace, la ventana temporal y el nombre del cliente, y la asigna sola. Si algo no encaja, queda en revisión manual con sugerencias — un clic y resuelto. Nunca más adivinar a ojo.",
   },
 ];
 
 const FEATURES = [
-  "Compatible con cualquier ficha de Google Business Profile.",
-  "Aislamiento multi-tenant: cada cliente ve solo sus datos, garantizado por RLS de Postgres.",
-  "Email automático al comercial cuando llega una reseña atribuida.",
-  "Dashboard agregado para el admin con ranking de comerciales.",
-  "Export Excel filtrable por comercial, ficha y rango de fechas.",
-  "Captura tanto reseñas con texto como sin texto (solo estrellas).",
-  "Detección de reseñas eliminadas por el usuario o por Google.",
-  "Soporte para multi-ficha: una org puede tener varias localizaciones.",
+  "Funciona con cualquier ficha de Google Business Profile que ya tengas.",
+  "Cada cliente ve solo sus datos — aislamiento total garantizado por RLS de Postgres.",
+  "Tus comerciales se enteran solos: email automático en cuanto consiguen una reseña.",
+  "Ves el ranking de tu equipo de un vistazo, sin montar ninguna hoja de Excel.",
+  "Te lo llevas todo a Excel cuando quieras: filtrado por comercial, ficha y fechas.",
+  "Cuenta las reseñas con texto y las de solo estrellas — no se te escapa ninguna.",
+  "Te avisa si una reseña desaparece, la borre el cliente o la borre Google.",
+  "¿Varias oficinas o fichas? Las gestionas todas desde la misma cuenta.",
 ];
 
 const PRICING_INCLUDED = [
@@ -125,8 +125,8 @@ const FAQS: FaqItem[] = [
   {
     q: "¿Cuánto cuesta?",
     a: [
-      "Implantación llave en mano de 990€ y suscripción mensual de 397€. La implantación incluye conexión de tus fichas de Google, alta de tu equipo, formación a comerciales y soporte intensivo las primeras semanas.",
-      "Para una valoración exacta de tu caso reservamos una llamada de 20 minutos.",
+      "Implantación llave en mano de 990€ y suscripción mensual de 397€, sin permanencia. Incluye conexión de tus fichas de Google, alta de tu equipo, formación a comerciales y soporte intensivo las primeras semanas.",
+      "Piénsalo en lo que te ahorra: cero tardes de Excel al mes y cero discusiones sobre a quién pertenece cada reseña. Para el encaje exacto de tu caso reservamos una llamada de 20 minutos.",
     ],
   },
   {
@@ -188,8 +188,8 @@ export default function HomePage() {
                 100<span className="not-italic font-normal">%</span>
               </p>
               <p className="mt-4 max-w-md text-[15px] leading-snug text-ink-2 sm:text-[16px]">
-                de las reseñas verificadas atribuidas a su comercial en
-                el primer mes del piloto, sin intervención manual.
+                de las reseñas verificadas, atribuidas solas el primer
+                mes del piloto. Sin tocar nada.
               </p>
             </div>
 
@@ -200,10 +200,10 @@ export default function HomePage() {
                   className="font-display font-light italic leading-none tracking-tight text-ink"
                   style={{ fontSize: "var(--text-stat-sm)" }}
                 >
-                  ≈8h<span className="not-italic">/mes</span>
+                  +8&nbsp;h<span className="not-italic">/mes</span>
                 </dt>
                 <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  ahorradas vs. atribución manual en Excel.
+                  que recuperas. Antes se iban en Excel.
                 </dd>
               </div>
               <div>
@@ -211,10 +211,10 @@ export default function HomePage() {
                   className="font-display font-light italic leading-none tracking-tight text-ink"
                   style={{ fontSize: "var(--text-stat-sm)" }}
                 >
-                  cero
+                  0
                 </dt>
                 <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  disputas internas sobre la propiedad de una reseña.
+                  discusiones de «¿de quién era esta reseña?».
                 </dd>
               </div>
             </dl>
@@ -229,16 +229,16 @@ export default function HomePage() {
                 className="text-balance font-display font-medium leading-[1.04] tracking-[-0.02em] text-ink"
                 style={{ fontSize: "var(--text-display)" }}
               >
-                Atribuye cada reseña de Google al comercial que la
-                ha conseguido.
+                Deja de adivinar qué comercial te trae las
+                reseñas de Google.
               </h1>
               <p
                 className="mt-6 max-w-xl text-pretty leading-relaxed text-ink-2"
                 style={{ fontSize: "var(--text-lead)" }}
               >
-                Sin pedirle al cliente que escriba el nombre del vendedor.
-                Sin Excel. Sin disputas internas. Atribuya cruza cada reseña
-                nueva con quién la consiguió y la asigna en automático.
+                Tus comerciales dejan de discutir. Tú ves quién te hace ganar
+                negocio. Sin Excel, sin plantillas y sin pedirle el nombre del
+                vendedor al cliente — Atribuya lo hace solo.
               </p>
             </div>
             <div className="md:col-span-4 md:pt-2">
@@ -246,9 +246,9 @@ export default function HomePage() {
                 href="#contacto"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
               >
-                Solicitar demo
+                Quiero saber quién me genera negocio
                 <svg
-                  className="h-3.5 w-3.5"
+                  className="h-3.5 w-3.5 shrink-0"
                   viewBox="0 0 14 14"
                   fill="none"
                   stroke="currentColor"
@@ -260,37 +260,39 @@ export default function HomePage() {
                 </svg>
               </a>
               <p className="mt-3 text-[13px] text-ink-3">
-                Llamada de 20 minutos. Sin compromiso.
+                Sin compromiso. Te enseñamos quién te genera negocio.
               </p>
             </div>
           </div>
 
-          {/* Atribución del dato + sectores */}
-          <p className="mt-12 text-[12px] leading-relaxed text-ink-4 sm:mt-14">
+          {/* Sectores — señalar al cliente con el dedo, no esconderlo */}
+          <div className="mt-12 border-t border-line pt-10 sm:mt-14">
+            <p
+              className="max-w-2xl font-display font-medium leading-snug tracking-tight text-ink"
+              style={{ fontSize: "var(--text-h3)" }}
+            >
+              ¿Tienes red comercial y reseñas de Google?{" "}
+              <em className="font-light text-ink-2">Esto es para ti.</em>
+            </p>
+            <ul className="mt-5 flex flex-wrap gap-2.5">
+              {SECTORS.map((s) => (
+                <li
+                  key={s}
+                  className="rounded-full border border-line bg-white px-3.5 py-1.5 text-[14px] font-medium text-ink-2"
+                >
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Atribución del dato del piloto */}
+          <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
             Datos del despliegue piloto de Atribuya en una promotora
             inmobiliaria real — 4 comerciales, 1 ficha de Google Business
             Profile, primer mes. Sector, tamaño y métricas reales; nombre del
             cliente reservado hasta firma de permiso comercial.
           </p>
-
-          <div className="mt-10">
-            <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-              Hecho para
-            </p>
-            <p className="mt-3 text-[15px] leading-relaxed text-ink-2 sm:text-[16px]">
-              {SECTORS.map((s, i) => (
-                <span key={s}>
-                  {s}
-                  {i < SECTORS.length - 1 && (
-                    <span className="mx-2 text-ink-4" aria-hidden="true">
-                      ·
-                    </span>
-                  )}
-                </span>
-              ))}
-              .
-            </p>
-          </div>
         </section>
 
         {/* ============================= Problema ============================= */}
@@ -411,7 +413,7 @@ export default function HomePage() {
               </p>
               <p className="text-ink-3">
                 Como referencia: <span className="tabular-nums">≈ 8 h/mes</span>{" "}
-                ahorradas frente a la atribución manual, y cero disputas
+                que recuperaron frente a la atribución manual, y cero disputas
                 internas sobre la propiedad de una reseña.
               </p>
             </div>
@@ -498,7 +500,7 @@ export default function HomePage() {
                       href="#contacto"
                       className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
                     >
-                      Solicitar demo
+                      Quiero esto para mi equipo
                       <svg
                         className="h-3.5 w-3.5"
                         viewBox="0 0 14 14"
@@ -673,9 +675,9 @@ export default function HomePage() {
               className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
               style={{ fontSize: "var(--text-h2)" }}
             >
-              <em className="font-light">¿Te interesa?</em>
+              <em className="font-light">¿Quieres saber</em>
               <br />
-              Cuéntanos brevemente.
+              quién de tu equipo te genera negocio?
             </h2>
             <p
               className="mt-5 max-w-xl leading-relaxed text-ink-2"

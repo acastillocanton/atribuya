@@ -6,7 +6,7 @@ type Locale = "es" | "en";
 const STRINGS = {
   es: {
     statement:
-      "Atribuye reseñas de Google al comercial que las ha conseguido.",
+      "Sabes qué comercial te trae cada reseña de Google.",
     altLangHref: "/en",
     altLangLabel: "English",
     terms: { href: "/terminos", label: "Términos" },
@@ -15,7 +15,7 @@ const STRINGS = {
   },
   en: {
     statement:
-      "Attribute Google reviews to the sales rep who earned them.",
+      "You know which rep brings in every Google review.",
     altLangHref: "/",
     altLangLabel: "Español",
     terms: { href: "/terminos", label: "Terms" },
