@@ -290,6 +290,7 @@ export const SALES_SIDEBAR_GROUPS: SidebarGroup[] = [
       { id: "link", label: "Mi enlace", href: "/panel/enlace", icon: Link2 },
       { id: "clients", label: "Mis clientes", href: "/clientes", icon: Users },
       { id: "reviews", label: "Mis reseñas", href: "/panel/resenas", icon: Star },
+      { id: "verification", label: "Verificación", href: "/resenas/verificacion", icon: ListChecks },
     ],
   },
 ];

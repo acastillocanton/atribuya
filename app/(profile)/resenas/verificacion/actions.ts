@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { recordAudit } from "@/lib/audit";
+import { createClientRecord } from "@/app/(sales)/clientes/actions";
 
 const reviewIdSchema = z.string().uuid();
 
@@ -234,4 +235,85 @@ export async function restoreReview(reviewId: string) {
   revalidatePath("/manager/resenas");
   revalidatePath("/dashboard");
   return { ok: true as const };
+}
+
+const claimSchema = z
+  .object({
+    reviewId: z.string().uuid(),
+    clientId: z.string().uuid().optional().nullable(),
+    newClientName: z
+      .string()
+      .trim()
+      .min(2, "Nombre de cliente demasiado corto.")
+      .max(120)
+      .optional()
+      .nullable(),
+  })
+  // XOR: o un cliente existente, o uno nuevo (o ninguno: reclamar sin cliente).
+  .refine((v) => !(v.clientId && v.newClientName), {
+    message: "Elige un cliente existente o crea uno nuevo, no ambos.",
+  });
+
+/**
+ * "Es mía": el comercial reclama una reseña huérfana (sin atribuir) de su
+ * ficha. La pasa a counted con sales_id = él mismo y, opcionalmente, la vincula
+ * a un cliente suyo (existente o creado al vuelo). La RLS reviews_sales_claim_update
+ * (mig 019) garantiza el aislamiento: solo unmatched, de su ficha, su org, y la
+ * fila resultante queda forzosamente con sales_id = auth.uid() y counted.
+ */
+export async function claimReview(input: z.input<typeof claimSchema>) {
+  const parsed = claimSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "No autorizado." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle<{ role: string }>();
+  if (profile?.role !== "sales") {
+    return { ok: false as const, error: "Solo el comercial puede reclamar una reseña." };
+  }
+
+  // Cliente: nuevo (reusa createClientRecord, que valida org y unicidad de slug)
+  // o uno existente del propio comercial (la RLS de clients garantiza pertenencia).
+  let clientId: string | null = parsed.data.clientId ?? null;
+  let wasNewClient = false;
+  if (!clientId && parsed.data.newClientName) {
+    const created = await createClientRecord({ fullName: parsed.data.newClientName });
+    if (!created.ok) return { ok: false as const, error: created.error };
+    clientId = created.client.id;
+    wasNewClient = true;
+  }
+
+  // Reclamar. `.is("sales_id", null)` hace la operación race-safe (si otro se
+  // adelanta, no afecta filas). La RLS impone ficha/org/estado final.
+  const { error } = await supabase
+    .from("reviews")
+    .update({ sales_id: user.id, match_state: "counted", client_id: clientId } as never)
+    .eq("id", parsed.data.reviewId)
+    .is("sales_id", null);
+  if (error) {
+    console.error("[verificacion] claimReview failed:", error);
+    return { ok: false as const, error: error.message };
+  }
+
+  await audit(parsed.data.reviewId, "claim", {
+    claimed_by: user.id,
+    client_id: clientId,
+    was_new_client: wasNewClient,
+  });
+  revalidatePath("/resenas/verificacion");
+  revalidatePath("/panel");
+  revalidatePath("/panel/resenas");
+  revalidatePath("/clientes");
+  revalidatePath("/ranking");
+  return { ok: true as const, clientId, wasNewClient };
 }

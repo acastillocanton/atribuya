@@ -132,6 +132,8 @@ function pathAllowedForRole(
     return (
       pathname.startsWith("/panel") ||
       pathname.startsWith("/clientes") ||
+      // Bandeja de huérfanas de su ficha: ver y reclamar ("Es mía", mig 019).
+      pathname.startsWith("/resenas/verificacion") ||
       // Autoservicio de su propio Excel; el endpoint valida que salesId = self.
       pathname.startsWith("/api/export/sales")
     );

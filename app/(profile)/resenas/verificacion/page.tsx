@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { ReviewVerificationRow } from "./ReviewVerificationRow";
+import { SalesClaimRow, type ClaimableReview } from "./SalesClaimRow";
 
 type SearchParams = Promise<{ state?: string }>;
 
@@ -62,6 +63,110 @@ export default async function ResenasVerificacionPage({
   }
 
   const supabase = await createClient();
+
+  // El comercial ve una bandeja distinta: solo las reseñas huérfanas de su
+  // ficha (RLS reviews_unmatched_location_select), con el botón "Es mía" para
+  // reclamarlas. Admin/gestor siguen con la bandeja completa de abajo.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: me } = user
+    ? await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle<{ role: string }>()
+    : { data: null };
+
+  if (me?.role === "sales") {
+    const [orphanRes, clientsRes] = await Promise.all([
+      supabase
+        .from("reviews")
+        .select(
+          "id, author_name, rating, text, google_created_at, location:locations(name)",
+        )
+        .is("sales_id", null)
+        .is("removed_at", null)
+        .order("google_created_at", { ascending: false })
+        .returns<
+          (Omit<ClaimableReview, "location_name"> & { location: { name: string } | null })[]
+        >(),
+      supabase
+        .from("clients")
+        .select("id, full_name")
+        .order("full_name")
+        .returns<{ id: string; full_name: string }[]>(),
+    ]);
+    const orphans: ClaimableReview[] = (orphanRes.data ?? []).map((r) => ({
+      id: r.id,
+      author_name: r.author_name,
+      rating: r.rating,
+      text: r.text,
+      google_created_at: r.google_created_at,
+      location_name: r.location?.name ?? null,
+    }));
+    const clients = clientsRes.data ?? [];
+
+    return (
+      <>
+        <Topbar
+          title="Verificación"
+          subtitle="Reseñas huérfanas de tu ficha"
+          range={`${orphans.length} sin atribuir`}
+          breadcrumb="Atribuya"
+          compact
+        />
+        <div
+          style={{
+            flex: 1,
+            padding: "24px 32px 32px",
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+          }}
+        >
+          <Card>
+            <div style={sectionLabel}>Cómo usar esta bandeja</div>
+            <p
+              style={{
+                margin: "10px 0 0",
+                fontSize: 13,
+                color: "var(--ink-3)",
+                lineHeight: 1.55,
+                maxWidth: 640,
+              }}
+            >
+              Aquí aparecen las reseñas de tu ficha que dejaron clientes sin pasar
+              por tu enlace personal y que no pudimos atribuir solas. Si reconoces
+              al cliente que la dejó, pulsa <strong>«Es mía»</strong> para
+              atribuírtela. Si no la reconoces, déjala: un compañero o el gestor
+              podrá identificarla.
+            </p>
+          </Card>
+
+          {orphans.length === 0 ? (
+            <Card padding={32}>
+              <div style={{ fontSize: 13, color: "var(--ink-3)", fontWeight: 500 }}>
+                Bandeja vacía
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 600, marginTop: 4, letterSpacing: "-0.02em" }}>
+                No hay reseñas huérfanas en tu ficha
+              </div>
+              <p style={{ margin: "10px 0 0", color: "var(--ink-3)", fontSize: 13.5, lineHeight: 1.55, maxWidth: 560 }}>
+                Cuando un cliente deje una reseña en tu ficha sin usar tu enlace y
+                no podamos atribuirla, aparecerá aquí para que la reclames.
+              </p>
+            </Card>
+          ) : (
+            orphans.map((r) => (
+              <SalesClaimRow key={r.id} review={r} clients={clients} />
+            ))
+          )}
+        </div>
+      </>
+    );
+  }
 
   const reviewsQueryBase = supabase
     .from("reviews")
