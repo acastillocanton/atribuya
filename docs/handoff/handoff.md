@@ -392,10 +392,13 @@ semanal. Los filtros de comerciales son por oficina (ficha) y director, sin
 departamento/idioma.
 
 **Migraciones**: 018-021 aplicadas en prod (la 020 y 021 deben aplicarse en
-ejecuciones separadas por el 55P04 del enum). Tests de aislamiento del director
-documentados en [docs/tests-multitenancy.md](../tests-multitenancy.md) (pendiente
-sembrar fixtures con dos directores para ejecutarlos contra la BD).
+ejecuciones separadas por el 55P04 del enum). **Aislamiento RLS del director
+verificado contra la BD real (2026-06-08)** con los seeds `dev-seeds/03_test_director.sql`
+(autosuficiente: crea la org/ficha Acme si faltan + 2 directores con un comercial
+cada uno) y `03b_director_isolation_checks.sql`: cada director ve solo su equipo
+(1), no ve el equipo del otro director ni la otra org, y super_admin ve todo. Ver
+[docs/tests-multitenancy.md](../tests-multitenancy.md).
 
-**Migración de datos pendiente**: los seeds (`dev-seeds/`) no incluyen ningún
-`office_director`; cuando se quiera probar el rol end-to-end hay que invitar un
-director desde `/directores` (admin) y asignarle comerciales.
+**Para probar el rol en la app** (UI end-to-end): los `dev-seeds/03` crean
+directores de prueba pero sin login real (no pasan por GoTrue); para un test de
+UI, invita un director desde `/directores` (como admin) y asígnale comerciales.

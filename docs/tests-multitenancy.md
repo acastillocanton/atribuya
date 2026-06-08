@@ -109,6 +109,12 @@ con el JWT del director correspondiente (`set local request.jwt.claims`):
    (`profiles_self_update` lo congela).
 8. **super_admin sigue viéndolo todo** (sus policies no cambian).
 
-Pendiente de ejecutar con fixtures de dos directores cuando se siembren en la BD
-(hoy los seeds no incluyen `office_director`). El código está verificado por
-typecheck/build/tests; la RLS por las policies de la mig 021.
+**Verificado contra la BD real (2026-06-08)** con los seeds `03_test_director.sql`
+(2 directores D1/D2 + un comercial cada uno en Acme) y `03b_director_isolation_checks.sql`:
+- D1 ve solo su equipo (1 comercial); D2 solo el suyo (1). No se cruzan
+  (D1 ve 0 del equipo de D2).
+- D1 no ve nada de la org Beta (0).
+- super_admin ve todos los comerciales.
+Es decir: cada director queda aislado a su equipo y a su org. (El check 6 del
+lockdown —que un comercial no puede cambiarse `director_id`— se ejecuta aparte y
+debe dar ERROR de RLS.)
