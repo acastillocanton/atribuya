@@ -3,9 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { getCurrentOrgContext, requireOrgContext } from "@/lib/supabase/org";
 import { recordAudit } from "@/lib/audit";
 import { slugify } from "@/lib/utils";
+import type { Role } from "@/lib/supabase/types";
+import {
+  scoreOrphanCandidates,
+  partitionOrphanCandidates,
+  type OrphanReviewCandidate,
+  type OrphanReviewInput,
+} from "@/lib/clients/orphan-reviews";
+import { decideDuplicateForClient } from "@/lib/cron/duplicate-detection";
 
 const createClientSchema = z.object({
   fullName: z.string().min(2, "Nombre demasiado corto.").max(120),
@@ -211,5 +220,230 @@ export async function deleteClientRecord(
   }
 
   revalidatePath("/clientes");
+  return { ok: true };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sugerencia de vinculación de reseñas huérfanas tras crear cliente.
+//
+// Caso típico: el cliente deja la reseña ANTES de que el comercial le dé de
+// alta. Acaba counted al sales con client_id=null. Al crear el cliente,
+// detectamos esas reseñas con autor similar al nombre y las vinculamos: las
+// casi-exactas (>=90) solas; las dudosas (50-89) se ofrecen en un modal.
+// Ver lib/clients/orphan-reviews.ts (helper puro). La escritura va por
+// service-role validando propiedad y org_id en código (no hay policy de UPDATE
+// de client_id para sales — defensa en profundidad por código).
+// ─────────────────────────────────────────────────────────────────────────────
+
+type ClientLookup = { id: string; full_name: string; sales_id: string; org_id: string | null };
+type FindOrphanScope = { userId: string; role: Role; orgId: string; client: ClientLookup };
+
+/**
+ * Auth común para find/link. Resuelve el actor + su org, lee el cliente y
+ * verifica scope: sales = dueño del cliente; admin/reviews_manager = cualquiera
+ * de SU misma org. Todo dentro del mismo org_id.
+ */
+async function resolveOrphanScope(
+  clientId: string,
+): Promise<{ ok: true; scope: FindOrphanScope } | { ok: false; error: string }> {
+  const parsed = z.string().uuid().safeParse(clientId);
+  if (!parsed.success) return { ok: false, error: "Id de cliente inválido." };
+
+  const supabase = await createClient();
+  let orgCtx;
+  try {
+    orgCtx = await requireOrgContext(supabase);
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "No autenticado." };
+  }
+
+  const { data: actor } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", orgCtx.userId)
+    .maybeSingle<{ role: Role }>();
+  if (!actor) return { ok: false, error: "No autenticado." };
+
+  const admin = createServiceClient();
+  const { data: client } = await admin
+    .from("clients")
+    .select("id, full_name, sales_id, org_id")
+    .eq("id", parsed.data)
+    .maybeSingle<ClientLookup>();
+  if (!client) return { ok: false, error: "Cliente no encontrado." };
+
+  // Aislamiento multi-tenant: el cliente debe ser de la org del actor.
+  if (client.org_id !== orgCtx.orgId) return { ok: false, error: "No autorizado." };
+
+  if (actor.role === "sales") {
+    if (client.sales_id !== orgCtx.userId) return { ok: false, error: "No autorizado." };
+  } else if (actor.role !== "admin" && actor.role !== "reviews_manager") {
+    return { ok: false, error: "No autorizado." };
+  }
+
+  return {
+    ok: true,
+    scope: { userId: orgCtx.userId, role: actor.role, orgId: orgCtx.orgId, client },
+  };
+}
+
+/**
+ * Resuelve las reseñas huérfanas (counted del sales, sin client_id, misma org)
+ * con autor similar al cliente: las casi-exactas (>=90) se vinculan solas; el
+ * resto (50-89) se devuelve en `candidates` para el modal. ESCRIBE (auto-vincula).
+ */
+export async function findOrphanReviewsForClient(
+  clientId: string,
+): Promise<
+  | { ok: true; autoLinked: number; candidates: OrphanReviewCandidate[] }
+  | { ok: false; error: string }
+> {
+  const res = await resolveOrphanScope(clientId);
+  if (!res.ok) return { ok: false, error: res.error };
+  const { scope } = res;
+
+  const admin = createServiceClient();
+  const { data: orphans, error } = await admin
+    .from("reviews")
+    .select("id, author_name, rating, google_created_at")
+    .eq("sales_id", scope.client.sales_id)
+    .eq("org_id", scope.orgId)
+    .eq("match_state", "counted")
+    .is("client_id", null)
+    .is("removed_at", null)
+    .order("google_created_at", { ascending: false })
+    .limit(50)
+    .returns<OrphanReviewInput[]>();
+  if (error) {
+    console.error("[clientes] findOrphan query failed:", error);
+    return { ok: false, error: "No se pudieron buscar candidatas." };
+  }
+
+  const scored = scoreOrphanCandidates(scope.client.full_name, orphans ?? [], 50);
+  const { autoLink, suggest } = partitionOrphanCandidates(scored);
+
+  // Auto-vincular las casi-exactas, SECUENCIALMENTE (el anti-fraude de
+  // duplicados de cada una depende del estado de las anteriores).
+  let autoLinked = 0;
+  for (const cand of autoLink) {
+    const r = await linkOrphanCore(admin, scope, cand.id, clientId, true);
+    if (r.ok) autoLinked++;
+  }
+  // NO revalidar "/clientes" aquí (el caller acaba de crear el cliente y va a
+  // montar el modal; lo refresca con router.refresh()). Las demás rutas sí.
+  if (autoLinked > 0) {
+    revalidatePath("/panel/resenas");
+    revalidatePath("/dashboard");
+    revalidatePath("/manager/resenas");
+  }
+
+  return { ok: true, autoLinked, candidates: suggest.slice(0, 5) };
+}
+
+const linkOrphanSchema = z.object({
+  reviewId: z.string().uuid(),
+  clientId: z.string().uuid(),
+});
+
+/**
+ * Núcleo de la vinculación. Valida que la reseña sea del mismo sales, de la
+ * misma org, counted, sin cliente y no removed. Aplica anti-fraude (mig 015):
+ * si el cliente ya tiene principal, la nueva entra como duplicada; si es más
+ * antigua, demota la principal previa. Race-safe (where client_id is null).
+ */
+async function linkOrphanCore(
+  admin: ReturnType<typeof createServiceClient>,
+  scope: FindOrphanScope,
+  reviewId: string,
+  clientId: string,
+  auto: boolean,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { data: review } = await admin
+    .from("reviews")
+    .select("id, sales_id, org_id, match_state, client_id, removed_at, google_created_at")
+    .eq("id", reviewId)
+    .maybeSingle<{
+      id: string;
+      sales_id: string | null;
+      org_id: string | null;
+      match_state: string;
+      client_id: string | null;
+      removed_at: string | null;
+      google_created_at: string;
+    }>();
+  if (!review) return { ok: false, error: "Reseña no encontrada." };
+  if (review.org_id !== scope.orgId) return { ok: false, error: "No autorizado." };
+  if (review.removed_at) return { ok: false, error: "La reseña está marcada como eliminada." };
+  if (review.match_state !== "counted") return { ok: false, error: "La reseña no está atribuida." };
+  if (review.client_id) return { ok: false, error: "La reseña ya tiene cliente asignado." };
+  if (review.sales_id !== scope.client.sales_id) {
+    return { ok: false, error: "La reseña no es del mismo comercial." };
+  }
+
+  const dup = await decideDuplicateForClient(admin, {
+    clientId,
+    incomingGoogleCreatedAt: review.google_created_at,
+    excludeReviewId: review.id,
+  });
+
+  const { data: updated, error: upErr } = await admin
+    .from("reviews")
+    .update({ client_id: clientId, is_duplicate: dup.newIsDuplicate } as never)
+    .eq("id", review.id)
+    .is("client_id", null)
+    .is("removed_at", null)
+    .select("id");
+  if (upErr) {
+    console.error("[clientes] linkOrphan update failed:", upErr);
+    return { ok: false, error: upErr.message };
+  }
+  if (!updated || updated.length === 0) {
+    return { ok: false, error: "La reseña fue modificada por otro usuario. Vuelve a cargar." };
+  }
+
+  if (dup.demotedReviewId) {
+    await admin
+      .from("reviews")
+      .update({ is_duplicate: true } as never)
+      .eq("id", dup.demotedReviewId);
+  }
+
+  await recordAudit({
+    entityType: "review",
+    entityId: review.id,
+    action: auto ? "link_orphan_auto" : "link_orphan",
+    orgId: scope.orgId,
+    payload: {
+      linked_by: scope.userId,
+      actor_role: scope.role,
+      client_id: clientId,
+      is_duplicate: dup.newIsDuplicate,
+      demoted_review_id: dup.demotedReviewId,
+    },
+  });
+
+  return { ok: true };
+}
+
+/** Vincula una reseña huérfana a un cliente desde el modal (clic "Vincular"). */
+export async function linkOrphanReviewToClient(
+  input: z.input<typeof linkOrphanSchema>,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const parsed = linkOrphanSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const res = await resolveOrphanScope(parsed.data.clientId);
+  if (!res.ok) return { ok: false, error: res.error };
+
+  const admin = createServiceClient();
+  const core = await linkOrphanCore(admin, res.scope, parsed.data.reviewId, parsed.data.clientId, false);
+  if (!core.ok) return core;
+
+  revalidatePath("/clientes");
+  revalidatePath("/panel/resenas");
+  revalidatePath("/dashboard");
+  revalidatePath("/manager/resenas");
   return { ok: true };
 }

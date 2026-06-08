@@ -2,8 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { GhostBtn } from "@/components/ui/GhostBtn";
-import { createClientRecord, type ClientRow } from "./actions";
+import { createClientRecord, findOrphanReviewsForClient, type ClientRow } from "./actions";
 import { ClientLinkDialog } from "./ClientLinkDialog";
+import { OrphanReviewsModal } from "@/components/clients/OrphanReviewsModal";
+import type { OrphanReviewCandidate } from "@/lib/clients/orphan-reviews";
 
 type NewClientButtonProps = {
   appBase: string;
@@ -16,12 +18,18 @@ export function NewClientButton({ appBase, orgSlug, salesName, salesSlug }: NewC
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<ClientRow | null>(null);
+  const [orphanCandidates, setOrphanCandidates] = useState<OrphanReviewCandidate[]>([]);
+  const [autoLinked, setAutoLinked] = useState(0);
+  const [showOrphan, setShowOrphan] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function close() {
     setOpen(false);
     setError(null);
     setCreated(null);
+    setOrphanCandidates([]);
+    setAutoLinked(0);
+    setShowOrphan(false);
   }
 
   function handleSubmit(formData: FormData) {
@@ -38,6 +46,16 @@ export function NewClientButton({ appBase, orgSlug, salesName, salesSlug }: NewC
         return;
       }
       setCreated(result.client);
+      // Tras crear, buscar reseñas huérfanas con nombre parecido: las casi
+      // exactas se vinculan solas; las dudosas se ofrecen en el modal.
+      const orphan = await findOrphanReviewsForClient(result.client.id);
+      if (orphan.ok) {
+        setAutoLinked(orphan.autoLinked);
+        if (orphan.candidates.length > 0) {
+          setOrphanCandidates(orphan.candidates);
+          setShowOrphan(true);
+        }
+      }
     });
   }
 
@@ -139,7 +157,18 @@ export function NewClientButton({ appBase, orgSlug, salesName, salesSlug }: NewC
         </div>
       )}
 
-      {created && (
+      {created && showOrphan && (
+        <OrphanReviewsModal
+          open={true}
+          onClose={() => setShowOrphan(false)}
+          clientId={created.id}
+          clientName={created.full_name}
+          candidates={orphanCandidates}
+          autoLinkedCount={autoLinked}
+        />
+      )}
+
+      {created && !showOrphan && (
         <ClientLinkDialog
           open={true}
           onClose={close}

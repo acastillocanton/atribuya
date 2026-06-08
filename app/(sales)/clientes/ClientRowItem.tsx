@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { GhostBtn } from "@/components/ui/GhostBtn";
-import { deleteClientRecord, type ClientRow } from "./actions";
+import { deleteClientRecord, findOrphanReviewsForClient, type ClientRow } from "./actions";
 import { ClientLinkDialog } from "./ClientLinkDialog";
+import { OrphanReviewsModal } from "@/components/clients/OrphanReviewsModal";
+import type { OrphanReviewCandidate } from "@/lib/clients/orphan-reviews";
 
 type ClientRowItemProps = {
   client: ClientRow;
@@ -25,6 +27,10 @@ export function ClientRowItem({
 }: ClientRowItemProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [scanning, setScanning] = useState(false);
+  const [orphanOpen, setOrphanOpen] = useState(false);
+  const [orphanCandidates, setOrphanCandidates] = useState<OrphanReviewCandidate[]>([]);
+  const [orphanAutoLinked, setOrphanAutoLinked] = useState(0);
 
   function onDelete() {
     const ok = window.confirm(
@@ -35,6 +41,25 @@ export function ClientRowItem({
       const r = await deleteClientRecord(client.id);
       if (!r.ok) alert(r.error);
     });
+  }
+
+  // Re-escanea reseñas sueltas del comercial que se parezcan a este cliente:
+  // vincula las casi-exactas y abre el modal con las dudosas.
+  async function onScan() {
+    setScanning(true);
+    const r = await findOrphanReviewsForClient(client.id);
+    setScanning(false);
+    if (!r.ok) {
+      alert(r.error);
+      return;
+    }
+    if (r.autoLinked === 0 && r.candidates.length === 0) {
+      alert("No se encontraron reseñas sueltas que se parezcan a este cliente.");
+      return;
+    }
+    setOrphanAutoLinked(r.autoLinked);
+    setOrphanCandidates(r.candidates);
+    setOrphanOpen(true);
   }
 
   const altaLabel = new Date(client.created_at).toLocaleDateString("es-ES", {
@@ -117,6 +142,9 @@ export function ClientRowItem({
         <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}>{altaLabel}</span>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <GhostBtn onClick={() => setOpen(true)}>Ver enlace</GhostBtn>
+          <button type="button" onClick={onScan} disabled={scanning} style={secondaryBtn(scanning)}>
+            {scanning ? "…" : "Buscar reseñas"}
+          </button>
           <button
             type="button"
             onClick={onDelete}
@@ -196,8 +224,11 @@ export function ClientRowItem({
             {altaLabel}
           </div>
         </div>
-        <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+        <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
           <GhostBtn onClick={() => setOpen(true)}>Ver enlace</GhostBtn>
+          <button type="button" onClick={onScan} disabled={scanning} style={secondaryBtn(scanning)}>
+            {scanning ? "…" : "Buscar reseñas"}
+          </button>
           <button
             type="button"
             onClick={onDelete}
@@ -229,6 +260,29 @@ export function ClientRowItem({
         clientEmail={client.email}
         clientPhone={client.phone}
       />
+
+      {orphanOpen && (
+        <OrphanReviewsModal
+          open={true}
+          onClose={() => setOrphanOpen(false)}
+          clientId={client.id}
+          clientName={client.full_name}
+          candidates={orphanCandidates}
+          autoLinkedCount={orphanAutoLinked}
+        />
+      )}
     </>
   );
+}
+
+function secondaryBtn(busy: boolean): React.CSSProperties {
+  return {
+    padding: "5px 10px",
+    background: "transparent",
+    border: "1px solid var(--line-strong)",
+    borderRadius: 7,
+    fontSize: 12,
+    color: "var(--ink-3)",
+    cursor: busy ? "wait" : "pointer",
+  };
 }
