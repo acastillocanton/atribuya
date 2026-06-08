@@ -5,6 +5,7 @@ import {
   ADMIN_SIDEBAR_GROUPS,
   SALES_SIDEBAR_GROUPS,
   MANAGER_SIDEBAR_GROUPS,
+  OFFICE_DIRECTOR_SIDEBAR_GROUPS,
 } from "@/components/layout/Sidebar";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { createClient } from "@/lib/supabase/server";
@@ -53,14 +54,18 @@ export default async function ProfileLayout({
       ? ADMIN_SIDEBAR_GROUPS
       : role === "reviews_manager"
         ? MANAGER_SIDEBAR_GROUPS
-        : SALES_SIDEBAR_GROUPS;
+        : role === "office_director"
+          ? OFFICE_DIRECTOR_SIDEBAR_GROUPS
+          : SALES_SIDEBAR_GROUPS;
 
   const subtitle =
     role === "admin"
       ? "Admin · Atribuya"
       : role === "reviews_manager"
         ? "Gestor · Atribuya"
-        : "Comercial";
+        : role === "office_director"
+          ? "Director · Atribuya"
+          : "Comercial";
 
   return (
     <Frame>

@@ -18,10 +18,12 @@ export type SalesEditCardProps = {
   orgSlug?: string | null;
   joinedAt: string;
   locations: { id: string; name: string }[];
+  directors?: { id: string; full_name: string }[];
   initial: {
     locationId: string | null;
     monthlyGoal: number;
     commissionRate: number | null;
+    directorId: string | null;
     status: ProfileStatus;
   };
 };
@@ -34,6 +36,7 @@ export function SalesEditCard({
   orgSlug,
   joinedAt,
   locations,
+  directors = [],
   initial,
 }: SalesEditCardProps) {
   const router = useRouter();
@@ -48,6 +51,7 @@ export function SalesEditCard({
   const [commissionRate, setCommissionRate] = useState(
     initial.commissionRate === null ? "" : String(initial.commissionRate),
   );
+  const [directorId, setDirectorId] = useState(initial.directorId ?? "");
   const [status, setStatus] = useState<ProfileStatus>(initial.status);
 
   const currentLocation = locations.find((l) => l.id === locationId);
@@ -64,6 +68,7 @@ export function SalesEditCard({
     setCommissionRate(
       initial.commissionRate === null ? "" : String(initial.commissionRate),
     );
+    setDirectorId(initial.directorId ?? "");
     setStatus(initial.status);
     setError(null);
     setEditing(false);
@@ -76,6 +81,7 @@ export function SalesEditCard({
       locationId,
       monthlyGoal,
       commissionRate,
+      directorId,
       status,
     };
     startTransition(async () => {
@@ -186,6 +192,33 @@ export function SalesEditCard({
             )}
           </dd>
         </div>
+
+        {/* Director responsable */}
+        {directors.length > 0 && (
+          <div style={rowGrid}>
+            <dt style={dtStyle}>Director responsable</dt>
+            <dd style={{ margin: 0 }}>
+              {editing ? (
+                <select
+                  value={directorId}
+                  onChange={(e) => setDirectorId(e.target.value)}
+                  style={inputStyle}
+                >
+                  <option value="">Sin director (pool del admin)</option>
+                  {directors.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.full_name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span style={{ fontSize: 13.5 }}>
+                  {directors.find((d) => d.id === directorId)?.full_name ?? "Sin director"}
+                </span>
+              )}
+            </dd>
+          </div>
+        )}
 
         {/* Estado */}
         <div style={rowGrid}>

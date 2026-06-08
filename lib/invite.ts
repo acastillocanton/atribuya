@@ -8,7 +8,7 @@ type CreateInvitedProfileArgs = {
   email: string;
   phone: string | null;
   slug: string;
-  role: "sales" | "reviews_manager";
+  role: "sales" | "reviews_manager" | "office_director";
   /**
    * Org to which the invited user will belong. Required for multi-tenant
    * isolation: a profile without org_id is invisible to its own org under

@@ -10,6 +10,7 @@ const ROLE_HOME: Record<Role, string> = {
   admin: "/dashboard",
   sales: "/panel",
   reviews_manager: "/dashboard",
+  office_director: "/dashboard",
 };
 
 /** Where to send a super_admin after login or when hitting `/`. */
@@ -128,6 +129,23 @@ function pathAllowedForRole(
   // Helpdesk interno — accesible a los tres roles de org (no super_admin).
   if (pathname === "/soporte" || pathname.startsWith("/soporte/")) return true;
   if (role === "admin") return true;
+  if (role === "office_director") {
+    // Dual: productor (su panel/enlace/clientes/reseñas) + gestor de su equipo
+    // (dashboard, comerciales, ranking, su ficha, verificación). RLS (mig 021)
+    // lo limita a su equipo y su org. NO accede a /gestores ni /directores.
+    return (
+      pathname === "/dashboard" ||
+      pathname.startsWith("/panel") ||
+      pathname.startsWith("/clientes") ||
+      pathname.startsWith("/comerciales") ||
+      pathname.startsWith("/ranking") ||
+      pathname.startsWith("/fichas") ||
+      pathname.startsWith("/resenas/verificacion") ||
+      pathname === "/manager/export" ||
+      pathname.startsWith("/api/export") ||
+      pathname.startsWith("/api/google/oauth")
+    );
+  }
   if (role === "sales") {
     return (
       pathname.startsWith("/panel") ||

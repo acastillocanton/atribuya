@@ -28,6 +28,7 @@ type SalesDetail = {
   phone: string | null;
   monthly_goal: number;
   commission_rate: number | null;
+  director_id: string | null;
   status: ProfileStatus;
   joined_at: string;
   location_id: string | null;
@@ -103,22 +104,28 @@ export default async function ComercialDetallePage({ params, searchParams }: Pag
   // 005 y assertCanManageSales en actions.ts.
   const canEdit = viewerRole === "admin" || viewerRole === "reviews_manager";
 
-  const [salesRes, locsRes] = await Promise.all([
+  const [salesRes, locsRes, dirsRes] = await Promise.all([
     supabase
       .from("profiles")
       .select(
-        "id, full_name, slug, email, phone, monthly_goal, commission_rate, status, joined_at, location_id, location:locations(id, name)",
+        "id, full_name, slug, email, phone, monthly_goal, commission_rate, director_id, status, joined_at, location_id, location:locations(id, name)",
       )
       .eq("slug", slug)
       .eq("role", "sales")
       .maybeSingle<SalesDetail>(),
     supabase.from("locations").select("id, name").order("name"),
+    supabase
+      .from("profiles")
+      .select("id, full_name")
+      .eq("role", "office_director")
+      .order("full_name"),
   ]);
 
   const sales = salesRes.data;
   if (!sales) notFound();
 
   const locations = (locsRes.data ?? []) as { id: string; name: string }[];
+  const directors = (dirsRes.data ?? []) as { id: string; full_name: string }[];
 
   // Carga clientes + share_links + reviews en paralelo y agrega en JS.
   const [clientsRes, sharesRes, reviewsRes] = await Promise.all([
@@ -325,10 +332,12 @@ export default async function ComercialDetallePage({ params, searchParams }: Pag
               orgSlug={orgSlug}
               joinedAt={sales.joined_at}
               locations={locations}
+              directors={directors}
               initial={{
                 locationId: sales.location_id,
                 monthlyGoal: sales.monthly_goal,
                 commissionRate: sales.commission_rate,
+                directorId: sales.director_id,
                 status: sales.status,
               }}
             />

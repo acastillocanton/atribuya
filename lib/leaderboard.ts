@@ -7,8 +7,8 @@ import { TEAM } from "@/lib/demo-data";
  * Helper compartido del leaderboard de comerciales (rol `sales`).
  *
  * Portado del producto base single-tenant y adaptado a multi-tenant:
- *   - Atribuya NO tiene el rol `office_director` → el ranking es siempre
- *     GLOBAL de la org (no hay "equipos"/`director_id`).
+ *   - El ranking es por org. Para admin/gestor es global de la org; para un
+ *     office_director la RLS (mig 021) lo scopea automáticamente a SU equipo.
  *   - Todas las queries filtran por `org_id` (derivado del servidor vía
  *     `requireOrgContext`, NUNCA del cliente) — defensa en profundidad sobre RLS.
  *

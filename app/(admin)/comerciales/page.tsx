@@ -23,10 +23,12 @@ type SalesRow = {
 };
 
 type LocationOption = { id: string; name: string };
+type DirectorOption = { id: string; full_name: string };
 
 export default async function ComercialesPage() {
   let salesList: SalesRow[] = [];
   let locations: LocationOption[] = [];
+  let directors: DirectorOption[] = [];
   let dbError: string | null = null;
   let viewerRole: string | null = null;
   let orgSlug: string | null = null;
@@ -46,7 +48,7 @@ export default async function ComercialesPage() {
       orgSlug = profile?.organizations?.slug ?? null;
     }
 
-    const [salesRes, locRes] = await Promise.all([
+    const [salesRes, locRes, dirRes] = await Promise.all([
       supabase
         .from("profiles")
         .select(
@@ -55,12 +57,18 @@ export default async function ComercialesPage() {
         .eq("role", "sales")
         .order("joined_at", { ascending: false }),
       supabase.from("locations").select("id, name").order("name"),
+      supabase
+        .from("profiles")
+        .select("id, full_name")
+        .eq("role", "office_director")
+        .order("full_name"),
     ]);
 
     if (salesRes.error) dbError = salesRes.error.message;
     else salesList = ((salesRes.data ?? []) as unknown) as SalesRow[];
 
     if (locRes.data) locations = locRes.data as LocationOption[];
+    if (dirRes.data) directors = dirRes.data as DirectorOption[];
   }
 
   // Admin y reviews_manager comparten plenamente la administración de
@@ -82,7 +90,7 @@ export default async function ComercialesPage() {
         subtitle={canEdit ? "Gestión de comerciales" : "Vista solo lectura"}
         range={`${stats.total} en plantilla`}
         breadcrumb="Atribuya"
-        right={canEdit ? <InviteSalesButton locations={locations} /> : undefined}
+        right={canEdit ? <InviteSalesButton locations={locations} directors={directors} /> : undefined}
       />
 
       <div style={{ flex: 1, padding: "24px 32px 32px", overflow: "auto" }}>
@@ -150,7 +158,7 @@ export default async function ComercialesPage() {
                       invites a alguien, te daremos un enlace de un solo uso que
                       puedes enviarle por WhatsApp o email.
                     </p>
-                    <InviteSalesButton locations={locations} />
+                    <InviteSalesButton locations={locations} directors={directors} />
                   </>
                 ) : (
                   <p

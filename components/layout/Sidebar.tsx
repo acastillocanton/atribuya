@@ -16,6 +16,7 @@ import {
   LifeBuoy,
   MessageCircle,
   Trophy,
+  Building2,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { pickActiveId } from "./active-item";
@@ -269,6 +270,7 @@ export const ADMIN_SIDEBAR_GROUPS: SidebarGroup[] = [
     label: "Equipo",
     items: [
       { id: "sales", label: "Comerciales", href: "/comerciales", icon: Users },
+      { id: "directors", label: "Directores", href: "/directores", icon: Building2 },
       { id: "ranking", label: "Ranking", href: "/ranking", icon: Trophy },
       { id: "managers", label: "Gestores", href: "/gestores", icon: UserCog },
     ],
@@ -304,6 +306,39 @@ export const MANAGER_SIDEBAR_GROUPS: SidebarGroup[] = [
       { id: "ranking", label: "Ranking", href: "/ranking", icon: Trophy },
       { id: "reviews", label: "Reseñas", href: "/manager/resenas", icon: Star },
       { id: "export", label: "Exportar Excel", href: "/manager/export", icon: Download },
+    ],
+  },
+];
+
+// El director de oficina es DUAL: produce (su panel/enlace/clientes/reseñas) y
+// gestiona su equipo (dashboard, comerciales, ranking, verificación, su ficha),
+// todo scopeado por RLS a su equipo y su org (mig 021).
+export const OFFICE_DIRECTOR_SIDEBAR_GROUPS: SidebarGroup[] = [
+  {
+    id: "home",
+    label: "Inicio",
+    items: [
+      { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    id: "panel",
+    label: "Mi panel",
+    items: [
+      { id: "panel", label: "Mi panel", href: "/panel", icon: LayoutDashboard },
+      { id: "link", label: "Mi enlace", href: "/panel/enlace", icon: Link2 },
+      { id: "myclients", label: "Mis clientes", href: "/clientes", icon: Users },
+      { id: "myreviews", label: "Mis reseñas", href: "/panel/resenas", icon: Star },
+    ],
+  },
+  {
+    id: "team",
+    label: "Mi oficina",
+    items: [
+      { id: "verification", label: "Verificación", href: "/resenas/verificacion", icon: ListChecks },
+      { id: "sales", label: "Comerciales", href: "/comerciales", icon: Users },
+      { id: "branch", label: "Mi ficha", href: "/fichas", icon: MapPin },
+      { id: "team-ranking", label: "Ranking", href: "/ranking", icon: Trophy },
     ],
   },
 ];

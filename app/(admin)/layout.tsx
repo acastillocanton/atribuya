@@ -3,6 +3,7 @@ import {
   Sidebar,
   ADMIN_SIDEBAR_GROUPS,
   MANAGER_SIDEBAR_GROUPS,
+  OFFICE_DIRECTOR_SIDEBAR_GROUPS,
 } from "@/components/layout/Sidebar";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -37,19 +38,31 @@ export default async function AdminLayout({
     }
   }
 
-  const isManager = profile?.role === "reviews_manager";
-  const groups = isManager ? MANAGER_SIDEBAR_GROUPS : ADMIN_SIDEBAR_GROUPS;
-  const user = isManager
-    ? {
-        name: profile?.full_name ?? "Gestor de reseñas",
-        subtitle: "Gestor · Atribuya",
-        avatarUrl: profile?.avatar_url,
-      }
-    : {
-        name: profile?.full_name ?? "Administrador",
-        subtitle: "Admin · Atribuya",
-        avatarUrl: profile?.avatar_url,
-      };
+  const role = profile?.role;
+  const groups =
+    role === "reviews_manager"
+      ? MANAGER_SIDEBAR_GROUPS
+      : role === "office_director"
+        ? OFFICE_DIRECTOR_SIDEBAR_GROUPS
+        : ADMIN_SIDEBAR_GROUPS;
+  const user =
+    role === "reviews_manager"
+      ? {
+          name: profile?.full_name ?? "Gestor de reseñas",
+          subtitle: "Gestor · Atribuya",
+          avatarUrl: profile?.avatar_url,
+        }
+      : role === "office_director"
+        ? {
+            name: profile?.full_name ?? "Director",
+            subtitle: "Director · Atribuya",
+            avatarUrl: profile?.avatar_url,
+          }
+        : {
+            name: profile?.full_name ?? "Administrador",
+            subtitle: "Admin · Atribuya",
+            avatarUrl: profile?.avatar_url,
+          };
 
   return (
     <Frame>

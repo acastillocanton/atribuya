@@ -52,6 +52,19 @@ const commissionRateSchema = z
     return Number.isFinite(n) && n >= 0 ? n : null;
   });
 
+// Director responsable: uuid del office_director, o null (pool del admin).
+// Vacío del formulario ("") → null.
+const directorIdSchema = z
+  .union([z.string(), z.null(), z.undefined()])
+  .transform((v) => {
+    const s = (v ?? "").toString().trim();
+    return s === "" ? null : s;
+  })
+  .refine(
+    (v) => v === null || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v),
+    { message: "Director inválido." },
+  );
+
 const inviteSchema = z.object({
   fullName: z.string().min(2, "Nombre demasiado corto.").max(120),
   email: z.string().email("Email inválido."),
@@ -64,6 +77,7 @@ const inviteSchema = z.object({
   locationId: z.string().uuid("Selecciona una ficha."),
   monthlyGoal: z.coerce.number().int().min(0).max(1000),
   commissionRate: commissionRateSchema,
+  directorId: directorIdSchema,
 });
 
 export type InviteSalesInput = z.infer<typeof inviteSchema>;
@@ -93,6 +107,7 @@ export async function inviteSales(input: InviteSalesInput): Promise<
       location_id: parsed.data.locationId,
       monthly_goal: parsed.data.monthlyGoal,
       commission_rate: parsed.data.commissionRate,
+      director_id: parsed.data.directorId,
     },
     nextPath: "/panel",
     revalidate: ["/comerciales"],
@@ -105,6 +120,7 @@ const updateSchema = z.object({
   locationId: z.string().uuid("Selecciona una ficha."),
   status: z.enum(["invited", "active", "paused"]),
   commissionRate: commissionRateSchema,
+  directorId: directorIdSchema,
 });
 
 export type UpdateSalesInput = z.input<typeof updateSchema>;
@@ -128,6 +144,7 @@ export async function updateSales(input: UpdateSalesInput) {
       location_id: parsed.data.locationId,
       status: parsed.data.status,
       commission_rate: parsed.data.commissionRate,
+      director_id: parsed.data.directorId,
     } as never)
     .eq("id", parsed.data.id)
     .eq("role", "sales");

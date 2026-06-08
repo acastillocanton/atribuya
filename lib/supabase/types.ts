@@ -1,4 +1,24 @@
-export type Role = "admin" | "sales" | "reviews_manager";
+export type Role = "admin" | "sales" | "reviews_manager" | "office_director";
+
+/** Roles con vista de gestión tipo admin (admin global + director de su equipo). */
+export function isAdminLike(role: Role | null | undefined): boolean {
+  return role === "admin" || role === "office_director";
+}
+
+/** True si el rol es director de oficina. */
+export function isOfficeDirector(role: Role | null | undefined): boolean {
+  return role === "office_director";
+}
+
+/** Roles que pueden gestionar comerciales (invitar/editar): admin, gestor, director. */
+export function canManageSales(role: Role | null | undefined): boolean {
+  return role === "admin" || role === "reviews_manager" || role === "office_director";
+}
+
+/** Roles que PRODUCEN reseñas (tienen panel/enlace/clientes): comercial y director. */
+export function isProducer(role: Role | null | undefined): boolean {
+  return role === "sales" || role === "office_director";
+}
 
 export type ProfileStatus = "invited" | "active" | "paused";
 
@@ -84,6 +104,7 @@ export type Database = {
           phone: string | null;
           monthly_goal: number;
           commission_rate: number | null;
+          director_id: string | null;
           status: ProfileStatus;
           avatar_url: string | null;
           joined_at: string;
@@ -100,6 +121,7 @@ export type Database = {
           phone?: string | null;
           monthly_goal?: number;
           commission_rate?: number | null;
+          director_id?: string | null;
           status?: ProfileStatus;
           avatar_url?: string | null;
           joined_at?: string;

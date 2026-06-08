@@ -2,18 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { GhostBtn } from "@/components/ui/GhostBtn";
-import { inviteSales } from "./actions";
+import { inviteOfficeDirector } from "./actions";
 
 type LocationOption = { id: string; name: string };
-type DirectorOption = { id: string; full_name: string };
 
-export function InviteSalesButton({
-  locations,
-  directors = [],
-}: {
-  locations: LocationOption[];
-  directors?: DirectorOption[];
-}) {
+export function InviteDirectorButton({ locations }: { locations: LocationOption[] }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ link: string; email: string } | null>(null);
@@ -29,7 +22,6 @@ export function InviteSalesButton({
 
   function handleSubmit(formData: FormData) {
     setError(null);
-    setSuccess(null);
     startTransition(async () => {
       const input = {
         fullName: String(formData.get("fullName") ?? ""),
@@ -38,9 +30,8 @@ export function InviteSalesButton({
         locationId: String(formData.get("locationId") ?? ""),
         monthlyGoal: String(formData.get("monthlyGoal") ?? "5"),
         commissionRate: String(formData.get("commissionRate") ?? ""),
-        directorId: String(formData.get("directorId") ?? ""),
       };
-      const result = await inviteSales(input as never);
+      const result = await inviteOfficeDirector(input as never);
       if (!result.ok) {
         setError(result.error);
         return;
@@ -49,60 +40,23 @@ export function InviteSalesButton({
     });
   }
 
-  async function copyLink() {
-    if (!success) return;
-    try {
-      await navigator.clipboard.writeText(success.link);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // ignore
-    }
-  }
-
   return (
     <>
       <GhostBtn primary onClick={() => setOpen(true)}>
-        + Invitar comercial
+        + Invitar director
       </GhostBtn>
 
       {open && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 50,
-            background: "rgba(20,20,22,0.32)",
-            backdropFilter: "blur(2px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 24,
-          }}
+          style={modalBackdrop}
           onClick={(e) => {
             if (e.target === e.currentTarget) close();
           }}
         >
-          <div
-            style={{
-              width: 520,
-              maxWidth: "100%",
-              background: "var(--surface)",
-              border: "1px solid var(--line)",
-              borderRadius: 18,
-              boxShadow:
-                "0 24px 60px rgba(0,0,0,0.18), 0 8px 20px rgba(0,0,0,0.08)",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                padding: "20px 22px 14px",
-                borderBottom: "1px solid var(--line)",
-              }}
-            >
+          <div style={modalCard}>
+            <div style={modalHeader}>
               <div style={{ fontSize: 12.5, color: "var(--ink-3)", fontWeight: 500 }}>
-                Nuevo comercial
+                Nuevo director de oficina
               </div>
               <div
                 style={{
@@ -113,79 +67,56 @@ export function InviteSalesButton({
                   marginTop: 2,
                 }}
               >
-                {success ? "Invitación lista" : "Invitar a la plataforma"}
+                Invita a un director
               </div>
             </div>
 
             {success ? (
               <div style={{ padding: "18px 22px" }}>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 13.5,
-                    color: "var(--ink-2)",
-                    lineHeight: 1.55,
-                  }}
-                >
-                  Hemos creado el perfil de <strong>{success.email}</strong>. Copia
-                  este enlace y envíaselo por WhatsApp, email o como prefieras —
-                  al abrirlo, completará el alta y accederá a su panel.
+                <p style={{ margin: 0, fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.55 }}>
+                  Director invitado. Envíale este enlace de acceso de un solo uso a{" "}
+                  <strong>{success.email}</strong>:
                 </p>
                 <div
                   style={{
-                    marginTop: 14,
+                    marginTop: 12,
                     padding: "10px 12px",
-                    background: "var(--surface-2)",
                     border: "1px solid var(--line-strong)",
                     borderRadius: 9,
+                    background: "var(--surface-2)",
                     fontFamily: "var(--font-mono)",
-                    fontSize: 11.5,
-                    color: "var(--ink-2)",
+                    fontSize: 12,
                     wordBreak: "break-all",
-                    maxHeight: 120,
-                    overflow: "auto",
                   }}
                 >
                   {success.link}
                 </div>
-                <div
-                  style={{
-                    marginTop: 14,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                >
-                  <span style={{ fontSize: 11.5, color: "var(--ink-4)" }}>
-                    Enlace de un solo uso. Si caduca, vuelve a invitar.
-                  </span>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <GhostBtn onClick={close}>Cerrar</GhostBtn>
-                    <GhostBtn primary onClick={copyLink}>
-                      {copied ? "✓ Copiado" : "Copiar enlace"}
-                    </GhostBtn>
-                  </div>
+                <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                  <GhostBtn
+                    onClick={() => {
+                      navigator.clipboard?.writeText(success.link);
+                      setCopied(true);
+                    }}
+                  >
+                    {copied ? "Copiado" : "Copiar enlace"}
+                  </GhostBtn>
+                  <GhostBtn primary onClick={close}>
+                    Hecho
+                  </GhostBtn>
                 </div>
               </div>
             ) : (
               <form action={handleSubmit}>
-                <div
-                  style={{
-                    padding: "18px 22px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 14,
-                  }}
-                >
+                <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
                   <Field label="Nombre completo">
-                    <input name="fullName" required minLength={2} maxLength={120} style={inputStyle} />
+                    <input name="fullName" required minLength={2} maxLength={120} autoFocus style={inputStyle} />
                   </Field>
-                  <Field label="Email" hint="Donde recibirá el acceso">
+                  <Field label="Email">
                     <input
                       name="email"
                       type="email"
                       required
+                      maxLength={120}
                       autoComplete="off"
                       style={{ ...inputStyle, fontFamily: "var(--font-mono)" }}
                     />
@@ -193,7 +124,7 @@ export function InviteSalesButton({
                   <Field label="Teléfono (opcional)">
                     <input name="phone" type="tel" maxLength={40} style={inputStyle} />
                   </Field>
-                  <Field label="Ficha asignada">
+                  <Field label="Ficha (oficina)">
                     <select name="locationId" required style={inputStyle} defaultValue="">
                       <option value="" disabled>
                         Selecciona…
@@ -206,39 +137,11 @@ export function InviteSalesButton({
                     </select>
                   </Field>
                   <Field label="Objetivo mensual">
-                    <input
-                      name="monthlyGoal"
-                      type="number"
-                      min={0}
-                      max={1000}
-                      defaultValue={5}
-                      required
-                      style={inputStyle}
-                    />
+                    <input name="monthlyGoal" type="number" min={0} max={1000} defaultValue={5} required style={inputStyle} />
                   </Field>
                   <Field label="Tarifa por reseña (€, opcional)">
-                    <input
-                      name="commissionRate"
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      inputMode="decimal"
-                      placeholder="Sin tarifa"
-                      style={inputStyle}
-                    />
+                    <input name="commissionRate" type="number" min={0} step="0.01" inputMode="decimal" placeholder="Sin tarifa" style={inputStyle} />
                   </Field>
-                  {directors.length > 0 && (
-                    <Field label="Director responsable (opcional)">
-                      <select name="directorId" style={inputStyle} defaultValue="">
-                        <option value="">Sin director (pool del admin)</option>
-                        {directors.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.full_name}
-                          </option>
-                        ))}
-                      </select>
-                    </Field>
-                  )}
                   {error && (
                     <div
                       role="alert"
@@ -267,7 +170,7 @@ export function InviteSalesButton({
                     Cancelar
                   </GhostBtn>
                   <GhostBtn primary type="submit" disabled={isPending}>
-                    {isPending ? "Creando…" : "Crear invitación"}
+                    {isPending ? "Invitando…" : "Invitar director"}
                   </GhostBtn>
                 </div>
               </form>
@@ -279,6 +182,33 @@ export function InviteSalesButton({
   );
 }
 
+const modalBackdrop: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  zIndex: 50,
+  background: "rgba(20,20,22,0.32)",
+  backdropFilter: "blur(2px)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 24,
+};
+
+const modalCard: React.CSSProperties = {
+  width: 520,
+  maxWidth: "100%",
+  background: "var(--surface)",
+  border: "1px solid var(--line)",
+  borderRadius: 18,
+  boxShadow: "0 24px 60px rgba(0,0,0,0.18), 0 8px 20px rgba(0,0,0,0.08)",
+  overflow: "hidden",
+};
+
+const modalHeader: React.CSSProperties = {
+  padding: "20px 22px 14px",
+  borderBottom: "1px solid var(--line)",
+};
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "9px 12px",
@@ -289,15 +219,7 @@ const inputStyle: React.CSSProperties = {
   color: "var(--ink)",
 };
 
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <div
@@ -312,9 +234,6 @@ function Field({
         {label}
       </div>
       {children}
-      {hint && (
-        <div style={{ marginTop: 4, fontSize: 11.5, color: "var(--ink-4)" }}>{hint}</div>
-      )}
     </div>
   );
 }

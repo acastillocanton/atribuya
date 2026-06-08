@@ -1,5 +1,9 @@
 import { Frame } from "@/components/layout/Frame";
-import { Sidebar, SALES_SIDEBAR_GROUPS } from "@/components/layout/Sidebar";
+import {
+  Sidebar,
+  SALES_SIDEBAR_GROUPS,
+  OFFICE_DIRECTOR_SIDEBAR_GROUPS,
+} from "@/components/layout/Sidebar";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { MobileProfileAvatar } from "@/components/layout/MobileProfileAvatar";
 import { createClient } from "@/lib/supabase/server";
@@ -10,7 +14,7 @@ export default async function SalesLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let profile: { full_name: string; avatar_url: string | null } | null = null;
+  let profile: { full_name: string; role: string; avatar_url: string | null } | null = null;
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
@@ -20,22 +24,28 @@ export default async function SalesLayout({
     if (user) {
       const res = await supabase
         .from("profiles")
-        .select("full_name, avatar_url")
+        .select("full_name, role, avatar_url")
         .eq("id", user.id)
-        .maybeSingle<{ full_name: string; avatar_url: string | null }>();
+        .maybeSingle<{ full_name: string; role: string; avatar_url: string | null }>();
       profile = res.data;
     }
   }
+
+  // El director también produce (usa /panel, /clientes…): cuando entra por el
+  // grupo (sales) le pintamos su sidebar dual, no el del comercial.
+  const isDirector = profile?.role === "office_director";
+  const groups = isDirector ? OFFICE_DIRECTOR_SIDEBAR_GROUPS : SALES_SIDEBAR_GROUPS;
+  const subtitle = isDirector ? "Director · Atribuya" : "Comercial";
 
   return (
     <Frame>
       {/* Sidebar desktop: visible ≥768px, oculto en mobile (CSS) */}
       <div className="sales-hide-mobile" style={{ display: "contents" }}>
         <Sidebar
-          groups={SALES_SIDEBAR_GROUPS}
+          groups={groups}
           user={{
-            name: profile?.full_name ?? "Comercial",
-            subtitle: "Comercial",
+            name: profile?.full_name ?? (isDirector ? "Director" : "Comercial"),
+            subtitle,
             avatarUrl: profile?.avatar_url,
           }}
         />
