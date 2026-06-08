@@ -168,11 +168,14 @@ export async function resendSalesAccess(id: string): Promise<
   if (!auth.ok) return auth;
 
   const admin = createServiceClient();
+  // Service-role salta RLS: el filtro de org_id es obligatorio aquí, si no un
+  // admin podría generar un magic-link de login para un comercial de OTRA org.
   const { data: target } = await admin
     .from("profiles")
     .select("email")
     .eq("id", id)
     .eq("role", "sales")
+    .eq("org_id", auth.orgId)
     .maybeSingle<{ email: string | null }>();
   if (!target?.email) {
     return { ok: false, error: "Este comercial no tiene email registrado." };
@@ -186,11 +189,24 @@ export async function deleteSales(id: string) {
   if (!auth.ok) return { error: auth.error };
   const supabase = await createClient();
   // RLS: admin + reviews_manager (migración 005) son los únicos roles que
-  // pueden hacer DELETE en filas con role='sales'.
-  const { error } = await supabase.from("profiles").delete().eq("id", id);
+  // pueden hacer DELETE en filas con role='sales'. Filtramos también por
+  // org_id (defensa en profundidad) y comprobamos que el delete afectó una
+  // fila ANTES de borrar el auth.user: si no, un delete cross-org (0 filas,
+  // no es error bajo RLS) seguido de deleteUser destruiría la cuenta de un
+  // comercial de otra org.
+  const { data: deleted, error } = await supabase
+    .from("profiles")
+    .delete()
+    .eq("id", id)
+    .eq("role", "sales")
+    .eq("org_id", auth.orgId)
+    .select("id");
   if (error) {
     console.error("[comerciales] deleteSales failed:", error);
     return { error: error.message };
+  }
+  if (!deleted || deleted.length === 0) {
+    return { error: "Comercial no encontrado." };
   }
   // Also wipe the auth.users row so the slot is free for re-invitation.
   const admin = createServiceClient();

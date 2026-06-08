@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
-import { createServiceClient } from "@/lib/supabase/service";
+import { createClient } from "@/lib/supabase/server";
 import {
   getValidAccessTokenForLocation,
   listAccounts,
@@ -31,8 +31,10 @@ type AccountWithLocations = {
 export default async function ConectarFichaPage({ params }: PageProps) {
   const { id } = await params;
 
-  const admin = createServiceClient();
-  const { data: loc } = await admin
+  // Cliente con cookie (no service-role): RLS limita la ficha a la org del
+  // admin autenticado, así que una ficha de otra org devuelve null → notFound.
+  const supabase = await createClient();
+  const { data: loc } = await supabase
     .from("locations")
     .select("id, name, google_place_id, google_account_email, oauth_status")
     .eq("id", id)

@@ -71,17 +71,21 @@ export async function resendManagerAccess(id: string): Promise<
   if (!user) return { ok: false, error: "No autenticado." };
   const { data: actor } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, org_id")
     .eq("id", user.id)
-    .maybeSingle<{ role: string }>();
+    .maybeSingle<{ role: string; org_id: string | null }>();
   if (actor?.role !== "admin") return { ok: false, error: "No autorizado." };
+  if (!actor.org_id) return { ok: false, error: "Tu perfil no tiene organización asignada." };
 
   const admin = createServiceClient();
+  // Service-role salta RLS: filtrar por org_id es obligatorio, si no un admin
+  // podría generar un magic-link de login para un gestor de OTRA org.
   const { data: target } = await admin
     .from("profiles")
     .select("email")
     .eq("id", id)
     .eq("role", "reviews_manager")
+    .eq("org_id", actor.org_id)
     .maybeSingle<{ email: string | null }>();
   if (!target?.email) {
     return { ok: false, error: "Este gestor no tiene email registrado." };
@@ -102,24 +106,32 @@ export async function deleteReviewsManager(id: string) {
   if (!user) return { error: "No autenticado." };
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, org_id")
     .eq("id", user.id)
-    .maybeSingle<{ role: string }>();
+    .maybeSingle<{ role: string; org_id: string | null }>();
   if (profile?.role !== "admin") return { error: "No autorizado." };
+  if (!profile.org_id) return { error: "Tu perfil no tiene organización asignada." };
 
   // Usamos service-client para el delete del profile + el auth.user. Bypasea
   // la RLS y evita el caso "admin tiene política pero current_role() no lo
   // resuelve" en algún edge case. Coherente con createInvitedProfile, que
   // también pasa por service-client para crear el perfil + el auth.user.
+  // Como service-role salta RLS, el filtro por org_id es obligatorio: sin él
+  // un admin podría borrar el gestor (y su auth.user) de OTRA org.
   const admin = createServiceClient();
-  const { error: profileErr } = await admin
+  const { data: deleted, error: profileErr } = await admin
     .from("profiles")
     .delete()
     .eq("id", id)
-    .eq("role", "reviews_manager");
+    .eq("role", "reviews_manager")
+    .eq("org_id", profile.org_id)
+    .select("id");
   if (profileErr) {
     console.error("[gestores] delete profile failed:", profileErr);
     return { error: profileErr.message };
+  }
+  if (!deleted || deleted.length === 0) {
+    return { error: "Gestor no encontrado." };
   }
 
   const { error: authErr } = await admin.auth.admin.deleteUser(id);

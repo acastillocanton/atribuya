@@ -43,9 +43,13 @@ export async function createInvitedProfile(
 > {
   const admin = createServiceClient();
 
+  // Unicidad de slug POR ORG (migración 013: UNIQUE (org_id, slug)). Sin el
+  // filtro de org_id, dos orgs no podrían reusar un mismo slug y un slug ya
+  // usado en otra org bloquearía la invitación con un falso conflicto.
   const { data: existing } = await admin
     .from("profiles")
     .select("id")
+    .eq("org_id", args.orgId)
     .eq("slug", args.slug)
     .maybeSingle<{ id: string }>();
   if (existing) {
