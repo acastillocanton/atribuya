@@ -5,7 +5,7 @@ export function Frame({ children }: { children: ReactNode }) {
     <div
       style={{
         width: "100%",
-        minHeight: "100vh",
+        height: "100dvh",
         background: "var(--bg)",
         color: "var(--ink)",
         display: "flex",

@@ -52,7 +52,7 @@ export default async function ManagerLayout({
   return (
     <Frame>
       <Sidebar groups={groups} user={user} />
-      <main style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflowY: "auto" }}>
         {children}
       </main>
     </Frame>

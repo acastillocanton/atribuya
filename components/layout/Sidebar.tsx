@@ -55,7 +55,7 @@ export function Sidebar({ groups, user }: SidebarProps) {
         display: "flex",
         flexDirection: "column",
         gap: 22,
-        minHeight: "100vh",
+        height: "100%",
       }}
     >
       <div
@@ -79,7 +79,16 @@ export function Sidebar({ groups, user }: SidebarProps) {
         </div>
       </div>
 
-      <nav style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <nav
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 18,
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+        }}
+      >
         {groups.map((group) => (
           <div key={group.id} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {group.label && (

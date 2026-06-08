@@ -28,7 +28,8 @@ export default async function SuperLayout({ children }: { children: React.ReactN
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          minHeight: "100vh",
+          minHeight: 0,
+          overflowY: "auto",
         }}
       >
         <header
