@@ -10,7 +10,8 @@
 --
 -- Requiere el seed 01 (orgs/locations) y 02 (test users) aplicados.
 -- Org Acme = 7ee47f36-1977-4f80-be5c-05508ce55550
--- Ficha Acme · Centro = c9d17be1-9f4e-4a53-a1dc-02e0be756bb4
+-- La ficha (location_id) se busca dinámicamente: el seed 01 las recrea con
+-- gen_random_uuid() cada vez, así que NO se puede hardcodear su id.
 --
 -- Aplicación: Management API o SQL Editor.
 -- ============================================================================
@@ -41,14 +42,26 @@ values
   ('f3f3f3f3-f3f3-f3f3-f3f3-f3f3f3f3f3f3', 'test+sales-d1-acme@atribuya.test', 'authenticated', 'authenticated'),
   ('f4f4f4f4-f4f4-f4f4-f4f4-f4f4f4f4f4f4', 'test+sales-d2-acme@atribuya.test', 'authenticated', 'authenticated');
 
--- 3. profiles: 2 directores (Acme/Centro) + 2 sales asignados a cada uno.
+-- 3. profiles: 2 directores + 2 sales asignados, todos en la misma ficha de
+--    Acme (la primera por nombre), buscada dinámicamente vía subquery `acme_loc`.
+with acme_loc as (
+  select id
+  from public.locations
+  where org_id = '7ee47f36-1977-4f80-be5c-05508ce55550'
+  order by name
+  limit 1
+)
 insert into public.profiles
-  (id,                                      full_name,        role,              org_id,                                 location_id,                            director_id,                            slug,              email,                              monthly_goal, status)
-values
-  ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'Test Dir 1 Acme', 'office_director', '7ee47f36-1977-4f80-be5c-05508ce55550', 'c9d17be1-9f4e-4a53-a1dc-02e0be756bb4', null,                                   'test-dir1-acme',  'test+dir1-acme@atribuya.test',      5, 'active'),
-  ('f2f2f2f2-f2f2-f2f2-f2f2-f2f2f2f2f2f2', 'Test Dir 2 Acme', 'office_director', '7ee47f36-1977-4f80-be5c-05508ce55550', 'c9d17be1-9f4e-4a53-a1dc-02e0be756bb4', null,                                   'test-dir2-acme',  'test+dir2-acme@atribuya.test',      5, 'active'),
-  ('f3f3f3f3-f3f3-f3f3-f3f3-f3f3f3f3f3f3', 'Test Sales D1',   'sales',           '7ee47f36-1977-4f80-be5c-05508ce55550', 'c9d17be1-9f4e-4a53-a1dc-02e0be756bb4', 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'test-sales-d1',   'test+sales-d1-acme@atribuya.test',  5, 'active'),
-  ('f4f4f4f4-f4f4-f4f4-f4f4-f4f4f4f4f4f4', 'Test Sales D2',   'sales',           '7ee47f36-1977-4f80-be5c-05508ce55550', 'c9d17be1-9f4e-4a53-a1dc-02e0be756bb4', 'f2f2f2f2-f2f2-f2f2-f2f2-f2f2f2f2f2f2', 'test-sales-d2',   'test+sales-d2-acme@atribuya.test',  5, 'active');
+  (id, full_name, role, org_id, location_id, director_id, slug, email, monthly_goal, status)
+select v.id, v.full_name, v.role, '7ee47f36-1977-4f80-be5c-05508ce55550', acme_loc.id,
+       v.director_id, v.slug, v.email, 5, 'active'
+from acme_loc, (
+  values
+    ('ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid, 'Test Dir 1 Acme', 'office_director'::role_enum, null::uuid,                                       'test-dir1-acme', 'test+dir1-acme@atribuya.test'),
+    ('f2f2f2f2-f2f2-f2f2-f2f2-f2f2f2f2f2f2'::uuid, 'Test Dir 2 Acme', 'office_director'::role_enum, null::uuid,                                       'test-dir2-acme', 'test+dir2-acme@atribuya.test'),
+    ('f3f3f3f3-f3f3-f3f3-f3f3-f3f3f3f3f3f3'::uuid, 'Test Sales D1',   'sales'::role_enum,           'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid,     'test-sales-d1',  'test+sales-d1-acme@atribuya.test'),
+    ('f4f4f4f4-f4f4-f4f4-f4f4-f4f4f4f4f4f4'::uuid, 'Test Sales D2',   'sales'::role_enum,           'f2f2f2f2-f2f2-f2f2-f2f2-f2f2f2f2f2f2'::uuid,     'test-sales-d2',  'test+sales-d2-acme@atribuya.test')
+) as v(id, full_name, role, director_id, slug, email);
 
 commit;
 
