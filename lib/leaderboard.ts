@@ -65,8 +65,10 @@ export type LeaderboardRow = {
   /** Conversión visitas → reseñas, 0..100 (entero). Ver nota de `visits`. */
   conv: number;
   goal: number;
-  /** Atribuya no tiene rol director → siempre false. Se conserva el campo por
-   *  compatibilidad con los componentes (y para reintroducir el rol a futuro). */
+  /** True si la fila es un office_director. Los directores quedan FUERA del
+   *  ranking agregado y del dashboard (gestionan, no compiten: ver el filtro
+   *  role='sales' en getLeaderboard), pero el campo se mantiene para vistas que
+   *  sí listan directores y para el badge "★ Director" de las cards. */
   isDirector: boolean;
   /** Foto de perfil del comercial (o null → la card pinta iniciales). */
   avatarUrl: string | null;
@@ -178,6 +180,8 @@ export async function getLeaderboard(opts: {
       .from("profiles")
       .select("id, full_name, slug, status, monthly_goal, location_id, role, avatar_url")
       .eq("org_id", opts.orgId)
+      // Solo comerciales: los office_director gestionan equipos, no compiten en
+      // el ranking ni cuentan en los KPIs del dashboard. Decisión deliberada.
       .eq("role", "sales")
       .returns<LeaderboardSales[]>(),
     db

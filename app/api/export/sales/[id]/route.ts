@@ -19,7 +19,7 @@ import type { Role } from "@/lib/supabase/types";
  * Query params:
  *   • from / to (yyyy-mm-dd, default mes en curso).
  *
- * Acceso (multi-tenant — Atribuya no tiene rol office_director):
+ * Acceso (multi-tenant):
  *   • admin, reviews_manager → cualquier sales_id DE SU PROPIA ORG.
  *   • sales → solo self (autoservicio desde /panel/resenas).
  *

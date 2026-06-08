@@ -7,9 +7,10 @@
  * Llamado desde `app/api/export/sales/[id]/route.ts`. Mantener este
  * módulo sin side effects facilita los tests unit.
  *
- * Portado del producto base single-tenant. Adaptado a Atribuya: sin rol
- * `office_director` ni columna `department` — la "Zona" es directamente la
- * ficha (location) del comercial.
+ * Portado del producto base single-tenant. Adaptado a Atribuya: la "Zona" es
+ * directamente la ficha (location) del comercial (no hay columna `department`).
+ * Nota: el rol `office_director` sí existe (mig 020/021), pero este export es
+ * por comercial y no lo distingue.
  */
 
 import { buildGoogleReviewListUrl } from "@/lib/google/review-url";
