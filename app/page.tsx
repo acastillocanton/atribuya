@@ -145,7 +145,7 @@ const FAQS: FaqItem[] = [
     q: "¿Cuánto cuesta?",
     a: [
       "La suscripción mensual va según el número de fichas de Google que gestiones: desde 45€/mes (hasta 2 fichas) o 149€/mes (hasta 10). Los comerciales son ilimitados en todos los planes, así que tu equipo crece sin pagar más. Si tienes más de 10 fichas o eres una cadena, lo vemos a medida.",
-      "A eso se suma una implantación llave en mano de 60€ (pago único) que incluye conexión de tus fichas, alta de tu equipo, formación a comerciales y soporte las primeras semanas. Sin permanencia. Para el encaje exacto de tu caso reservamos una llamada de 20 minutos.",
+      "A eso se suma una implantación llave en mano de 129€ (pago único) que incluye conexión de tus fichas, alta de tu equipo, formación a comerciales y soporte las primeras semanas. Sin permanencia. Para el encaje exacto de tu caso reservamos una llamada de 20 minutos.",
     ],
   },
   {
@@ -653,7 +653,7 @@ export default function HomePage() {
             </div>
 
             <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
-              A cualquier plan se suma una implantación llave en mano de 60 €
+              A cualquier plan se suma una implantación llave en mano de 129 €
               (pago único), sin permanencia.
             </p>
 

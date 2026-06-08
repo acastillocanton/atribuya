@@ -142,7 +142,7 @@ const FAQS: FaqItem[] = [
     q: "How much does it cost?",
     a: [
       "The monthly subscription scales with the number of Google listings you manage: from €45/month (up to 2 listings) or €149/month (up to 10). Sales reps are unlimited on every plan, so your team grows without paying more. More than 10 listings or a chain? We tailor a plan with you.",
-      "On top of that there's a one-time €60 turnkey setup that includes connecting your listings, onboarding your team, training your sales reps and support during the first weeks. No minimum contract. For an exact assessment of your case we book a 20-minute call.",
+      "On top of that there's a one-time €129 turnkey setup that includes connecting your listings, onboarding your team, training your sales reps and support during the first weeks. No minimum contract. For an exact assessment of your case we book a 20-minute call.",
     ],
   },
   {
@@ -651,7 +651,7 @@ export default function HomePageEn() {
             </div>
 
             <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
-              A one-time €60 turnkey setup is added to any plan. No minimum
+              A one-time €129 turnkey setup is added to any plan. No minimum
               contract.
             </p>
 

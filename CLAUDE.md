@@ -90,7 +90,7 @@ Migraciones SQL: ejecutar en Supabase Dashboard → SQL Editor en orden numéric
 | 15. Lote 2 — para vender (ranking, helpdesk mig 016, excel individual, parte por ficha) | ✅ 2026-06-06 |
 | 16. Google Places API (Vía A) — vía pública de respaldo, top-5 reseñas recientes (ver §7) | ✅ 2026-06-07 |
 | —. Reescritura de copy de la landing (ES+EN) a tono beneficio-first — métrica del hero, H1, CTAs por resultado, sectores destacados (detalle → handoff §9) | ✅ 2026-06-07 |
-| —. Pricing definido: por nº de fichas, comerciales ilimitados, 2 tiers (45/149 €) + a medida (3 tarjetas), setup plano 60 € (detalle → §8 / handoff §9) | ✅ 2026-06-07 |
+| —. Pricing definido: por nº de fichas, comerciales ilimitados, 2 tiers (45/149 €) + a medida (3 tarjetas), setup plano 129 € (detalle → §8 / handoff §9) | ✅ 2026-06-07 |
 | —. Formulario de lead: campo **teléfono obligatorio** (mig 017 `leads.phone`), verificado E2E (detalle → handoff §9) | ✅ 2026-06-07 |
 | —. Analítica + SEO infra: GA4 (`G-GKYPWE3QRK`) con banner de consentimiento opt-in RGPD (solo páginas públicas, hits solo en prod), evento de conversión `generate_lead`, Search Console verificado (DNS) + vinculado a GA4 + sitemap enviado, dominio canónico invertido a apex (`www` 308 → `atribuya.com`) (detalle → handoff §12) | ✅ 2026-06-07 |
 | —. Página de empresa en LinkedIn (`linkedin.com/company/atribuya`) | ✅ 2026-06-07 |
@@ -277,7 +277,7 @@ Se creará en la misma cuenta Supabase pero como proyecto aparte (`atribuya-prod
 Sin resolver hasta que el usuario las decida (decisiones de negocio, no técnicas):
 
 1. ~~**Pricing tiers**~~: **decidido (2026-06-07, v2)**. Se factura **por nº de fichas**, **comerciales ilimitados** en todos los planes (no penalizar el crecimiento del equipo). **2 tiers + a medida** (la mayoría del mercado es de una sola ficha): Starter hasta 2 fichas **45 €/mes** (destacado, el más vendido) · Professional hasta 10 fichas **149 €/mes** · A medida +10 fichas / cadenas. Entrada a 45 € porque el coste de infra (~45-55 €/mes Vercel+Supabase+Places) es **de plataforma, compartido entre tenants**, no por cliente → margen limpio desde el 2º cliente. Aplicado a la landing (ES+EN). **Pendiente**: enforcement del tope de fichas por plan (hoy `organizations.plan` es placeholder `text` sin validación; requiere migración → "ask first").
-2. ~~**Setup pagado**~~: **decidido (2026-06-07)**: **60 € plano** para todas las fichas (filtro de compromiso, no ingreso). Incluye conexión de fichas, alta del equipo, formación y soporte inicial. **Nota (2026-06-07)**: el programa **Cliente Insignia** y la **garantía de 90 días** se han retirado de la landing (ES+EN) y de la FAQ por decisión del usuario; si se vuelven a ofrecer, hay que reañadir esos bloques en `app/page.tsx` / `app/en/page.tsx`.
+2. ~~**Setup pagado**~~: **decidido (2026-06-07; revisado a 129 € el 2026-06-08)**: **129 € plano** para todas las fichas (filtro de compromiso, no ingreso). Incluye conexión de fichas, alta del equipo, formación y soporte inicial. **Nota (2026-06-07)**: el programa **Cliente Insignia** y la **garantía de 90 días** se han retirado de la landing (ES+EN) y de la FAQ por decisión del usuario; si se vuelven a ofrecer, hay que reañadir esos bloques en `app/page.tsx` / `app/en/page.tsx`.
 3. **Billing**: primeros 5-8 clientes facturación manual con Holded. Stripe a partir del cliente 6-8.
 4. **Mover rutas autenticadas bajo `/o/[orgSlug]/...`**: deferred en Fase 6. Reevaluar cuando llegue al cliente #5.
 
