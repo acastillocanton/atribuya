@@ -29,7 +29,8 @@ export function InviteSalesButton({ locations }: { locations: LocationOption[] }
         email: String(formData.get("email") ?? ""),
         phone: String(formData.get("phone") ?? ""),
         locationId: String(formData.get("locationId") ?? ""),
-        monthlyGoal: String(formData.get("monthlyGoal") ?? "50"),
+        monthlyGoal: String(formData.get("monthlyGoal") ?? "5"),
+        commissionRate: String(formData.get("commissionRate") ?? ""),
       };
       const result = await inviteSales(input as never);
       if (!result.ok) {
@@ -202,8 +203,19 @@ export function InviteSalesButton({ locations }: { locations: LocationOption[] }
                       type="number"
                       min={0}
                       max={1000}
-                      defaultValue={50}
+                      defaultValue={5}
                       required
+                      style={inputStyle}
+                    />
+                  </Field>
+                  <Field label="Tarifa por reseña (€, opcional)">
+                    <input
+                      name="commissionRate"
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      inputMode="decimal"
+                      placeholder="Sin tarifa"
                       style={inputStyle}
                     />
                   </Field>

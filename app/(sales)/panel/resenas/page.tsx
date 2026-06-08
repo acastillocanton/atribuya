@@ -11,7 +11,8 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import {
   parseRange,
-  defaultShortcuts,
+  commissionShortcuts,
+  commissionPeriodRange,
   type DateRange,
 } from "@/lib/date-range";
 
@@ -60,8 +61,8 @@ export default async function MisResenasPage({
 }) {
   const params = await searchParams;
   const now = new Date();
-  const range = parseRange(params.from, params.to, now);
-  const shortcuts = defaultShortcuts(now);
+  const range = parseRange(params.from, params.to, now, commissionPeriodRange);
+  const shortcuts = commissionShortcuts(now);
 
   let profile: SalesProfile;
   let reviews: ReviewRow[];

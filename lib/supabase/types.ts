@@ -83,6 +83,7 @@ export type Database = {
           email: string | null;
           phone: string | null;
           monthly_goal: number;
+          commission_rate: number | null;
           status: ProfileStatus;
           avatar_url: string | null;
           joined_at: string;
@@ -98,6 +99,7 @@ export type Database = {
           email?: string | null;
           phone?: string | null;
           monthly_goal?: number;
+          commission_rate?: number | null;
           status?: ProfileStatus;
           avatar_url?: string | null;
           joined_at?: string;

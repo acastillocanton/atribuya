@@ -27,3 +27,13 @@ export function avatarColor(name: string): string {
   const code = name.charCodeAt(0) || 65;
   return palette[code % palette.length] ?? "#D2D2D7";
 }
+
+/**
+ * Formatea un importe en euros con separador decimal español (coma). Sin
+ * decimales si es entero; con 2 si no. Ej.: 2 → "2 €", 2.5 → "2,50 €".
+ */
+export function formatEuro(amount: number): string {
+  const isInt = Number.isInteger(amount);
+  const n = isInt ? String(amount) : amount.toFixed(2).replace(".", ",");
+  return `${n} €`;
+}

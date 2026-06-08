@@ -5,7 +5,7 @@ import { Stars } from "@/components/ui/Stars";
 import { Pill } from "@/components/ui/Pill";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { parseRange, defaultShortcuts } from "@/lib/date-range";
+import { parseRange, commissionShortcuts, commissionPeriodRange } from "@/lib/date-range";
 import { RangePicker } from "@/components/ui/RangePicker";
 import { SyncNowButton } from "@/components/ui/SyncNowButton";
 import { RemovalControls } from "@/components/ui/RemovalControls";
@@ -63,7 +63,7 @@ export default async function ManagerResenasPage({
   }
 
   const supabase = await createClient();
-  const range = parseRange(params.from, params.to);
+  const range = parseRange(params.from, params.to, new Date(), commissionPeriodRange);
 
   // El filtro "removed" es una pseudo-categoría dentro de match_state: si el
   // usuario lo elige, mostramos solo eliminadas y no filtramos por match
@@ -124,7 +124,7 @@ export default async function ManagerResenasPage({
   if (params.location_id) exportHref.set("location_id", params.location_id);
   if (params.match_state) exportHref.set("match_state", params.match_state);
 
-  const shortcuts = defaultShortcuts();
+  const shortcuts = commissionShortcuts();
 
   const fmtDateTime = (iso: string) =>
     new Date(iso).toLocaleString("es-ES", {

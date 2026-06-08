@@ -40,6 +40,18 @@ async function assertCanManageSales(): Promise<
   return { ok: true, orgId: actor.org_id };
 }
 
+// Tarifa €/reseña: acepta string del formulario ("", "20", "2,5"), número o
+// null. Vacío → null (tarifa sin configurar). Negativos/no-numéricos → null.
+const commissionRateSchema = z
+  .union([z.string(), z.number(), z.null(), z.undefined()])
+  .transform((v) => {
+    if (v === null || v === undefined) return null;
+    const s = String(v).trim().replace(",", ".");
+    if (s === "") return null;
+    const n = Number(s);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  });
+
 const inviteSchema = z.object({
   fullName: z.string().min(2, "Nombre demasiado corto.").max(120),
   email: z.string().email("Email inválido."),
@@ -51,6 +63,7 @@ const inviteSchema = z.object({
     .transform((v) => (v && v.trim() !== "" ? v.trim() : null)),
   locationId: z.string().uuid("Selecciona una ficha."),
   monthlyGoal: z.coerce.number().int().min(0).max(1000),
+  commissionRate: commissionRateSchema,
 });
 
 export type InviteSalesInput = z.infer<typeof inviteSchema>;
@@ -79,6 +92,7 @@ export async function inviteSales(input: InviteSalesInput): Promise<
     extra: {
       location_id: parsed.data.locationId,
       monthly_goal: parsed.data.monthlyGoal,
+      commission_rate: parsed.data.commissionRate,
     },
     nextPath: "/panel",
     revalidate: ["/comerciales"],
@@ -90,6 +104,7 @@ const updateSchema = z.object({
   monthlyGoal: z.coerce.number().int().min(0).max(1000),
   locationId: z.string().uuid("Selecciona una ficha."),
   status: z.enum(["invited", "active", "paused"]),
+  commissionRate: commissionRateSchema,
 });
 
 export type UpdateSalesInput = z.input<typeof updateSchema>;
@@ -112,6 +127,7 @@ export async function updateSales(input: UpdateSalesInput) {
       monthly_goal: parsed.data.monthlyGoal,
       location_id: parsed.data.locationId,
       status: parsed.data.status,
+      commission_rate: parsed.data.commissionRate,
     } as never)
     .eq("id", parsed.data.id)
     .eq("role", "sales");

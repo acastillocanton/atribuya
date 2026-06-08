@@ -21,6 +21,7 @@ export type SalesEditCardProps = {
   initial: {
     locationId: string | null;
     monthlyGoal: number;
+    commissionRate: number | null;
     status: ProfileStatus;
   };
 };
@@ -44,6 +45,9 @@ export function SalesEditCard({
     initial.locationId ?? locations[0]?.id ?? "",
   );
   const [monthlyGoal, setMonthlyGoal] = useState(initial.monthlyGoal);
+  const [commissionRate, setCommissionRate] = useState(
+    initial.commissionRate === null ? "" : String(initial.commissionRate),
+  );
   const [status, setStatus] = useState<ProfileStatus>(initial.status);
 
   const currentLocation = locations.find((l) => l.id === locationId);
@@ -57,6 +61,9 @@ export function SalesEditCard({
   function onCancel() {
     setLocationId(initial.locationId ?? locations[0]?.id ?? "");
     setMonthlyGoal(initial.monthlyGoal);
+    setCommissionRate(
+      initial.commissionRate === null ? "" : String(initial.commissionRate),
+    );
     setStatus(initial.status);
     setError(null);
     setEditing(false);
@@ -68,6 +75,7 @@ export function SalesEditCard({
       id,
       locationId,
       monthlyGoal,
+      commissionRate,
       status,
     };
     startTransition(async () => {
@@ -149,6 +157,32 @@ export function SalesEditCard({
               />
             ) : (
               <span style={{ fontSize: 13.5 }}>{monthlyGoal} reseñas/mes</span>
+            )}
+          </dd>
+        </div>
+
+        {/* Tarifa de comisión (€ por reseña abonable) */}
+        <div style={rowGrid}>
+          <dt style={dtStyle}>Tarifa por reseña</dt>
+          <dd style={{ margin: 0 }}>
+            {editing ? (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  inputMode="decimal"
+                  placeholder="Sin tarifa"
+                  value={commissionRate}
+                  onChange={(e) => setCommissionRate(e.target.value)}
+                  style={{ ...inputStyle, width: 120 }}
+                />
+                <span style={{ fontSize: 13.5, color: "var(--ink-4)" }}>€/reseña</span>
+              </span>
+            ) : (
+              <span style={{ fontSize: 13.5 }}>
+                {commissionRate === "" ? "Sin tarifa" : `${commissionRate} €/reseña`}
+              </span>
             )}
           </dd>
         </div>

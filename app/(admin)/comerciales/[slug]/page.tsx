@@ -8,7 +8,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { RangePicker } from "@/components/ui/RangePicker";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { parseRange, defaultShortcuts, isFullNaturalMonth } from "@/lib/date-range";
+import { parseRange, commissionShortcuts, commissionPeriodRange, isFullNaturalMonth } from "@/lib/date-range";
 import type { ProfileStatus } from "@/lib/supabase/types";
 import { DeleteSalesButton } from "../DeleteSalesButton";
 import { ResendAccessButton } from "@/components/ui/ResendAccessButton";
@@ -27,6 +27,7 @@ type SalesDetail = {
   email: string | null;
   phone: string | null;
   monthly_goal: number;
+  commission_rate: number | null;
   status: ProfileStatus;
   joined_at: string;
   location_id: string | null;
@@ -57,9 +58,9 @@ type ReviewRow = {
 export default async function ComercialDetallePage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const sp = await searchParams;
-  const range = parseRange(sp.from, sp.to);
+  const range = parseRange(sp.from, sp.to, new Date(), commissionPeriodRange);
   const isMonthRange = isFullNaturalMonth(range);
-  const shortcuts = defaultShortcuts();
+  const shortcuts = commissionShortcuts();
   let viewerRole: string | null = null;
 
   if (!isSupabaseConfigured()) {
@@ -106,7 +107,7 @@ export default async function ComercialDetallePage({ params, searchParams }: Pag
     supabase
       .from("profiles")
       .select(
-        "id, full_name, slug, email, phone, monthly_goal, status, joined_at, location_id, location:locations(id, name)",
+        "id, full_name, slug, email, phone, monthly_goal, commission_rate, status, joined_at, location_id, location:locations(id, name)",
       )
       .eq("slug", slug)
       .eq("role", "sales")
@@ -327,6 +328,7 @@ export default async function ComercialDetallePage({ params, searchParams }: Pag
               initial={{
                 locationId: sales.location_id,
                 monthlyGoal: sales.monthly_goal,
+                commissionRate: sales.commission_rate,
                 status: sales.status,
               }}
             />
@@ -687,6 +689,10 @@ function SalesReadOnlyCard({
         <Term label="Teléfono" value={sales.phone ?? "—"} />
         <Term label="Ficha asignada" value={sales.location?.name ?? "—"} />
         <Term label="Objetivo mensual" value={String(sales.monthly_goal)} />
+        <Term
+          label="Tarifa por reseña"
+          value={sales.commission_rate === null ? "Sin tarifa" : `${sales.commission_rate} €/reseña`}
+        />
         <Term label="Estado" value={statusLabel} />
         <Term label="Alta" value={joinedFmt} />
       </dl>
