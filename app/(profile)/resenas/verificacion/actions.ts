@@ -295,14 +295,24 @@ export async function claimReview(input: z.input<typeof claimSchema>) {
 
   // Reclamar. `.is("sales_id", null)` hace la operación race-safe (si otro se
   // adelanta, no afecta filas). La RLS impone ficha/org/estado final.
-  const { error } = await supabase
+  const { data: claimed, error } = await supabase
     .from("reviews")
     .update({ sales_id: user.id, match_state: "counted", client_id: clientId } as never)
     .eq("id", parsed.data.reviewId)
-    .is("sales_id", null);
+    .is("sales_id", null)
+    .select("id");
   if (error) {
     console.error("[verificacion] claimReview failed:", error);
     return { ok: false as const, error: error.message };
+  }
+  if (!claimed || claimed.length === 0) {
+    // Otro comercial/cron atribuyó la reseña entre medias. Si habíamos creado
+    // un cliente al vuelo para esta reclamación, lo borramos para no dejarlo
+    // huérfano (no llegó a vincularse a ninguna reseña).
+    if (wasNewClient && clientId) {
+      await supabase.from("clients").delete().eq("id", clientId);
+    }
+    return { ok: false as const, error: "Esta reseña ya fue atribuida." };
   }
 
   await audit(parsed.data.reviewId, "claim", {

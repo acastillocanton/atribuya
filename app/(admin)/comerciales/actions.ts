@@ -147,7 +147,8 @@ export async function updateSales(input: UpdateSalesInput) {
       director_id: parsed.data.directorId,
     } as never)
     .eq("id", parsed.data.id)
-    .eq("role", "sales");
+    .eq("role", "sales")
+    .eq("org_id", auth.orgId);
 
   if (error) {
     console.error("[comerciales] updateSales failed:", error);

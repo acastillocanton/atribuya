@@ -69,7 +69,7 @@ export default async function ComercialDetallePage({ params, searchParams }: Pag
       <>
         <Topbar
           title="Detalle"
-          subtitle="Modo demo — sin base de datos"
+          subtitle="Modo demo (sin base de datos)"
           breadcrumb="Comerciales"
         />
         <div style={{ padding: "24px 32px" }}>

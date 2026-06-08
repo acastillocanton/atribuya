@@ -29,13 +29,16 @@ async function requireAdmin() {
   if (!user) return { error: "unauthorized" as const, status: 401 };
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, org_id")
     .eq("id", user.id)
-    .maybeSingle<{ role: string }>();
+    .maybeSingle<{ role: string; org_id: string | null }>();
   if (profile?.role !== "admin") {
     return { error: "forbidden" as const, status: 403 };
   }
-  return { ok: true as const };
+  if (!profile.org_id) {
+    return { error: "forbidden" as const, status: 403 };
+  }
+  return { ok: true as const, orgId: profile.org_id };
 }
 
 type FailedRow = {
@@ -51,8 +54,11 @@ type FailedRow = {
   };
 };
 
-async function loadPending(): Promise<FailedRow[]> {
+async function loadPending(orgId: string): Promise<FailedRow[]> {
   const admin = createServiceClient();
+  // Service-role salta RLS: filtramos por org_id para no listar reseñas (ni
+  // sus emails/contenido vía payload) de otras orgs. notify_failed lleva
+  // org_id (lo escribe el cron en process-reviews).
   // notify_failed que no tiene un notify_retry_ok posterior para la misma
   // review (entity_id). Lo hacemos en dos queries por simplicidad.
   const { data: failed } = await admin
@@ -60,6 +66,7 @@ async function loadPending(): Promise<FailedRow[]> {
     .select("id, entity_id, created_at, payload")
     .eq("entity_type", "review")
     .eq("action", "notify_failed")
+    .eq("org_id", orgId)
     .order("created_at", { ascending: false })
     .limit(500)
     .returns<FailedRow[]>();
@@ -71,6 +78,7 @@ async function loadPending(): Promise<FailedRow[]> {
     .select("entity_id")
     .eq("entity_type", "review")
     .eq("action", "notify_retry_ok")
+    .eq("org_id", orgId)
     .in("entity_id", reviewIds)
     .returns<{ entity_id: string }[]>();
   const okSet = new Set((succeeded ?? []).map((s) => s.entity_id));
@@ -83,7 +91,7 @@ export async function GET() {
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
-  const pending = await loadPending();
+  const pending = await loadPending(auth.orgId);
   return NextResponse.json({ ok: true, pending });
 }
 
@@ -101,7 +109,7 @@ export async function POST(request: NextRequest) {
     // body vacío o no-JSON → reintentar todos
   }
 
-  const pending = await loadPending();
+  const pending = await loadPending(auth.orgId);
   const targets = ids ? pending.filter((p) => ids!.includes(p.id)) : pending;
   if (targets.length === 0) {
     return NextResponse.json({ ok: true, retried: 0, succeeded: 0, failed: 0 });
@@ -119,6 +127,7 @@ export async function POST(request: NextRequest) {
       "id, author_name, rating, text, match_confidence, sales_id, sales:profiles!reviews_sales_id_fkey(full_name, email, status), location:locations(name), client:clients(full_name)",
     )
     .in("id", reviewIds)
+    .eq("org_id", auth.orgId)
     .is("removed_at", null)
     .returns<
       Array<{
@@ -171,6 +180,7 @@ export async function POST(request: NextRequest) {
       auditRows.push({
         entity_type: "review",
         entity_id: reviewId,
+        org_id: auth.orgId,
         action: "notify_retry_failed",
         payload: {
           retry_of: t.id,
@@ -185,6 +195,7 @@ export async function POST(request: NextRequest) {
       auditRows.push({
         entity_type: "review",
         entity_id: reviewId,
+        org_id: auth.orgId,
         action: "notify_retry_ok",
         payload: { retry_of: t.id, skipped: "skipped" in sendRes && sendRes.skipped },
       });
@@ -193,6 +204,7 @@ export async function POST(request: NextRequest) {
       auditRows.push({
         entity_type: "review",
         entity_id: reviewId,
+        org_id: auth.orgId,
         action: "notify_retry_failed",
         payload: {
           retry_of: t.id,

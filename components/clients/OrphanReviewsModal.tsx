@@ -118,7 +118,7 @@ export function OrphanReviewsModal({
               {autoLinkedCount === 1
                 ? "1 reseña con nombre casi idéntico se vinculó automáticamente."
                 : `${autoLinkedCount} reseñas con nombre casi idéntico se vincularon automáticamente.`}{" "}
-              Las de abajo son menos seguras — revísalas tú.
+              Las de abajo son menos seguras. Revísalas tú.
             </div>
           )}
         </div>
