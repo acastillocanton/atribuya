@@ -8,11 +8,9 @@
 --   ffffffff… → Director 1 (D1)        f2f2f2f2… → Director 2 (D2)
 --   f3f3f3f3… → Sales S1 (equipo D1)   f4f4f4f4… → Sales S2 (equipo D2)
 --
--- Requiere SOLO el seed 01 (orgs/locations) aplicado. NO depende del seed 02.
--- La org Acme y su ficha se buscan DINÁMICAMENTE por slug (`acme-promotora`),
--- porque el seed 01 las recrea con gen_random_uuid() — sus ids NO son fijos.
--- Si Acme no existe, el insert falla con error de constraint (señal de que hay
--- que aplicar el seed 01 primero).
+-- Autosuficiente y NO destructivo: si la org Acme o su ficha no existen, las
+-- crea (sin borrar nada). No depende de los seeds 01/02. Todo se resuelve por
+-- slug (`acme-promotora`), nunca por ids fijos (el seed 01 usa gen_random_uuid).
 -- ============================================================================
 
 begin;
@@ -40,6 +38,19 @@ values
   ('f2f2f2f2-f2f2-f2f2-f2f2-f2f2f2f2f2f2', 'test+dir2-acme@atribuya.test',     'authenticated', 'authenticated'),
   ('f3f3f3f3-f3f3-f3f3-f3f3-f3f3f3f3f3f3', 'test+sales-d1-acme@atribuya.test', 'authenticated', 'authenticated'),
   ('f4f4f4f4-f4f4-f4f4-f4f4-f4f4f4f4f4f4', 'test+sales-d2-acme@atribuya.test', 'authenticated', 'authenticated');
+
+-- 2b. Bootstrap NO destructivo: asegura que existe la org Acme y una ficha
+--     suya (las crea solo si faltan; no borra nada). Así el seed funciona aunque
+--     el seed 01 no se haya aplicado, sin tocar locations existentes.
+insert into public.organizations (name, slug, status, plan, billing_email, contact_name, contact_phone)
+values ('Acme Promotora', 'acme-promotora', 'active', 'standard', 'demo+acme@atribuya.test', 'Ana Pérez', '+34 600 000 001')
+on conflict (slug) do nothing;
+
+insert into public.locations (name, oauth_status, org_id)
+select 'Acme Promotora — Ficha test', 'disconnected'::oauth_status_enum, o.id
+from public.organizations o
+where o.slug = 'acme-promotora'
+  and not exists (select 1 from public.locations l where l.org_id = o.id);
 
 -- 3. profiles. org_id y location_id se resuelven por slug de Acme + su 1ª ficha.
 with acme as (
