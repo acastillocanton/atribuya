@@ -87,3 +87,28 @@ curl -s -X POST "$URL" \
 - **`audit_log_self_insert`**: la policy de inserción en `audit_log` permite a cualquier usuario insertar con `actor_id = auth.uid()` pero **NO filtra por `org_id`**. En la práctica `recordAudit()` corre via service-role y la deuda es teórica, pero conviene corregirlo cuando reescribamos el helper de audit (Fase 3 o 5).
 
 - **`set not null` de `org_id`**: la sección 9 de la migración 012 deja como comentario los `alter table ... alter column org_id set not null`. Aplicar cuando hayamos hecho los seeds finales de PROD (Fase 9 onwards).
+
+## Aislamiento del rol director de oficina (mig 020/021) — casos a verificar
+
+El director (`office_director`) debe ver y gestionar SOLO su equipo (sales con
+`director_id = su id`) dentro de SU org. Casos a comprobar (con dos directores
+D1 y D2 en la misma org A con equipos distintos, y una org B aparte). Ejecutar
+con el JWT del director correspondiente (`set local request.jwt.claims`):
+
+1. **D1 ve solo su equipo**: `select count(*) from profiles` (rol sales) →
+   solo los sales con `director_id = D1`. NO aparecen los del equipo de D2.
+2. **D1 ve solo las reseñas/clientes/share_links de su equipo**: ídem sobre
+   `reviews`, `clients`, `share_links` (sales_id ∈ equipo de D1).
+3. **D1 NO ve nada de la org B**: cualquier `select` cruza-org devuelve 0.
+4. **D1 ve y puede actualizar SU ficha** (`locations` por `current_office_location()`),
+   pero NO otras fichas de su org.
+5. **Reclamar / reasignar acotado**: D1 solo puede UPDATE reseñas de su equipo
+   (RLS `reviews_director_update`); intentar tocar una de D2 no afecta filas.
+6. **Un sales sin `director_id`** queda en el pool del admin (ningún director lo ve).
+7. **Lockdown**: un sales NO puede cambiarse `director_id` por PostgREST
+   (`profiles_self_update` lo congela).
+8. **super_admin sigue viéndolo todo** (sus policies no cambian).
+
+Pendiente de ejecutar con fixtures de dos directores cuando se siembren en la BD
+(hoy los seeds no incluyen `office_director`). El código está verificado por
+typecheck/build/tests; la RLS por las policies de la mig 021.

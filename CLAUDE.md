@@ -95,6 +95,7 @@ Migraciones SQL: ejecutar en Supabase Dashboard → SQL Editor en orden numéric
 | —. Analítica + SEO infra: GA4 (`G-GKYPWE3QRK`) con banner de consentimiento opt-in RGPD (solo páginas públicas, hits solo en prod), evento de conversión `generate_lead`, Search Console verificado (DNS) + vinculado a GA4 + sitemap enviado, dominio canónico invertido a apex (`www` 308 → `atribuya.com`) (detalle → handoff §12) | ✅ 2026-06-07 |
 | —. Página de empresa en LinkedIn (`linkedin.com/company/atribuya`) | ✅ 2026-06-07 |
 | —. Landing: muestra el producto. Capturas reales del admin (`/dashboard`, `/ranking`) + comercial (`/panel/enlace`, `/panel/resenas`) en `public/landing/` con marco de navegador y lightbox (`components/landing/ProductShot.tsx`), más una animación CSS del paso 03 (la atribución resolviéndose, `AttributionAnimation.tsx`, sin vídeo). Script `scripts/capture-landing.py` (modo demo, limpia chrome de dev). ES+EN | ✅ 2026-06-07 |
+| —. **Portado ReseñaHub → Atribuya** (paridad con el producto base, adaptado a multi-tenant). 5 fases desplegadas: comisiones € + ciclo de comisión 20→19 (mig 018), tarjeta/banner ≤2★ en dashboard, autoatribución del comercial «Es mía» (mig 019), autovinculación de reseñas huérfanas al crear cliente, y **rol director de oficina** con equipos `director_id` + RLS por equipo/org (mig 020/021) + `/directores`. Omitido lo específico de Inseryal (departamento/idioma/marca). Detalle → handoff | ✅ 2026-06-08 |
 | —. Google OAuth Business Profile (Vía B) — todas las reseñas | ⏳ esperando aprobación Google (caso `7-4031000041620`, ~18-jun; ver §7) |
 
 Extras (detalle → handoff.md): datos fiscales por org en `/super`, rebrand visual (logos/favicon), fix repo público para deploys Vercel Hobby. La fase 6 (routing) es **parcial**: solo la landing pública lleva prefijo `/o/`; las rutas autenticadas no (las protege RLS — ver §5.4).
@@ -219,7 +220,7 @@ Creado 2026-05-24. **Renombrado en el dashboard `atribuya-dev` → `atribuya`** 
 
 **Decisión (2026-05-24)**: NO se crea un proyecto Supabase separado para prod. Se reusa este. Razones: MVP pre-cliente, free tier en ambos casos, complejidad operativa de 2 entornos no compensa el aislamiento. Cuando entre cliente #2-3 con tráfico real, creamos `atribuya-staging` y este pasa a ser prod oficial. Nombre del proyecto en el dashboard puede renombrarse a "atribuya" (Settings → General).
 
-**Migraciones aplicadas:** 001 → 017. La 015 (calidad de reseñas + lockdown auto-update) aplicada el 2026-06-06. La **016** (helpdesk de soporte multi-tenant — 3 tablas `support_*` + RLS + `support_unread_count()`) aplicada el 2026-06-06. La **017** (`leads_phone` — añade `leads.phone text` nullable para el teléfono del formulario de la landing, obligatorio a nivel app) aplicada el 2026-06-07. El número 017 que el plan original reservaba para la caché de rating nunca se creó (descartada).
+**Migraciones aplicadas:** 001 → 021. La 015 (calidad de reseñas + lockdown auto-update) aplicada el 2026-06-06. La **016** (helpdesk de soporte multi-tenant — 3 tablas `support_*` + RLS + `support_unread_count()`) aplicada el 2026-06-06. La **017** (`leads_phone`) aplicada el 2026-06-07. **Portado ReseñaHub → Atribuya (2026-06-08), todas aplicadas:** **018** (`commission_rate` + objetivo por defecto 5 + lockdown congela tarifa), **019** (verificación abierta al comercial: `current_user_location()` + RLS `reviews_unmatched_location_select`/`reviews_sales_claim_update`, org-scoped), **020** (enum `office_director`, aislada), **021** (`director_id` + constraint `role_requires_location` + `current_office_location()` + RLS de director por equipo y org + lockdown congela `director_id`). El número 017 que el plan original reservaba para la caché de rating nunca se creó (descartada).
 
 **Estado actual de datos:**
 - `organizations` — 2 filas: Acme Promotora (active), Beta Apartamentos (trial) — `dev-seeds/01_*`.
@@ -292,8 +293,8 @@ En orden: ~~Brevo SMTP~~ (✅ hecho 2026-06-06) → ~~Google Cloud Places (Vía 
 ### 8.2 Roadmap de features pendientes (del producto base)
 
 Lotes 1 y 2 hechos (Fases 14-15). Pendiente de portar desde el producto base single-tenant (detalle → handoff §7.8):
-- **🟡 medio**: comisiones por reseña, suite E2E Playwright. *(Caché de rating por ficha: descartada, innecesaria.)*
-- **🟠 grande / toca multi-tenant**: rol "director de oficina" (rediseño RLS), verificación multi-rol.
+- ✅ **Portado (2026-06-08)**: comisiones por reseña, rol "director de oficina" (RLS por equipo/org), autoatribución «Es mía» y autovinculación de huérfanas — todo ya en producción (mig 018-021). Ver §3 / handoff.
+- **🟡 medio**: suite E2E Playwright. *(Caché de rating por ficha: descartada, innecesaria.)*
 - **Pendiente menor del helpdesk**: badge de no-leídos en el sidebar (`support_unread_count()` en el layout) + acceso a Soporte en mobile.
 - **Capturas `public/help/*.png`**: 7/9 regeneradas (modo demo + Playwright, `scripts/capture-help.py`). Pendientes 01 (email magic link) y 06 (diagrama) — se hacen a mano.
 

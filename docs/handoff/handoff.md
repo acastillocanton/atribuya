@@ -353,3 +353,49 @@ curl -X POST https://api.supabase.com/v1/projects/iuiveiznvwjeoyhescmx/database/
 
 ### LinkedIn
 - Página de empresa creada: `linkedin.com/company/atribuya`. Portadas generadas en [public/brand/](../../public/brand/) (`linkedin-cover-light.png` usada, `linkedin-cover-navy.png` alternativa), 1128×191.
+
+## 13. Portado ReseñaHub → Atribuya (2026-06-08)
+
+Llevamos Atribuya a paridad funcional con el producto base single-tenant
+(`00 - Proyecto Original.`, en `.gitignore`), **adaptando cada feature a
+multi-tenant** (toda RLS nueva lleva `and org_id = public.current_org_id()`; las
+escrituras sensibles van por service-role validando propiedad + org en código).
+5 fases, cada una verificada (typecheck + build + 190 tests) y desplegada:
+
+1. **Comisiones € + ciclo de comisión** (`45b605c`, mig 018): `profiles.commission_rate`,
+   objetivo por defecto 5, lockdown congela la tarifa. Helpers de ciclo 20→19 en
+   `lib/date-range.ts` (`commissionPeriodRange`, `commissionShortcuts`, …, día 20 fijo).
+   Panel del comercial con € estimado, "abonables", "Por verificar", "Cierra el X".
+   Edición de tarifa en invitar/editar comercial. Las 6 pantallas arrancan en el ciclo.
+2. **Tarjeta/banner ≤2★** (`8389134`, sin mig): dashboard admin muestra reseñas
+   negativas del periodo + CTA a `/manager/resenas?rating_lte=2`. Reusa el motor de
+   alertas ya existente.
+3. **Autoatribución «Es mía»** (`ba4ae05`, mig 019): verificación reubicada a
+   `(profile)/resenas/verificacion` (abierta por rol). El comercial ve las huérfanas
+   de su ficha y las reclama (RLS `reviews_unmatched_location_select` +
+   `reviews_sales_claim_update`, org-scoped). `claimReview` reusa `createClientRecord`.
+4. **Autovinculación de huérfanas** (`afa31f5`, sin mig): al crear un cliente, las
+   reseñas sueltas con nombre ≥90% se vinculan solas y las 50-89% se ofrecen en
+   `OrphanReviewsModal`. `lib/clients/orphan-reviews.ts` (puro) + acciones por
+   service-role; botón "Buscar reseñas" por fila. Reusa `decideDuplicateForClient`.
+5. **Rol director de oficina** (`5e413cf`, mig 020+021): enum `office_director`,
+   `profiles.director_id` (equipos), `current_office_location()`, y RLS de director
+   por **equipo (`director_id = auth.uid()`) y org** sobre profiles/reviews/clients/
+   share_links/locations + lockdown congela `director_id`. Rol DUAL (productor +
+   gestor de su equipo): sidebar dual, middleware, layouts (admin/sales/profile)
+   role-aware, `/directores` (invitar/gestionar), selector «Director responsable»
+   en comerciales. El leaderboard marca "★ Director".
+
+**Omitido por decisión** (específico del cliente Inseryal, no encaja en un SaaS
+genérico): `brand_enum`, `sales_department_enum`/`department`/`language`, informe
+semanal. Los filtros de comerciales son por oficina (ficha) y director, sin
+departamento/idioma.
+
+**Migraciones**: 018-021 aplicadas en prod (la 020 y 021 deben aplicarse en
+ejecuciones separadas por el 55P04 del enum). Tests de aislamiento del director
+documentados en [docs/tests-multitenancy.md](../tests-multitenancy.md) (pendiente
+sembrar fixtures con dos directores para ejecutarlos contra la BD).
+
+**Migración de datos pendiente**: los seeds (`dev-seeds/`) no incluyen ningún
+`office_director`; cuando se quiera probar el rol end-to-end hay que invitar un
+director desde `/directores` (admin) y asignarle comerciales.
