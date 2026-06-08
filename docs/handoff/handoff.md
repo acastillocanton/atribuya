@@ -402,3 +402,50 @@ cada uno) y `03b_director_isolation_checks.sql`: cada director ve solo su equipo
 **Para probar el rol en la app** (UI end-to-end): los `dev-seeds/03` crean
 directores de prueba pero sin login real (no pasan por GoTrue); para un test de
 UI, invita un director desde `/directores` (como admin) y asígnale comerciales.
+
+## 14. Auditoría de seguridad/rendimiento/calidad (2026-06-08)
+
+Pasada de revisión sobre el fork (excluyendo `00 - Proyecto Original.`): 3 agentes
+(seguridad multi-tenant, rendimiento, calidad) + typecheck/tests. Typecheck limpio,
+190 tests. **3 commits desplegados a prod** (`b1a71db`, `7f19154`, `a8ed581`).
+
+### Arreglado
+Clase de bug detectada: **acciones admin que usan `createServiceClient` (salta RLS)
+filtrando solo por `id`** → fugas cross-tenant. Cerradas todas con `.eq("org_id")`
+del actor + comprobación de filas afectadas antes de borrar cuentas:
+- `resendSalesAccess`/`resendManagerAccess`: generaban magic-link de login de OTRA org.
+- `deleteSales`/`deleteReviewsManager`: borraban el `auth.user` de otra org.
+- `linkGoogleLocation`/`disconnectGoogleLocation`/`updateLocationPlaceId`: operaban
+  sobre fichas de cualquier org (nuevo `assertCanManageLocations()`); `conectar/page`
+  leía la ficha con service-role → pasa a cliente cookie (RLS).
+- `notify-failed`: listaba/reenviaba notificaciones (contenido + emails) de todas las
+  orgs → `requireAdmin` devuelve `org_id` y filtra `audit_log`/`reviews`.
+- `lib/invite`: unicidad de slug ahora por `org_id` (alineado con mig 013).
+- `updateSales`: `.eq("org_id")` de defensa en profundidad.
+- `claimReview`: race-safe (comprueba filas; si la reseña ya fue atribuida, borra el
+  cliente creado al vuelo y devuelve error en vez de reportar falso éxito).
+- Copy: dos guiones largos fuera de strings de UI.
+- `office_director` documentado **fuera del ranking/dashboard** (decisión: gestionan,
+  no compiten); comentarios obsoletos corregidos.
+
+> Regla durable: cualquier query por service-role DEBE re-aplicar `.eq("org_id")`.
+> RLS no protege ese camino (lo salta por diseño), así que los 15/15 tests de
+> aislamiento RLS NO cubren las rutas service-role.
+
+### Pendiente (no bloqueante, anotado)
+- **🟡 Bajo — integridad de datos**: validar que `director_id`/`location_id` asignados
+  en `inviteSales`/`updateSales`/`inviteOfficeDirector` pertenezcan a la org del actor
+  (hoy solo se valida formato UUID). RLS contiene la fuga real (el usuario foráneo no
+  ve nada), es solo dato corrupto.
+- **⚡ Rendimiento — riesgo de timeout**: el primer sync de Business Profile sobre una
+  ficha con histórico procesa reseñas una a una (hasta ~500 × 2-4 queries, `maxDuration=60`).
+  Recomendado: precargar incumbentes (`location_id,author_name`) y duplicados en batch
+  antes del bucle en `lib/cron/process-reviews.ts`. **Bloqueado por la aprobación de la
+  Vía B de Google (~18-jun)**: hasta entonces no puede dispararse en prod. Tocar el matcher
+  = "ask first" + tests delante.
+- **⚡ Índices faltantes** (migración nueva → "ask first"): índice parcial para la
+  verificación del comercial (`reviews(location_id, google_created_at) where sales_id is
+  null and removed_at is null`) y para el edit-merge de Places (`reviews(location_id,
+  author_name) where google_review_id like 'places:%'`).
+- **Tests**: añadir cobertura específica para las rutas service-role (las pruebas RLS no
+  las ven).
