@@ -14,6 +14,7 @@ type SearchParams = Promise<{
   sales_id?: string;
   location_id?: string;
   match_state?: string;
+  rating_lte?: string;
   from?: string;
   to?: string;
 }>;
@@ -89,6 +90,11 @@ export default async function ManagerResenasPage({
 
   if (params.sales_id) query = query.eq("sales_id", params.sales_id);
   if (params.location_id) query = query.eq("location_id", params.location_id);
+  // Filtro de rating máximo (CTA del banner ≤2★ del dashboard: ?rating_lte=2).
+  {
+    const rl = Number(params.rating_lte);
+    if (Number.isInteger(rl) && rl >= 1 && rl <= 5) query = query.lte("rating", rl);
+  }
 
   const [reviewsRes, salesRes, locationsRes] = await Promise.all([
     query.returns<ReviewRow[]>(),
