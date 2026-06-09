@@ -12,6 +12,7 @@ import {
   ListChecks,
   Star,
   Download,
+  Reply,
   Link2,
   LifeBuoy,
   MessageCircle,
@@ -26,6 +27,10 @@ export type SidebarItem = {
   label: string;
   href: string;
   icon: LucideIcon;
+  /** Item deshabilitado (sin enlace), para funciones aún no disponibles. */
+  disabled?: boolean;
+  /** Etiqueta corta a la derecha del item. Ej. "PRONTO". */
+  badge?: string;
 };
 
 export type SidebarGroup = {
@@ -42,7 +47,12 @@ type SidebarProps = {
 
 export function Sidebar({ groups, user }: SidebarProps) {
   const pathname = usePathname() ?? "";
-  const allItems = useMemo(() => groups.flatMap((g) => g.items), [groups]);
+  const allItems = useMemo(
+    // Los items deshabilitados (ej. "Respuestas · PRONTO", href "#") quedan
+    // fuera: su basePath vacío haría prefix-match con cualquier ruta.
+    () => groups.flatMap((g) => g.items).filter((it) => !it.disabled),
+    [groups],
+  );
   const activeId = useMemo(() => pickActiveId(allItems, pathname), [allItems, pathname]);
 
   return (
@@ -110,6 +120,62 @@ export function Sidebar({ groups, user }: SidebarProps) {
               {group.items.map((it) => {
                 const on = it.id === activeId;
                 const Icon = it.icon;
+
+                const iconEl = (
+                  <Icon
+                    aria-hidden="true"
+                    size={16}
+                    strokeWidth={on ? 2 : 1.75}
+                    style={{
+                      color: on ? "var(--ink)" : "var(--ink-4)",
+                      flexShrink: 0,
+                    }}
+                  />
+                );
+                const badgeEl = it.badge && (
+                  <span
+                    style={{
+                      marginLeft: "auto",
+                      fontSize: 9.5,
+                      fontWeight: 600,
+                      letterSpacing: "0.06em",
+                      color: "var(--ink-4)",
+                      border: "1px solid var(--line-strong)",
+                      borderRadius: 5,
+                      padding: "1px 5px",
+                    }}
+                  >
+                    {it.badge}
+                  </span>
+                );
+
+                // Item deshabilitado: sin enlace, atenuado, no enfocable.
+                if (it.disabled) {
+                  return (
+                    <div
+                      key={it.id}
+                      aria-disabled="true"
+                      title="Disponible próximamente"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "7px 10px",
+                        borderRadius: 8,
+                        color: "var(--ink-4)",
+                        fontSize: 13.5,
+                        fontWeight: 500,
+                        opacity: 0.6,
+                        cursor: "default",
+                      }}
+                    >
+                      {iconEl}
+                      <span>{it.label}</span>
+                      {badgeEl}
+                    </div>
+                  );
+                }
+
                 return (
                   <Link
                     key={it.id}
@@ -128,13 +194,9 @@ export function Sidebar({ groups, user }: SidebarProps) {
                     }}
                     aria-current={on ? "page" : undefined}
                   >
-                    <Icon
-                      aria-hidden="true"
-                      size={16}
-                      strokeWidth={on ? 2 : 1.75}
-                      style={{ color: on ? "var(--ink)" : "var(--ink-4)", flexShrink: 0 }}
-                    />
+                    {iconEl}
                     <span>{it.label}</span>
+                    {badgeEl}
                   </Link>
                 );
               })}
@@ -254,24 +316,24 @@ export const ADMIN_SIDEBAR_GROUPS: SidebarGroup[] = [
     label: "Inicio",
     items: [
       { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { id: "ranking", label: "Ranking", href: "/ranking", icon: Trophy },
     ],
   },
   {
     id: "reviews",
     label: "Reseñas",
     items: [
-      { id: "verification", label: "Verificación", href: "/resenas/verificacion", icon: ListChecks },
       { id: "review-list", label: "Lista de reseñas", href: "/manager/resenas", icon: Star },
-      { id: "export", label: "Exportar Excel", href: "/manager/export", icon: Download },
+      { id: "verification", label: "Verificación", href: "/resenas/verificacion", icon: ListChecks },
+      { id: "replies", label: "Respuestas", href: "#", icon: Reply, disabled: true, badge: "PRONTO" },
     ],
   },
   {
     id: "team",
     label: "Equipo",
     items: [
-      { id: "sales", label: "Comerciales", href: "/comerciales", icon: Users },
       { id: "directors", label: "Directores", href: "/directores", icon: Building2 },
-      { id: "ranking", label: "Ranking", href: "/ranking", icon: Trophy },
+      { id: "sales", label: "Comerciales", href: "/comerciales", icon: Users },
       { id: "managers", label: "Gestores", href: "/gestores", icon: UserCog },
     ],
   },
