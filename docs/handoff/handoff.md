@@ -553,3 +553,64 @@ reseñas) sigue bloqueada esperando aprobación de Google (~18-jun).
   prefix-match con cualquier ruta). Solo se tocó el menú de admin; el resto de roles igual.
 - Pendiente menor: la funcionalidad real de "Respuestas" (responder reseñas) no existe; el
   item es solo un marcador visual `PRONTO`.
+
+---
+
+## 17. Email de invitación, fix de formularios, insignias 10 y matcher por mención (2026-06-09)
+
+Tanda de mejoras detectadas probando la app como admin de una org. **Commits**:
+`a7af54f` + `a364f36` (formularios), `8d9971c` + `33e43e9` (email invitación), `04b9618`
+(insignias), `c3ce368` (matcher por mención).
+
+### Email automático al invitar (`8d9971c`, `33e43e9`)
+- Invitar comercial/director/gestor solo generaba un enlace para compartir a mano; el
+  invitado no recibía nada. Ahora `createInvitedProfile` ([lib/invite.ts](../../lib/invite.ts))
+  envía el email por Brevo (best-effort), lee el nombre de la org y devuelve `emailSent`.
+- Nuevo [lib/email/notify-invited-user.ts](../../lib/email/notify-invited-user.ts): plantilla
+  genérica por rol (admin/comercial/responsable de reseñas/director). `notify-invited-admin.ts`
+  pasa a ser un wrapper fino que delega aquí → el flujo `/super` queda intacto.
+- Los 3 modales muestran "enviado por email + enlace de respaldo" o, si falla, el enlace
+  para compartir a mano. Las 3 actions propagan `emailSent` en su tipo de retorno.
+- `33e43e9`: el modal del enlace ya no se cierra solo. El botón de invitar se renderiza
+  también dentro del empty-state; al crear el primero, `revalidatePath` desmontaba esa
+  instancia. Quitado el `revalidate` de la acción; la lista se refresca con `router.refresh()`
+  al cerrar el modal (mismo patrón que §4.33 del original).
+- ⚠️ Requiere `BREVO_SMTP_USER/PASS/FROM_EMAIL` en Vercel (ya presentes).
+
+### Fix formularios — React 19 borraba los campos al fallar (`a7af54f`, `a364f36`)
+`<form action={fn}>` resetea los campos no controlados al terminar la acción, también
+cuando devuelve error (ej. "email ya registrado") → se perdía lo escrito. Cambiado a
+`onSubmit` + `preventDefault` en 7 formularios (invitar comercial/director/gestor, nuevo
+cliente, crear org, editar org, LeadForm). LoginForm no se tocó (su email es controlado).
+
+### Insignias del comercial 4 → 10 (`04b9618`)
+[lib/panel-badges.ts](../../lib/panel-badges.ts) dejaba de colapsar las de volumen/5★ y
+muestra la escalera completa: **Primera reseña** (nueva) · Objetivo del mes · En racha ·
+Podio · Líder (solo con equipo) · 10/25 reseñas · 10/25/**50** (nueva) de 5★. 10 con equipo,
+8 sin equipo (el contador "X de N" se adapta). Icono nuevo `sparkles`. Sin migración.
+
+### Matcher: atribución por mención del comercial en el texto (`c3ce368`)
+Porta del **Proyecto Original** (la copia avanzada de ReseñaHub en `00 - Proyecto Original.`,
+su §4.38) la 2ª señal del matcher. Atribuya se forkeó de una versión anterior y le faltaba.
+
+- [lib/matching/attribute-review.ts](../../lib/matching/attribute-review.ts): `attributeReview`
+  pasa a ser wrapper en 2 pasos. Si la atribución por nombre+tiempo (`primaryAttribution`)
+  NO dio un `counted` sólido, se intenta `attributeByCommercialMention`:
+  - **Tier 1** — el texto nombra a un comercial con enlace abierto en ventana → `counted`
+    a ese comercial + cliente del mejor candidato (confianza 85 + bonus).
+  - **Tier 2** — nombra a un comercial del roster de la ficha sin enlace en ventana →
+    `counted` al comercial sin cliente (confianza 78).
+  - **Guardrail**: >1 comercial mencionado → no adivina (se queda con nombre+tiempo).
+  - `mentionsCommercial` casa por token completo (≥3 letras), nombre de pila o apellido,
+    sin acentos. El código es **idéntico al original** salvo un comentario (quité la
+    referencia a la doc interna §4.38 de Inseryal).
+- Cableado: `ProcessReviewsArgs.commercials`; `process-reviews.ts` enriquece candidatos con
+  `sales_full_name` (de `salesById`) y pasa `text` + roster al matcher. **Ambos crons**
+  (Places + Business Profile) cargan `sales` + `office_director` con `location_id` y
+  construyen `commercialsByLocation` → **scoped por ficha y por tanto por org** (sin fuga
+  cross-tenant). De paso, los crons ahora notifican también a directores productores.
+- Tests del matcher portados (37 casos; 206 en total). Sin migración.
+- ⚠️ Implicación aceptada (igual que el original): un comercial podría inducir a clientes a
+  nombrarlo para auto-atribuirse reseñas. El anti-fraude de duplicados por cliente (mig 015)
+  sigue capando varias reseñas del mismo cliente. Si aparecen falsos positivos, el lever es
+  subir la exigencia de la mención.
