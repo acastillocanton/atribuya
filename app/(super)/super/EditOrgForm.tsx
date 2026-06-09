@@ -64,7 +64,12 @@ export function EditOrgForm({ org, onClose }: Props) {
   // to be selectable so we don't silently change them on save.
   const planInList = PLAN_OPTIONS.some((p) => p.value === org.plan);
 
-  function handleSave(formData: FormData) {
+  // onSubmit + preventDefault: React 19 resetea los campos no controlados al
+  // terminar una <form action={fn}>, también al fallar (aquí volverían a los
+  // valores originales, perdiendo las ediciones). Así se conservan.
+  function handleSave(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     startTransition(async () => {
       setError(null);
       const res = await updateOrg({
@@ -121,7 +126,7 @@ export function EditOrgForm({ org, onClose }: Props) {
           Editar organización
         </h2>
 
-        <form action={handleSave}>
+        <form onSubmit={handleSave}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div style={fieldStyle}>
               <label style={labelStyle}>Nombre comercial *</label>

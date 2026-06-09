@@ -35,7 +35,11 @@ export function CreateOrgForm() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteFullName, setInviteFullName] = useState("");
 
-  function handleCreate(formData: FormData) {
+  // onSubmit + preventDefault: React 19 resetea los campos no controlados al
+  // terminar una <form action={fn}>, también al fallar. Así se conservan.
+  function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     startTransition(async () => {
       setFeedback({ kind: "idle" });
       const res = await createOrg({
@@ -184,7 +188,7 @@ export function CreateOrgForm() {
   }
 
   return (
-    <form action={handleCreate}>
+    <form onSubmit={handleCreate}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div style={fieldStyle}>
           <label style={labelStyle}>Nombre comercial *</label>

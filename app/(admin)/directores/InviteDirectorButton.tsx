@@ -20,7 +20,11 @@ export function InviteDirectorButton({ locations }: { locations: LocationOption[
     setCopied(false);
   }
 
-  function handleSubmit(formData: FormData) {
+  // onSubmit + preventDefault: React 19 resetea los campos no controlados al
+  // terminar una <form action={fn}>, también al fallar. Así se conservan.
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setError(null);
     startTransition(async () => {
       const input = {
@@ -106,7 +110,7 @@ export function InviteDirectorButton({ locations }: { locations: LocationOption[
                 </div>
               </div>
             ) : (
-              <form action={handleSubmit}>
+              <form onSubmit={handleSubmit}>
                 <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
                   <Field label="Nombre completo">
                     <input name="fullName" required minLength={2} maxLength={120} autoFocus style={inputStyle} />

@@ -71,7 +71,12 @@ export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
   const [state, setState] = useState<FormState>({ kind: "idle" });
   const [pending, startTransition] = useTransition();
 
-  function handleSubmit(formData: FormData) {
+  // onSubmit + preventDefault: React 19 resetea los campos no controlados al
+  // terminar una <form action={fn}>, también al fallar la validación. Así se
+  // conservan para que el usuario corrija sin reescribir.
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     startTransition(async () => {
       setState({ kind: "submitting" });
       const res: SubmitLeadResult = await submitLead(formData);
@@ -105,7 +110,7 @@ export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
   const generalError = state.kind === "error" ? state.message : null;
 
   return (
-    <form action={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       {/* Locale hidden — el server action lo lee para devolver mensajes
           de error en el idioma adecuado. */}
       <input type="hidden" name="locale" value={locale} />
