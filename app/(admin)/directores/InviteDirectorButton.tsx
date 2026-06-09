@@ -9,7 +9,7 @@ type LocationOption = { id: string; name: string };
 export function InviteDirectorButton({ locations }: { locations: LocationOption[] }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ link: string; email: string } | null>(null);
+  const [success, setSuccess] = useState<{ link: string; email: string; emailSent: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -40,7 +40,7 @@ export function InviteDirectorButton({ locations }: { locations: LocationOption[
         setError(result.error);
         return;
       }
-      setSuccess({ link: result.inviteLink, email: result.email });
+      setSuccess({ link: result.inviteLink, email: result.email, emailSent: result.emailSent });
     });
   }
 
@@ -78,8 +78,19 @@ export function InviteDirectorButton({ locations }: { locations: LocationOption[
             {success ? (
               <div style={{ padding: "18px 22px" }}>
                 <p style={{ margin: 0, fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.55 }}>
-                  Director invitado. Envíale este enlace de acceso de un solo uso a{" "}
-                  <strong>{success.email}</strong>:
+                  {success.emailSent ? (
+                    <>
+                      Director invitado. Le hemos enviado el acceso por email a{" "}
+                      <strong>{success.email}</strong>. Enlace de respaldo por si
+                      no le llega (que revise spam):
+                    </>
+                  ) : (
+                    <>
+                      Director invitado, pero no pudimos enviarle el email.
+                      Envíale este enlace de acceso de un solo uso a{" "}
+                      <strong>{success.email}</strong>:
+                    </>
+                  )}
                 </p>
                 <div
                   style={{

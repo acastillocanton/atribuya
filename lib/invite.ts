@@ -2,6 +2,7 @@ import "server-only";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
+import { notifyInvitedUser } from "@/lib/email/notify-invited-user";
 
 type CreateInvitedProfileArgs = {
   fullName: string;
@@ -30,7 +31,9 @@ type CreateInvitedProfileArgs = {
  * campos extra del profile y la ruta a la que redirigimos tras el primer
  * login.
  *
- * No se envía email; devolvemos el link al admin para que lo comparta.
+ * Envía además un email de invitación al invitado (best-effort, vía Brevo):
+ * si el correo falla, la invitación NO se rompe y devolvemos `emailSent:false`
+ * para que la UI muestre el enlace de respaldo y se pueda compartir a mano.
  * El link apunta a /auth/confirm (verifyOtp server-side) en lugar del
  * action_link nativo de Supabase porque el verifier-en-cookies del flujo
  * PKCE rompía cuando el invitado abría el link desde otro dispositivo.
@@ -38,7 +41,7 @@ type CreateInvitedProfileArgs = {
 export async function createInvitedProfile(
   args: CreateInvitedProfileArgs,
 ): Promise<
-  | { ok: true; inviteLink: string; email: string }
+  | { ok: true; inviteLink: string; email: string; emailSent: boolean }
   | { ok: false; error: string }
 > {
   const admin = createServiceClient();
@@ -104,8 +107,33 @@ export async function createInvitedProfile(
     return { ok: false, error: profileError.message };
   }
 
+  // Email de invitación al invitado (best-effort). Necesita el nombre de la
+  // org para el copy; lo leemos con el mismo cliente service-role.
+  let emailSent = false;
+  try {
+    const { data: org } = await admin
+      .from("organizations")
+      .select("name")
+      .eq("id", args.orgId)
+      .maybeSingle<{ name: string }>();
+    const mail = await notifyInvitedUser({
+      email: args.email,
+      name: args.fullName,
+      orgName: org?.name ?? "tu organización",
+      inviteLink,
+      appBase: origin,
+      role: args.role,
+    });
+    emailSent = mail.ok;
+    if (!mail.ok) {
+      console.warn("[invite] email de invitación no enviado:", mail);
+    }
+  } catch (err) {
+    console.error("[invite] notifyInvitedUser threw:", err);
+  }
+
   for (const path of args.revalidate) {
     revalidatePath(path);
   }
-  return { ok: true, inviteLink, email: args.email };
+  return { ok: true, inviteLink, email: args.email, emailSent };
 }

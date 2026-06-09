@@ -83,7 +83,7 @@ const inviteSchema = z.object({
 export type InviteSalesInput = z.infer<typeof inviteSchema>;
 
 export async function inviteSales(input: InviteSalesInput): Promise<
-  | { ok: true; inviteLink: string; email: string }
+  | { ok: true; inviteLink: string; email: string; emailSent: boolean }
   | { ok: false; error: string }
 > {
   const auth = await assertCanManageSales();

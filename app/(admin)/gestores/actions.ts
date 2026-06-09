@@ -23,7 +23,7 @@ const inviteManagerSchema = z.object({
 export type InviteManagerInput = z.infer<typeof inviteManagerSchema>;
 
 export async function inviteReviewsManager(input: InviteManagerInput): Promise<
-  | { ok: true; inviteLink: string; email: string }
+  | { ok: true; inviteLink: string; email: string; emailSent: boolean }
   | { ok: false; error: string }
 > {
   const parsed = inviteManagerSchema.safeParse(input);

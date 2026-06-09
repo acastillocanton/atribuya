@@ -13,7 +13,7 @@ export function InviteManagerButton({
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ link: string; email: string } | null>(null);
+  const [success, setSuccess] = useState<{ link: string; email: string; emailSent: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -42,7 +42,7 @@ export function InviteManagerButton({
         setError(result.error);
         return;
       }
-      setSuccess({ link: result.inviteLink, email: result.email });
+      setSuccess({ link: result.inviteLink, email: result.email, emailSent: result.emailSent });
     });
   }
 
@@ -139,9 +139,20 @@ export function InviteManagerButton({
                     lineHeight: 1.55,
                   }}
                 >
-                  Hemos creado el perfil de <strong>{success.email}</strong>. Copia
-                  este enlace y envíaselo — al abrirlo, completará el alta y
-                  entrará directo al panel del gestor.
+                  {success.emailSent ? (
+                    <>
+                      Le hemos enviado el acceso por email a{" "}
+                      <strong>{success.email}</strong>. Enlace de respaldo por si
+                      no le llega (que revise spam):
+                    </>
+                  ) : (
+                    <>
+                      Hemos creado el perfil de <strong>{success.email}</strong>,
+                      pero no pudimos enviarle el email. Copia este enlace y
+                      envíaselo. Al abrirlo, completará el alta y entrará directo
+                      al panel del gestor.
+                    </>
+                  )}
                 </p>
                 <div
                   style={{

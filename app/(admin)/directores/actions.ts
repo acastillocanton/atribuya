@@ -62,7 +62,7 @@ const inviteDirectorSchema = z.object({
 export type InviteDirectorInput = z.input<typeof inviteDirectorSchema>;
 
 export async function inviteOfficeDirector(input: InviteDirectorInput): Promise<
-  { ok: true; inviteLink: string; email: string } | { ok: false; error: string }
+  { ok: true; inviteLink: string; email: string; emailSent: boolean } | { ok: false; error: string }
 > {
   const guard = await assertCanManageDirectors();
   if (!guard.ok) return guard;
