@@ -27,7 +27,12 @@ export function InviteSalesButton({
     setCopied(false);
   }
 
-  function handleSubmit(formData: FormData) {
+  // onSubmit + preventDefault (en vez de <form action={fn}>): React 19 resetea
+  // los campos no controlados al terminar una form action, también al fallar.
+  // Con onSubmit los valores se conservan para que el usuario corrija el error.
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setError(null);
     setSuccess(null);
     startTransition(async () => {
@@ -169,7 +174,7 @@ export function InviteSalesButton({
                 </div>
               </div>
             ) : (
-              <form action={handleSubmit}>
+              <form onSubmit={handleSubmit}>
                 <div
                   style={{
                     padding: "18px 22px",
