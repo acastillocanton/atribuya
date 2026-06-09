@@ -34,6 +34,16 @@ export function isValidPlaceId(placeId: string): boolean {
   return PLACE_ID_PATTERN.test(placeId);
 }
 
+/** Candidato de búsqueda por texto — para el asistente de alta de ficha. */
+export type PlaceCandidate = {
+  placeId: string;
+  name: string;
+  /** formatted_address de Google. */
+  address: string;
+  rating: number | null;
+  totalRatings: number | null;
+};
+
 /** Reseña normalizada — shape compatible con el insert del cron. */
 export type PlacesReview = {
   /** Ya prefijado "places:" para no colisionar con IDs raw de Business
@@ -233,4 +243,94 @@ export async function listPlaceReviews(placeId: string): Promise<PlacesReview[]>
     if (m) mapped.push(m);
   }
   return mapped;
+}
+
+/** Shape parcial de la respuesta del Text Search legacy. */
+type TextSearchResult = {
+  place_id?: string;
+  name?: string;
+  formatted_address?: string;
+  rating?: number;
+  user_ratings_total?: number;
+};
+
+type TextSearchResponse = {
+  status?: string;
+  error_message?: string;
+  results?: TextSearchResult[];
+};
+
+/** Cuántos candidatos como máximo mostramos en el asistente. */
+const MAX_CANDIDATES = 6;
+
+/**
+ * Busca negocios por texto (nombre + ciudad) via Text Search legacy y
+ * devuelve los candidatos para que el admin elija el correcto en el alta de
+ * ficha. Mismo proyecto Cloud, misma API key y mismo producto "Places API"
+ * (legacy) que `listPlaceReviews`.
+ *
+ * Endpoint: GET https://maps.googleapis.com/maps/api/place/textsearch/json
+ *   ?query={texto}&language=es&key={KEY}
+ *
+ * Lanza `PlacesApiError` si Google rechaza (cuota, API key inválida, etc.).
+ * `ZERO_RESULTS` devuelve `[]`.
+ */
+export async function findPlaceCandidates(
+  query: string,
+): Promise<PlaceCandidate[]> {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+  if (!apiKey) {
+    throw new PlacesApiError(
+      "Falta GOOGLE_PLACES_API_KEY en el entorno.",
+      500,
+      "MISSING_API_KEY",
+    );
+  }
+
+  const params = new URLSearchParams({
+    query,
+    language: "es",
+    key: apiKey,
+  });
+  const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?${params.toString()}`;
+  const res = await fetchWithRetry(url, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+  });
+
+  if (!res.ok) {
+    throw new PlacesApiError(
+      `Places API HTTP ${res.status}`,
+      res.status,
+      `HTTP_${res.status}`,
+    );
+  }
+
+  const body = (await res.json()) as TextSearchResponse;
+  const status = body.status ?? "UNKNOWN";
+
+  if (status === "ZERO_RESULTS") return [];
+  if (status !== "OK") {
+    throw new PlacesApiError(
+      body.error_message ?? `Places API status ${status}`,
+      400,
+      status,
+    );
+  }
+
+  const out: PlaceCandidate[] = [];
+  for (const r of body.results ?? []) {
+    const placeId = r.place_id?.trim() ?? "";
+    if (!isValidPlaceId(placeId)) continue;
+    out.push({
+      placeId,
+      name: r.name?.trim() || "(sin nombre)",
+      address: r.formatted_address?.trim() ?? "",
+      rating: typeof r.rating === "number" ? r.rating : null,
+      totalRatings:
+        typeof r.user_ratings_total === "number" ? r.user_ratings_total : null,
+    });
+    if (out.length >= MAX_CANDIDATES) break;
+  }
+  return out;
 }

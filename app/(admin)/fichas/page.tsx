@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { isGoogleOAuthConfigured } from "@/lib/google/business-profile";
 import type { OauthStatus } from "@/lib/supabase/types";
 import { AddFichaButton } from "./AddFichaButton";
 import { DeleteFichaButton } from "./DeleteFichaButton";
@@ -32,6 +33,8 @@ const OAUTH_ERRORS: Record<string, string> = {
   exchange_failed: "Google rechazó el intercambio de tokens. Revisa los datos en Google Cloud Console.",
   no_tokens: "Aún no hay credenciales para esta ficha. Inicia la conexión de nuevo.",
   access_denied: "Cancelaste el consent en Google.",
+  oauth_unavailable:
+    "La conexión con Google (todas las reseñas) aún no está disponible. Mientras tanto, las reseñas recientes ya entran por el Place ID.",
 };
 
 export default async function FichasPage({
@@ -40,6 +43,11 @@ export default async function FichasPage({
   searchParams: SearchParams;
 }) {
   const { connected, oauth_error: oauthError } = await searchParams;
+
+  // Vía B (OAuth Business Profile) solo se ofrece si está configurada en este
+  // entorno. Hoy las env de OAuth no están en producción (pendiente de Google),
+  // así que el botón "Conectar Google" se muestra como "próximamente".
+  const oauthEnabled = isGoogleOAuthConfigured();
 
   let locations: LocationRow[] = [];
   let dbError: string | null = null;
@@ -136,8 +144,8 @@ export default async function FichasPage({
               }}
             >
               Cada apartamento / proyecto se representa por una ficha de Google
-              Business. Empieza por el nombre; el Place ID se rellena
-              automáticamente al conectar OAuth.
+              Business. Busca tu negocio en Google y lo dejamos listo. Las
+              reseñas recientes empiezan a entrar solas.
             </p>
             <AddFichaButton />
           </Card>
@@ -163,7 +171,12 @@ export default async function FichasPage({
               <span></span>
             </div>
             {locations.map((loc, i) => (
-              <FichaRow key={loc.id} loc={loc} last={i === locations.length - 1} />
+              <FichaRow
+                key={loc.id}
+                loc={loc}
+                last={i === locations.length - 1}
+                oauthEnabled={oauthEnabled}
+              />
             ))}
           </Card>
         )}
@@ -172,7 +185,15 @@ export default async function FichasPage({
   );
 }
 
-function FichaRow({ loc, last }: { loc: LocationRow; last: boolean }) {
+function FichaRow({
+  loc,
+  last,
+  oauthEnabled,
+}: {
+  loc: LocationRow;
+  last: boolean;
+  oauthEnabled: boolean;
+}) {
   // Estado consolidado de sincronización: la ficha trae reseñas si tiene
   // Business Profile conectado (preferido, paginable) o Places API vía
   // google_place_id. Si tiene OAuth en error pero NO tiene place_id, queda
@@ -273,7 +294,7 @@ function FichaRow({ loc, last }: { loc: LocationRow; last: boolean }) {
         <EditPlaceIdButton id={loc.id} currentPlaceId={loc.google_place_id} />
         {loc.oauth_status === "connected" ? (
           <DisconnectGoogleButton id={loc.id} name={loc.name} />
-        ) : (
+        ) : oauthEnabled ? (
           <a
             href={`/api/google/oauth/start?location_id=${loc.id}`}
             style={{
@@ -289,6 +310,22 @@ function FichaRow({ loc, last }: { loc: LocationRow; last: boolean }) {
           >
             {loc.oauth_status === "error" ? "Reconectar" : "Conectar Google"}
           </a>
+        ) : (
+          <span
+            title="La conexión con Google (todas las reseñas) llegará pronto. Mientras tanto, con el Place ID ya entran las reseñas recientes."
+            style={{
+              padding: "6px 11px",
+              border: "1px dashed var(--line-strong)",
+              borderRadius: 8,
+              fontSize: 12.5,
+              color: "var(--ink-4)",
+              fontWeight: 500,
+              background: "transparent",
+              cursor: "help",
+            }}
+          >
+            Conectar Google · próximamente
+          </span>
         )}
         <DeleteFichaButton id={loc.id} name={loc.name} />
       </div>

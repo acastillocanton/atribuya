@@ -51,7 +51,18 @@ export async function GET(request: NextRequest) {
   const nonce = randomBytes(24).toString("hex");
   const state = `${nonce}.${locationId}`;
 
-  const consentUrl = getOAuthStartUrl(state);
+  // Si las env vars de OAuth no están configuradas (Vía B sigue pendiente de
+  // aprobación de Google), getOAuthStartUrl lanza. Capturamos y redirigimos a
+  // /fichas con un aviso en vez de dejar una página en blanco (500).
+  let consentUrl: string;
+  try {
+    consentUrl = getOAuthStartUrl(state);
+  } catch (err) {
+    console.error("[oauth/start] OAuth no configurado:", err);
+    return NextResponse.redirect(
+      new URL("/fichas?oauth_error=oauth_unavailable", request.url),
+    );
+  }
 
   const response = NextResponse.redirect(consentUrl);
   response.cookies.set(STATE_COOKIE, state, {

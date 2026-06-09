@@ -66,6 +66,20 @@ function requireEnv(): { clientId: string; clientSecret: string; redirectUri: st
   return { clientId, clientSecret, redirectUri };
 }
 
+/**
+ * ¿Está configurado el OAuth de Business Profile en este entorno? No lanza,
+ * solo comprueba que las tres env vars están presentes. Lo usa la UI para
+ * mostrar "Conectar Google" como disponible o "próximamente" (Vía B sigue
+ * pendiente de aprobación de Google y sus env no están en producción).
+ */
+export function isGoogleOAuthConfigured(): boolean {
+  return Boolean(
+    process.env.GOOGLE_CLIENT_ID &&
+      process.env.GOOGLE_CLIENT_SECRET &&
+      process.env.GOOGLE_OAUTH_REDIRECT_URI,
+  );
+}
+
 export function getOAuthStartUrl(state: string): string {
   const { clientId, redirectUri } = requireEnv();
   const params = new URLSearchParams({

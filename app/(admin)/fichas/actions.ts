@@ -5,6 +5,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireOrgContext } from "@/lib/supabase/org";
+import {
+  findPlaceCandidates,
+  PlacesApiError,
+  type PlaceCandidate,
+} from "@/lib/google/places";
 
 /**
  * Comprueba que el caller es admin y devuelve su org_id. Las acciones de
@@ -30,6 +35,43 @@ async function assertCanManageLocations(): Promise<
   if (actor?.role !== "admin") return { ok: false, error: "No autorizado." };
   if (!actor.org_id) return { ok: false, error: "Tu perfil no tiene organización asignada." };
   return { ok: true, orgId: actor.org_id };
+}
+
+const searchSchema = z.object({
+  query: z.string().trim().min(3, "Escribe al menos 3 caracteres.").max(160),
+});
+
+/**
+ * Busca el negocio del admin en Google (Text Search legacy) para autorrellenar
+ * el Place ID en el alta de ficha. La API key vive solo en el servidor: esta
+ * action es el único punto que la usa de cara al asistente. Admin-only.
+ */
+export async function searchPlaces(
+  input: z.input<typeof searchSchema>,
+): Promise<
+  | { ok: true; candidates: PlaceCandidate[] }
+  | { ok: false; error: string }
+> {
+  const auth = await assertCanManageLocations();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const parsed = searchSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+  try {
+    const candidates = await findPlaceCandidates(parsed.data.query);
+    return { ok: true, candidates };
+  } catch (err) {
+    if (err instanceof PlacesApiError) {
+      console.error("[fichas] searchPlaces Places API error:", err.code, err.message);
+      return {
+        ok: false,
+        error: "No se pudo buscar en Google ahora mismo. Inténtalo de nuevo en un momento.",
+      };
+    }
+    console.error("[fichas] searchPlaces failed:", err);
+    return { ok: false, error: "No se pudo completar la búsqueda." };
+  }
 }
 
 const createSchema = z.object({
@@ -64,7 +106,11 @@ export async function createLocation(input: CreateLocationInput) {
     google_place_id: parsed.data.googlePlaceId,
     org_id: orgCtx.orgId,
   };
-  const { error } = await supabase.from("locations").insert(payload as never);
+  const { data: created, error } = await supabase
+    .from("locations")
+    .insert(payload as never)
+    .select("id")
+    .single<{ id: string }>();
   if (error) {
     if (error.code === "23505") {
       return { error: "Ya existe una ficha con ese Google Place ID." };
@@ -73,7 +119,7 @@ export async function createLocation(input: CreateLocationInput) {
     return { error: "No se pudo crear la ficha." };
   }
   revalidatePath("/fichas");
-  return { ok: true };
+  return { ok: true, id: created?.id ?? null };
 }
 
 const linkSchema = z.object({
