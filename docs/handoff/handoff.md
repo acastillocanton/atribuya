@@ -2,7 +2,7 @@
 
 > Documento de retorno rápido. Para cuando no hayas tocado el proyecto en semanas y necesitas saber exactamente dónde estás y qué hacer a continuación.
 >
-> Actualizado: 2026-06-07
+> Actualizado: 2026-06-09
 
 ---
 
@@ -57,6 +57,7 @@ SaaS B2B multi-tenant que atribuye reseñas de Google Business Profile a comerci
 | — | Google Cloud — OAuth Business Profile (Vía B) | ⏳ esperando a Google | 2026-06-07 |
 | 8 | DPA finalizado + plantilla `.docx` firmable | ✅ | `6b3d598` · 2026-06-07 |
 | — | Reescritura de copy de la landing (tono beneficio-first) | ✅ | 2026-06-07 |
+| — | Asistente de alta de ficha (búsqueda Google, Vía A) + fix OAuth en blanco + reorden sidebar admin (→ §16) | ✅ | `1be88e2`→`8487971` · 2026-06-09 |
 
 **Último trabajo (2026-06-07)**: cerrados **dos** bloqueantes del camino crítico. **(1) Google Places API (Vía A)**: proyecto Cloud `atribuya`, Places API legacy habilitada, API key restringida, facturación activa + cuota 500/día + alerta 10 €/mes; `GOOGLE_PLACES_API_KEY` en `.env.local` y Vercel; probado E2E (Telepizza Benicàssim). Es la vía pública de respaldo (top-5 reseñas recientes por ficha). **(2) DPA finalizado**: `docs/legal/dpa.md` pulido (datos del Encargado unificados, plazos rellenos, jurisdicción = Castellón) + plantilla firmable `docs/legal/dpa.docx`. Además: **OAuth Vía B** dejada configurada (consent screen Testing, OAuth client, APIs habilitadas) y **solicitud de acceso a la Reviews API v4 enviada** (caso Google `7-4031000041620`, ~7-10 días hábiles) — con recordatorio remoto programado para el 18-jun (`trig_01CBuCBCcBdJuvRfr5VeBpyi`).
 
@@ -498,3 +499,57 @@ fila + email automático).
 - ⚠️ **Verificar en Vercel** que `BREVO_SMTP_USER`/`BREVO_SMTP_PASS`/`BREVO_FROM_EMAIL`
   están en producción (las mismas del resto de transaccionales). Si faltan, el email se
   salta y solo queda el enlace de respaldo.
+
+---
+
+## 16. Asistente de alta de ficha (Vía A) + fix OAuth en blanco + reorden sidebar (2026-06-09)
+
+Probando el alta de fichas como admin de una org se vieron tres cosas: el formulario era
+hueco (creaba fichas sin Place ID → sin reseñas), "Conectar Google" daba **página en
+blanco** en prod, y el orden del sidebar no coincidía con el del producto base. Todo
+resuelto y desplegado. **Commits**: `1be88e2` (asistente + fix OAuth), `9f5cb09` (nota de
+ayuda), `8487971` (reorden sidebar).
+
+**Decisión de fondo**: priorizar **Vía A** (Places API, top-5 reseñas recientes), que
+**funciona hoy** y solo necesita el Place ID. **Vía A no necesita la cuenta de Google del
+cliente** (el Place ID es público; las reseñas entran con la `GOOGLE_PLACES_API_KEY` de la
+plataforma). Esto permite que el proveedor deje la ficha 100% operativa en el onboarding
+(justifica los 129 € de setup) sin tocar nada del cliente. Vía B (OAuth, todas las
+reseñas) sigue bloqueada esperando aprobación de Google (~18-jun).
+
+### Asistente de alta (`1be88e2`)
+- `lib/google/places.ts`: nueva `findPlaceCandidates(query)` con **Text Search legacy**
+  (`/place/textsearch/json`), reusando `GOOGLE_PLACES_API_KEY`, `fetchWithRetry`,
+  `PlacesApiError` e `isValidPlaceId`. Verificado que el endpoint está habilitado (devuelve
+  hasta 20 candidatos con name/address/place_id/rating). Tipo `PlaceCandidate` exportado.
+- `app/(admin)/fichas/actions.ts`: server action `searchPlaces(query)` (admin-only vía
+  `assertCanManageLocations`, la API key nunca sale al cliente). `createLocation` ahora
+  devuelve el `id` de la fila nueva (para el "Sincronizar ahora" del paso final).
+- `AddFichaButton.tsx`: el modal pasa a **asistente de 4 pasos** (buscar → elegir candidato
+  → confirmar/nombrar → listo + Sincronizar ahora), con escape a "Place ID a mano".
+- Copy del empty-state de `/fichas` actualizado a Vía-A-first.
+
+### Fix de la página en blanco (`1be88e2`)
+- Causa: `/api/google/oauth/start` llamaba a `getOAuthStartUrl()` **sin try/catch**; con las
+  env de OAuth ausentes en prod (Vía B pendiente), `requireEnv()` lanzaba → 500/blanco.
+- `app/api/google/oauth/start/route.ts`: try/catch → redirige a
+  `/fichas?oauth_error=oauth_unavailable` con banner, en vez de 500.
+- `lib/google/business-profile.ts`: nuevo `isGoogleOAuthConfigured()` (no lanza). `/fichas`
+  lo usa para degradar el botón a **"Conectar Google · próximamente"** (deshabilitado, con
+  tooltip) mientras Vía B no esté. Se reactiva solo cuando se suban las env de OAuth.
+- Nota de ayuda fija bajo la tabla de fichas (`9f5cb09`, `SyncMethodsHelp`) explicando
+  **Places API** (activo, sin conectar cuenta) vs **Conectar Google** (histórico completo,
+  al aprobar Google).
+
+### Reorden del sidebar de admin (`8487971`)
+- `components/layout/Sidebar.tsx`: `SidebarItem` soporta ahora `disabled` (sin enlace,
+  atenuado) y `badge` (etiqueta corta a la derecha). `ADMIN_SIDEBAR_GROUPS` reordenado para
+  igualar al producto base: **INICIO** Dashboard·Ranking · **RESEÑAS** Lista de
+  reseñas·Verificación·Respuestas (`PRONTO`, deshabilitado) · **EQUIPO**
+  Directores·Comerciales·Gestores · **CONFIGURACIÓN** Fichas Google.
+- **Ranking** sube de Equipo a Inicio. **Exportar Excel** sale del sidebar de admin (igual
+  que la referencia); sigue en el menú del rol **gestor** y la ruta `/manager/export` no se
+  toca. `pickActiveId` ignora items deshabilitados (el href `#` de "Respuestas" haría
+  prefix-match con cualquier ruta). Solo se tocó el menú de admin; el resto de roles igual.
+- Pendiente menor: la funcionalidad real de "Respuestas" (responder reseñas) no existe; el
+  item es solo un marcador visual `PRONTO`.
