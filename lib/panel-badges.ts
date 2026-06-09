@@ -19,7 +19,8 @@ export type BadgeIcon =
   | "medal"
   | "milestone"
   | "star"
-  | "flame";
+  | "flame"
+  | "sparkles";
 
 export type PanelBadge = {
   id: string;
@@ -48,10 +49,11 @@ export type PanelBadgesInput = {
   teamSize: number;
 };
 
-/** Umbrales de las insignias de volumen acumulado. */
-export const VOLUME_TIERS = [10, 25, 50, 100] as const;
+/** Umbrales de las insignias de volumen acumulado. La "primera reseña" se
+ *  trata aparte (tier 1 con copy propio). */
+export const VOLUME_TIERS = [10, 25] as const;
 /** Umbrales de la insignia "coleccionista de 5★". */
-export const FIVE_STAR_TIERS = [10, 25] as const;
+export const FIVE_STAR_TIERS = [10, 25, 50] as const;
 
 /**
  * Racha de meses consecutivos cumpliendo el objetivo, contando hacia atrás.
@@ -82,6 +84,18 @@ export function computePanelBadges(input: PanelBadgesInput): PanelBadge[] {
   } = input;
 
   const badges: PanelBadge[] = [];
+
+  // ── Primera reseña ────────────────────────────────────────────────────────
+  const firstReview = lifetimeCounted >= 1;
+  badges.push({
+    id: "first_review",
+    label: "Primera reseña",
+    icon: "sparkles",
+    earned: firstReview,
+    description: firstReview
+      ? "Has conseguido tu primera reseña verificada."
+      : "Consigue tu primera reseña verificada para desbloquearla.",
+  });
 
   // ── Objetivo del mes ────────────────────────────────────────────────────
   const goalMet = goal > 0 && reviewsThisPeriod >= goal;
@@ -136,51 +150,33 @@ export function computePanelBadges(input: PanelBadgesInput): PanelBadge[] {
   }
 
   // ── Hitos de volumen ─────────────────────────────────────────────────────
-  // Muestra las conseguidas + el siguiente umbral por alcanzar (no todas, para
-  // no saturar el grid).
-  let nextVolumeShown = false;
+  // Escalera completa: se muestran todas (conseguidas y bloqueadas) para que el
+  // comercial vea el camino. El grid las ordena conseguidas primero.
   for (const tier of VOLUME_TIERS) {
-    if (lifetimeCounted >= tier) {
-      badges.push({
-        id: `volume_${tier}`,
-        label: `${tier} reseñas`,
-        icon: "milestone",
-        earned: true,
-        description: `Has acumulado ${tier} reseñas verificadas en total.`,
-      });
-    } else if (!nextVolumeShown) {
-      badges.push({
-        id: `volume_${tier}`,
-        label: `${tier} reseñas`,
-        icon: "milestone",
-        earned: false,
-        description: `Te faltan ${tier - lifetimeCounted} reseñas para este hito.`,
-      });
-      nextVolumeShown = true;
-    }
+    const earned = lifetimeCounted >= tier;
+    badges.push({
+      id: `volume_${tier}`,
+      label: `${tier} reseñas`,
+      icon: "milestone",
+      earned,
+      description: earned
+        ? `Has acumulado ${tier} reseñas verificadas en total.`
+        : `Te faltan ${tier - lifetimeCounted} reseñas para este hito.`,
+    });
   }
 
   // ── Coleccionista de 5★ ───────────────────────────────────────────────────
-  let nextFiveStarShown = false;
   for (const tier of FIVE_STAR_TIERS) {
-    if (fiveStarCount >= tier) {
-      badges.push({
-        id: `five_star_${tier}`,
-        label: `${tier} de 5★`,
-        icon: "star",
-        earned: true,
-        description: `Has conseguido ${tier} reseñas de 5 estrellas.`,
-      });
-    } else if (!nextFiveStarShown) {
-      badges.push({
-        id: `five_star_${tier}`,
-        label: `${tier} de 5★`,
-        icon: "star",
-        earned: false,
-        description: `Te faltan ${tier - fiveStarCount} reseñas de 5★ para este hito.`,
-      });
-      nextFiveStarShown = true;
-    }
+    const earned = fiveStarCount >= tier;
+    badges.push({
+      id: `five_star_${tier}`,
+      label: `${tier} de 5★`,
+      icon: "star",
+      earned,
+      description: earned
+        ? `Has conseguido ${tier} reseñas de 5 estrellas.`
+        : `Te faltan ${tier - fiveStarCount} reseñas de 5★ para este hito.`,
+    });
   }
 
   return badges;

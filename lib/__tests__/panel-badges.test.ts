@@ -84,31 +84,37 @@ describe("computePanelBadges", () => {
     expect(byId(badges, "podium")?.earned).toBe(false);
   });
 
-  it("shows earned volume tiers plus the next locked one", () => {
+  it("earns the first-review badge from the first counted review", () => {
+    expect(byId(computePanelBadges(base), "first_review")?.earned).toBe(false);
+    expect(
+      byId(computePanelBadges({ ...base, lifetimeCounted: 1 }), "first_review")?.earned,
+    ).toBe(true);
+  });
+
+  it("shows the full volume ladder regardless of progress", () => {
     const badges = computePanelBadges({ ...base, lifetimeCounted: 30 });
     expect(byId(badges, "volume_10")?.earned).toBe(true);
     expect(byId(badges, "volume_25")?.earned).toBe(true);
-    expect(byId(badges, "volume_50")?.earned).toBe(false); // siguiente
-    expect(byId(badges, "volume_100")).toBeUndefined(); // no se muestra aún
+    // La escalera es [10, 25]; no hay tiers superiores en volumen.
+    const volumeIds = badges.filter((b) => b.id.startsWith("volume_")).map((b) => b.id);
+    expect(volumeIds).toEqual(["volume_10", "volume_25"]);
   });
 
-  it("shows only the lowest volume tier (locked) when starting out", () => {
+  it("shows every volume tier as locked when starting out", () => {
     const badges = computePanelBadges({ ...base, lifetimeCounted: 0 });
     expect(byId(badges, "volume_10")?.earned).toBe(false);
-    expect(byId(badges, "volume_25")).toBeUndefined();
+    expect(byId(badges, "volume_25")?.earned).toBe(false);
   });
 
-  it("earns the top volume tier without a next one beyond it", () => {
-    const badges = computePanelBadges({ ...base, lifetimeCounted: 120 });
-    expect(byId(badges, "volume_100")?.earned).toBe(true);
-    // no hay tier por encima de 100, así que no hay locked extra
-    const volumeBadges = badges.filter((b) => b.id.startsWith("volume_"));
-    expect(volumeBadges.every((b) => b.earned)).toBe(true);
-  });
-
-  it("handles the five-star collector tiers", () => {
+  it("shows the full five-star ladder including 50", () => {
     const badges = computePanelBadges({ ...base, fiveStarCount: 12 });
     expect(byId(badges, "five_star_10")?.earned).toBe(true);
     expect(byId(badges, "five_star_25")?.earned).toBe(false);
+    expect(byId(badges, "five_star_50")?.earned).toBe(false);
+  });
+
+  it("renders 10 badges with a team and 8 without", () => {
+    expect(computePanelBadges({ ...base, teamSize: 5, rankIndex: 1 })).toHaveLength(10);
+    expect(computePanelBadges({ ...base, teamSize: 1 })).toHaveLength(8);
   });
 });

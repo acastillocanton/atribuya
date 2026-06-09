@@ -1,4 +1,4 @@
-import { Award, Crown, Flame, Medal, Star, Target } from "lucide-react";
+import { Award, Crown, Flame, Medal, Sparkles, Star, Target } from "lucide-react";
 import type { BadgeIcon, PanelBadge } from "@/lib/panel-badges";
 
 /**
@@ -18,6 +18,7 @@ const ICONS: Record<BadgeIcon, typeof Award> = {
   milestone: Award,
   star: Star,
   flame: Flame,
+  sparkles: Sparkles,
 };
 
 export function Badge({ badge }: { badge: PanelBadge }) {
