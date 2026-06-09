@@ -15,6 +15,7 @@ import {
   type SalesInfo,
   type FreshReview,
   type PendingNotification,
+  type CommercialInfo,
 } from "@/lib/cron/process-reviews";
 import { notifyLowRating } from "@/lib/email/notify-low-rating";
 import {
@@ -90,9 +91,17 @@ export async function GET(request: NextRequest) {
       >(),
     admin
       .from("profiles")
-      .select("id, full_name, email, status")
-      .eq("role", "sales")
-      .returns<{ id: string; full_name: string; email: string | null; status: string }[]>(),
+      .select("id, full_name, email, status, location_id")
+      .in("role", ["sales", "office_director"])
+      .returns<
+        {
+          id: string;
+          full_name: string;
+          email: string | null;
+          status: string;
+          location_id: string | null;
+        }[]
+      >(),
     // Admins + reviews_managers (por org) para las alertas ≤2★.
     admin
       .from("profiles")
@@ -111,8 +120,15 @@ export async function GET(request: NextRequest) {
   const connectedLocations = locationsRes.data ?? null;
   const locsErr = locationsRes.error;
   const salesById = new Map<string, SalesInfo>();
+  // Roster de comerciales (sales + office_director) por ficha para el rescate
+  // por mención del comercial en el texto. Scoped por location → por org.
+  const commercialsByLocation = new Map<string, CommercialInfo[]>();
   for (const s of salesRes.data ?? []) {
     salesById.set(s.id, { full_name: s.full_name, email: s.email, status: s.status });
+    if (!s.location_id || s.status === "archived") continue;
+    const arr = commercialsByLocation.get(s.location_id) ?? [];
+    arr.push({ sales_id: s.id, full_name: s.full_name });
+    commercialsByLocation.set(s.location_id, arr);
   }
 
   // Admins / managers por org para las alertas ≤2★ (multi-tenant: cada alerta
@@ -278,6 +294,7 @@ export async function GET(request: NextRequest) {
           fresh: freshNormalized,
           salesById,
           source: "business_profile",
+          commercials: commercialsByLocation.get(loc.id) ?? [],
         },
         entry,
       );

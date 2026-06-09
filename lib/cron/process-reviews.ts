@@ -4,7 +4,12 @@ import {
   attributeReview,
   TEMPORAL_WINDOW_HOURS,
   type ShareLinkCandidate,
+  type CommercialInfo,
 } from "@/lib/matching/attribute-review";
+
+// Re-export para que los crons (callers) tipen el roster sin importar dos
+// módulos distintos.
+export type { CommercialInfo };
 import { decideDuplicateForClient } from "@/lib/cron/duplicate-detection";
 import { decideEditMerge } from "@/lib/cron/edit-merge";
 import {
@@ -94,6 +99,10 @@ export type ProcessReviewsArgs = {
   fresh: FreshReview[];
   salesById: Map<string, SalesInfo>;
   source: "business_profile" | "places_api";
+  /** Roster de comerciales de la ficha (sales + office_director no archivados)
+   *  para el rescate por mención del comercial en el texto. Scoped por org/ficha
+   *  por el caller. Si no se pasa, el rescate por mención queda inerte. */
+  commercials?: CommercialInfo[];
 };
 
 /**
@@ -152,9 +161,16 @@ export async function processFreshReviews(
   lowRatingAlerts: LowRatingAlert[];
 }> {
   const { admin, location, fresh, salesById, source } = args;
+  const commercials = args.commercials ?? [];
   if (fresh.length === 0) return { notifications: [], lowRatingAlerts: [] };
 
-  const candidates = await loadCandidates(admin, location.id, fresh);
+  const rawCandidates = await loadCandidates(admin, location.id, fresh);
+  // Enriquecemos cada candidato con el nombre del comercial dueño del enlace,
+  // que el matcher necesita para detectar la mención del comercial en el texto.
+  const candidates: ShareLinkCandidate[] = rawCandidates.map((c) => ({
+    ...c,
+    sales_full_name: salesById.get(c.sales_id)?.full_name ?? null,
+  }));
   const notifications: PendingNotification[] = [];
   const lowRatingAlerts: LowRatingAlert[] = [];
 
@@ -277,9 +293,11 @@ export async function processFreshReviews(
         google_review_id: fr.google_review_id,
         author_name: fr.author_name,
         hasAuthorName: fr.hasAuthorName,
+        text: fr.text,
         google_created_at: fr.google_created_at,
       },
       candidates,
+      commercials,
     );
 
     // ── Anti-fraude por duplicados (migración 015) ─────────────────────────
