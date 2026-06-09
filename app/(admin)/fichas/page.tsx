@@ -180,8 +180,50 @@ export default async function FichasPage({
             ))}
           </Card>
         )}
+
+        {locations.length > 0 && <SyncMethodsHelp />}
       </div>
     </>
+  );
+}
+
+/**
+ * Nota de ayuda fija: explica las dos vías de sincronización para que no haya
+ * dudas sobre qué significa "Places API" ni el botón "Conectar Google".
+ */
+function SyncMethodsHelp() {
+  return (
+    <Card>
+      <div style={{ fontSize: 12.5, color: "var(--ink-2)", fontWeight: 600 }}>
+        Cómo se traen las reseñas
+      </div>
+      <div
+        style={{
+          marginTop: 8,
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          fontSize: 12.5,
+          color: "var(--ink-3)",
+          lineHeight: 1.55,
+          maxWidth: 720,
+        }}
+      >
+        <p style={{ margin: 0 }}>
+          <strong style={{ color: "var(--ink-2)" }}>Places API</strong> se
+          activa al guardar el Place ID. Trae las reseñas más recientes de forma
+          automática (cada hora), sin conectar ninguna cuenta de Google. Es lo
+          que necesita la mayoría de las fichas.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong style={{ color: "var(--ink-2)" }}>Conectar Google</strong>{" "}
+          (próximamente) conecta la cuenta de Google del negocio para traer el
+          histórico completo de reseñas, sin el límite de las más recientes. Se
+          habilitará en cuanto Google apruebe el acceso. No hace falta para
+          empezar a recibir reseñas.
+        </p>
+      </div>
+    </Card>
   );
 }
 
