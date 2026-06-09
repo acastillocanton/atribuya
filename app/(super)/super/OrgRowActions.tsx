@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { setOrgStatus, deleteOrg } from "./actions";
 import { EditOrgForm, type EditableOrg } from "./EditOrgForm";
+import { InviteAdminForm } from "./InviteAdminForm";
 
 type OrgStatus = "trial" | "active" | "suspended" | "churned";
 
@@ -25,6 +26,7 @@ export function OrgRowActions({ org }: Props) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [inviting, setInviting] = useState(false);
 
   function changeStatus(next: OrgStatus) {
     if (next === orgStatus) return;
@@ -57,6 +59,9 @@ export function OrgRowActions({ org }: Props) {
       <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
         <button type="button" style={buttonStyle} disabled={pending} onClick={() => setEditing(true)}>
           Editar
+        </button>
+        <button type="button" style={buttonStyle} disabled={pending} onClick={() => setInviting(true)}>
+          Invitar admin
         </button>
         {orgStatus === "trial" && (
           <button type="button" style={buttonStyle} disabled={pending} onClick={() => changeStatus("active")}>
@@ -94,6 +99,9 @@ export function OrgRowActions({ org }: Props) {
       </div>
       {error && <p style={{ fontSize: 12, color: "#7a2929", margin: 0 }}>{error}</p>}
       {editing && <EditOrgForm org={org} onClose={() => setEditing(false)} />}
+      {inviting && (
+        <InviteAdminForm orgId={orgId} orgName={orgName} onClose={() => setInviting(false)} />
+      )}
     </div>
   );
 }

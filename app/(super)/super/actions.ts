@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getCurrentOrgContext } from "@/lib/supabase/org";
 import { recordAudit } from "@/lib/audit";
+import { notifyInvitedAdmin } from "@/lib/email/notify-invited-admin";
 import { DEFAULT_PLAN } from "./plans";
 
 /**
@@ -366,7 +367,8 @@ const inviteAdminSchema = z.object({
 });
 
 export async function inviteOrgAdmin(input: z.input<typeof inviteAdminSchema>): Promise<
-  { ok: true; inviteLink: string; email: string } | { ok: false; error: string }
+  | { ok: true; inviteLink: string; email: string; emailSent: boolean }
+  | { ok: false; error: string }
 > {
   const auth = await assertSuperAdmin();
   if (!auth.ok) return auth;
@@ -378,9 +380,9 @@ export async function inviteOrgAdmin(input: z.input<typeof inviteAdminSchema>): 
   const admin = createServiceClient();
   const { data: org } = await admin
     .from("organizations")
-    .select("id, slug")
+    .select("id, slug, name")
     .eq("id", parsed.data.orgId)
-    .maybeSingle<{ id: string; slug: string }>();
+    .maybeSingle<{ id: string; slug: string; name: string }>();
   if (!org) return { ok: false, error: "Organización no encontrada." };
 
   // Generate the invite link via Supabase Auth admin API.
@@ -438,6 +440,26 @@ export async function inviteOrgAdmin(input: z.input<typeof inviteAdminSchema>): 
     return { ok: false, error: profileErr.message };
   }
 
+  // Best-effort: enviar el enlace de acceso por email. Si falla (SMTP caído,
+  // sin credenciales en este entorno), no rompemos — devolvemos el link para
+  // que el super_admin lo copie y lo pase a mano.
+  let emailSent = false;
+  try {
+    const mail = await notifyInvitedAdmin({
+      adminEmail: parsed.data.email,
+      adminName: parsed.data.fullName,
+      orgName: org.name,
+      inviteLink,
+      appBase: origin,
+    });
+    emailSent = mail.ok;
+    if (!mail.ok) {
+      console.warn("[super] inviteOrgAdmin email no enviado:", mail);
+    }
+  } catch (err) {
+    console.error("[super] inviteOrgAdmin notifyInvitedAdmin threw:", err);
+  }
+
   await recordAudit({
     entityType: "profile",
     entityId: newUserId,
@@ -448,9 +470,10 @@ export async function inviteOrgAdmin(input: z.input<typeof inviteAdminSchema>): 
       email: parsed.data.email,
       full_name: parsed.data.fullName,
       org_slug: org.slug,
+      email_sent: emailSent,
     },
   });
 
   revalidatePath("/super");
-  return { ok: true, inviteLink, email: parsed.data.email };
+  return { ok: true, inviteLink, email: parsed.data.email, emailSent };
 }

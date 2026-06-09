@@ -30,7 +30,7 @@ export function CreateOrgForm() {
     | { kind: "idle" }
     | { kind: "error"; message: string }
     | { kind: "created"; orgId: string; orgSlug: string }
-    | { kind: "invited"; inviteLink: string; email: string }
+    | { kind: "invited"; inviteLink: string; email: string; emailSent: boolean }
   >({ kind: "idle" });
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteFullName, setInviteFullName] = useState("");
@@ -79,7 +79,12 @@ export function CreateOrgForm() {
         setFeedback({ kind: "error", message: res.error });
         return;
       }
-      setFeedback({ kind: "invited", inviteLink: res.inviteLink, email: res.email });
+      setFeedback({
+        kind: "invited",
+        inviteLink: res.inviteLink,
+        email: res.email,
+        emailSent: res.emailSent,
+      });
     });
   }
 
@@ -87,10 +92,14 @@ export function CreateOrgForm() {
     return (
       <div style={{ padding: 16, background: "#d6f3df", border: "1px solid #0b6a2f", borderRadius: 6 }}>
         <p style={{ margin: 0, fontWeight: 600, color: "#0b6a2f" }}>
-          ✓ Invitación generada para {feedback.email}
+          {feedback.emailSent
+            ? `✓ Invitación enviada por email a ${feedback.email}`
+            : `✓ Invitación generada para ${feedback.email}`}
         </p>
         <p style={{ marginTop: 12, marginBottom: 4, fontSize: 12, color: "var(--ink-muted)" }}>
-          Pásale este enlace al nuevo admin (no se manda email automáticamente):
+          {feedback.emailSent
+            ? "Ya le ha llegado el email con el acceso. Enlace de respaldo por si no lo recibe (revisar spam):"
+            : "No se pudo enviar el email automático. Pásale este enlace al nuevo admin a mano:"}
         </p>
         <textarea
           readOnly
