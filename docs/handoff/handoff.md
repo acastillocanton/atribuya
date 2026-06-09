@@ -449,3 +449,52 @@ del actor + comprobación de filas afectadas antes de borrar cuentas:
   author_name) where google_review_id like 'places:%'`).
 - **Tests**: añadir cobertura específica para las rutas service-role (las pruebas RLS no
   las ven).
+
+## 15. Gestión de orgs en `/super`: editar + invitar admin por email (2026-06-09)
+
+Comprobaciones desde cero (simulando un cliente con plan Starter) destaparon tres huecos
+en el panel super-admin de organizaciones, todos resueltos y desplegados a prod.
+
+**Commits**: `9becf4b` (editar org + selector de plan), `7b8028c` (invitar admin desde
+fila + email automático).
+
+### Editar organización (`9becf4b`)
+- Antes solo existía crear/activar/suspender/eliminar; los datos fiscales solo se metían
+  al crear y, si quedaban vacíos, el badge "Fiscales pendientes" era permanente (única
+  salida: borrar y recrear). Ahora hay botón **"Editar"** por fila → modal
+  `EditOrgForm.tsx` que edita **todo salvo el slug** (el slug es parte de las URLs
+  públicas `/o/[slug]/...`, queda fijo y deshabilitado en el form).
+- Nueva server action `updateOrg` en `app/(super)/super/actions.ts`: mismo patrón de
+  defensa que el resto (`assertSuperAdmin`, Zod, service-role, `revalidatePath`), audit
+  `org_updated` con `payload.before`/`after`. Reutiliza `optionalText`/`buildFiscalData`
+  (extraídos a `fiscalFields`/`billingEmailField`/`planField` compartidos con `createOrg`).
+- El `<details>` de fiscales arranca **abierto** si faltan campos requeridos.
+
+### Selector de plan (`9becf4b`)
+- El campo "Plan" era un `<input>` de texto libre con default `"standard"` (no coincidía
+  con ningún tier real). Ahora es un `<select>` (crear y editar) poblado desde el nuevo
+  `app/(super)/super/plans.ts`: **Starter** (`starter`), **Professional** (`professional`),
+  **A medida** (`custom`), default `starter`. `planLabel()` muestra la etiqueta legible en
+  la tabla. Las orgs con valores legacy (`"standard"`) conservan el valor: aparece como
+  opción "(actual)" hasta reasignarse.
+- **Sin migración**: `organizations.plan` sigue siendo `text` libre; el desplegable solo
+  aporta consistencia de UI. El enforcement del tope de fichas por plan sigue siendo open
+  question (CLAUDE.md §8 #1).
+
+### Invitar admin desde org existente + email automático (`7b8028c`)
+- **Hueco grave**: el paso de invitar al primer admin solo aparecía en el instante
+  posterior a crear la org (estado `created` de `CreateOrgForm`). Una org ya creada no
+  tenía forma de invitar a nadie. Ahora hay botón **"Invitar admin"** por fila →
+  `InviteAdminForm.tsx` (modal nombre + email), reutiliza `inviteOrgAdmin`. Sirve para el
+  primer admin o admins adicionales.
+- **Email automático**: `inviteOrgAdmin` ya no solo genera el enlace; lo envía por Brevo
+  con `lib/email/notify-invited-admin.ts` (plantilla de marca, botón "Crear mi acceso").
+  Best-effort (no rompe la invitación si el SMTP falla), devuelve `emailSent` y el audit
+  registra `email_sent`. La UI muestra "enviada por email" + enlace de respaldo copiable
+  (por si va a spam), o el aviso de envío manual si el correo falla.
+- **Flujo de alta del cliente ahora**: `/super` → fila de su org → "Invitar admin" →
+  nombre + email → le llega el correo con el enlace mágico (`/auth/confirm?...&type=invite`
+  → `/dashboard`). El enlace es de un solo uso.
+- ⚠️ **Verificar en Vercel** que `BREVO_SMTP_USER`/`BREVO_SMTP_PASS`/`BREVO_FROM_EMAIL`
+  están en producción (las mismas del resto de transaccionales). Si faltan, el email se
+  salta y solo queda el enlace de respaldo.
