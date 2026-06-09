@@ -2,13 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { setOrgStatus, deleteOrg } from "./actions";
+import { EditOrgForm, type EditableOrg } from "./EditOrgForm";
 
 type OrgStatus = "trial" | "active" | "suspended" | "churned";
 
 type Props = {
-  orgId: string;
-  orgName: string;
-  orgStatus: OrgStatus;
+  org: EditableOrg;
 };
 
 const buttonStyle: React.CSSProperties = {
@@ -21,9 +20,11 @@ const buttonStyle: React.CSSProperties = {
   cursor: "pointer",
 };
 
-export function OrgRowActions({ orgId, orgName, orgStatus }: Props) {
+export function OrgRowActions({ org }: Props) {
+  const { id: orgId, name: orgName, status: orgStatus } = org;
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
 
   function changeStatus(next: OrgStatus) {
     if (next === orgStatus) return;
@@ -54,6 +55,9 @@ export function OrgRowActions({ orgId, orgName, orgStatus }: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
       <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+        <button type="button" style={buttonStyle} disabled={pending} onClick={() => setEditing(true)}>
+          Editar
+        </button>
         {orgStatus === "trial" && (
           <button type="button" style={buttonStyle} disabled={pending} onClick={() => changeStatus("active")}>
             → Activar
@@ -89,6 +93,7 @@ export function OrgRowActions({ orgId, orgName, orgStatus }: Props) {
         </button>
       </div>
       {error && <p style={{ fontSize: 12, color: "#7a2929", margin: 0 }}>{error}</p>}
+      {editing && <EditOrgForm org={org} onClose={() => setEditing(false)} />}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getCurrentOrgContext } from "@/lib/supabase/org";
 import { recordAudit } from "@/lib/audit";
+import { DEFAULT_PLAN } from "./plans";
 
 /**
  * Server actions for the super-admin panel.
@@ -47,30 +48,23 @@ const optionalText = (max: number) =>
     .nullable()
     .transform((v) => (v && v.trim() !== "" ? v.trim() : null));
 
-const createOrgSchema = z.object({
-  name: z.string().min(2, "Nombre demasiado corto.").max(120, "Demasiado largo."),
-  slug: z
-    .string()
-    .min(2, "Slug demasiado corto.")
-    .max(60, "Slug demasiado largo.")
-    .regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones."),
-  billingEmail: z
-    .string()
-    .email("Email inválido.")
-    .max(120)
-    .optional()
-    .nullable()
-    .transform((v) => (v && v.trim() !== "" ? v.trim() : null)),
-  contactName: optionalText(120),
-  contactPhone: optionalText(40),
-  status: z.enum(ORG_STATUSES).default("trial"),
-  plan: z
-    .string()
-    .max(40)
-    .optional()
-    .nullable()
-    .transform((v) => (v && v.trim() !== "" ? v.trim() : "standard")),
-  // --- fiscal / billing identity (optional at creation, completable later) ---
+const billingEmailField = z
+  .string()
+  .email("Email inválido.")
+  .max(120)
+  .optional()
+  .nullable()
+  .transform((v) => (v && v.trim() !== "" ? v.trim() : null));
+
+const planField = z
+  .string()
+  .max(40)
+  .optional()
+  .nullable()
+  .transform((v) => (v && v.trim() !== "" ? v.trim() : DEFAULT_PLAN));
+
+/** Fiscal / billing identity fields, shared by create and update. */
+const fiscalFields = {
   legalName: optionalText(200),
   taxId: optionalText(40),
   address: optionalText(200),
@@ -78,12 +72,30 @@ const createOrgSchema = z.object({
   city: optionalText(80),
   province: optionalText(80),
   country: optionalText(80),
+} as const;
+
+const createOrgSchema = z.object({
+  name: z.string().min(2, "Nombre demasiado corto.").max(120, "Demasiado largo."),
+  slug: z
+    .string()
+    .min(2, "Slug demasiado corto.")
+    .max(60, "Slug demasiado largo.")
+    .regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones."),
+  billingEmail: billingEmailField,
+  contactName: optionalText(120),
+  contactPhone: optionalText(40),
+  status: z.enum(ORG_STATUSES).default("trial"),
+  plan: planField,
+  // --- fiscal / billing identity (optional at creation, completable later) ---
+  ...fiscalFields,
 });
 
 export type CreateOrgInput = z.input<typeof createOrgSchema>;
 
+type FiscalParsed = { [K in keyof typeof fiscalFields]: string | null };
+
 /** Build the `organizations.fiscal_data` JSON payload from the parsed input. */
-function buildFiscalData(parsed: z.infer<typeof createOrgSchema>): Record<string, string> {
+function buildFiscalData(parsed: FiscalParsed): Record<string, string> {
   const fd: Record<string, string> = {};
   if (parsed.legalName) fd.legal_name = parsed.legalName;
   if (parsed.taxId) fd.tax_id = parsed.taxId;
@@ -113,7 +125,7 @@ export async function createOrg(input: CreateOrgInput): Promise<
       name: parsed.data.name.trim(),
       slug: parsed.data.slug,
       status: parsed.data.status,
-      plan: parsed.data.plan ?? "standard",
+      plan: parsed.data.plan,
       billing_email: parsed.data.billingEmail,
       contact_name: parsed.data.contactName,
       contact_phone: parsed.data.contactPhone,
@@ -140,13 +152,100 @@ export async function createOrg(input: CreateOrgInput): Promise<
       name: parsed.data.name.trim(),
       slug: parsed.data.slug,
       status: parsed.data.status,
-      plan: parsed.data.plan ?? "standard",
+      plan: parsed.data.plan,
       fiscal_data_filled: Object.keys(fiscalData).length > 0,
     },
   });
 
   revalidatePath("/super");
   return { ok: true, orgId: data.id, slug: data.slug };
+}
+
+// ---------------------------------------------------------------------------
+// updateOrg — edit an existing org (everything except the slug, which is fixed
+// because it is part of the public /o/[slug]/... URLs)
+// ---------------------------------------------------------------------------
+
+const updateOrgSchema = z.object({
+  orgId: z.string().uuid(),
+  name: z.string().min(2, "Nombre demasiado corto.").max(120, "Demasiado largo."),
+  billingEmail: billingEmailField,
+  contactName: optionalText(120),
+  contactPhone: optionalText(40),
+  status: z.enum(ORG_STATUSES).default("trial"),
+  plan: planField,
+  ...fiscalFields,
+});
+
+export type UpdateOrgInput = z.input<typeof updateOrgSchema>;
+
+export async function updateOrg(input: UpdateOrgInput): Promise<
+  { ok: true } | { ok: false; error: string }
+> {
+  const auth = await assertSuperAdmin();
+  if (!auth.ok) return auth;
+  const parsed = updateOrgSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const admin = createServiceClient();
+  const { data: before } = await admin
+    .from("organizations")
+    .select("name, status, plan, fiscal_data")
+    .eq("id", parsed.data.orgId)
+    .maybeSingle<{
+      name: string;
+      status: OrgStatus;
+      plan: string;
+      fiscal_data: Record<string, string> | null;
+    }>();
+  if (!before) {
+    return { ok: false, error: "Organización no encontrada." };
+  }
+
+  const fiscalData = buildFiscalData(parsed.data);
+  const { error } = await admin
+    .from("organizations")
+    .update({
+      name: parsed.data.name.trim(),
+      status: parsed.data.status,
+      plan: parsed.data.plan,
+      billing_email: parsed.data.billingEmail,
+      contact_name: parsed.data.contactName,
+      contact_phone: parsed.data.contactPhone,
+      fiscal_data: fiscalData,
+    } as never)
+    .eq("id", parsed.data.orgId);
+  if (error) {
+    console.error("[super] updateOrg failed:", error);
+    return { ok: false, error: error.message };
+  }
+
+  await recordAudit({
+    entityType: "organization",
+    entityId: parsed.data.orgId,
+    action: "org_updated",
+    orgId: parsed.data.orgId,
+    payload: {
+      actor_id: auth.userId,
+      before: {
+        name: before.name,
+        status: before.status,
+        plan: before.plan,
+        fiscal_data: before.fiscal_data,
+      },
+      after: {
+        name: parsed.data.name.trim(),
+        status: parsed.data.status,
+        plan: parsed.data.plan,
+        fiscal_data: fiscalData,
+      },
+    },
+  });
+
+  revalidatePath("/super");
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------------------

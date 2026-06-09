@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { createOrg, inviteOrgAdmin } from "./actions";
+import { PLAN_OPTIONS, DEFAULT_PLAN } from "./plans";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -211,7 +212,13 @@ export function CreateOrgForm() {
         </div>
         <div style={fieldStyle}>
           <label style={labelStyle}>Plan</label>
-          <input name="plan" defaultValue="standard" style={inputStyle} />
+          <select name="plan" defaultValue={DEFAULT_PLAN} style={inputStyle}>
+            {PLAN_OPTIONS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

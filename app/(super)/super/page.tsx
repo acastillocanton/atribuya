@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { CreateOrgForm } from "./CreateOrgForm";
 import { OrgRowActions } from "./OrgRowActions";
+import { planLabel } from "./plans";
 
 type OrgRow = {
   id: string;
@@ -11,6 +12,7 @@ type OrgRow = {
   plan: string;
   billing_email: string | null;
   contact_name: string | null;
+  contact_phone: string | null;
   created_at: string;
   fiscal_data: Record<string, string> | null;
 };
@@ -54,7 +56,7 @@ export default async function SuperPage() {
     const { data, error } = await supabase
       .from("organizations")
       .select(
-        "id, name, slug, status, plan, billing_email, contact_name, created_at, fiscal_data",
+        "id, name, slug, status, plan, billing_email, contact_name, contact_phone, created_at, fiscal_data",
       )
       .order("created_at", { ascending: false })
       .returns<OrgRow[]>();
@@ -175,7 +177,7 @@ export default async function SuperPage() {
                       );
                     })()}
                   </td>
-                  <td style={{ padding: "12px", fontSize: 13 }}>{o.plan}</td>
+                  <td style={{ padding: "12px", fontSize: 13 }}>{planLabel(o.plan)}</td>
                   <td style={{ padding: "12px", fontSize: 13 }}>
                     {o.contact_name ?? <span style={{ color: "var(--ink-muted)" }}>—</span>}
                     {o.billing_email && (
@@ -194,7 +196,7 @@ export default async function SuperPage() {
                     {new Date(o.created_at).toLocaleDateString("es-ES")}
                   </td>
                   <td style={{ padding: "12px" }}>
-                    <OrgRowActions orgId={o.id} orgName={o.name} orgStatus={o.status} />
+                    <OrgRowActions org={o} />
                   </td>
                 </tr>
               );
