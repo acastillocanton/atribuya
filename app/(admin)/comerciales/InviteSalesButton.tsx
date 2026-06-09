@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { GhostBtn } from "@/components/ui/GhostBtn";
 import { inviteSales } from "./actions";
 
@@ -19,12 +20,17 @@ export function InviteSalesButton({
   const [success, setSuccess] = useState<{ link: string; email: string; emailSent: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   function close() {
+    const created = success !== null;
     setOpen(false);
     setError(null);
     setSuccess(null);
     setCopied(false);
+    // Refresca la lista al cerrar (no durante la acción, que desmontaría el
+    // modal si la página estaba en empty-state).
+    if (created) router.refresh();
   }
 
   // onSubmit + preventDefault (en vez de <form action={fn}>): React 19 resetea

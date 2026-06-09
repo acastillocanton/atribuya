@@ -86,7 +86,10 @@ export async function inviteOfficeDirector(input: InviteDirectorInput): Promise<
       commission_rate: parsed.data.commissionRate,
     },
     nextPath: "/dashboard",
-    revalidate: ["/directores"],
+    // Sin revalidate aquí (ver nota en comerciales/actions.ts): el refresco lo
+    // hace el modal con router.refresh() al cerrarse, para no desmontar el
+    // botón y perder el enlace.
+    revalidate: [],
   });
 }
 

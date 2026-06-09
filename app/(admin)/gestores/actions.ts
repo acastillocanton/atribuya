@@ -55,7 +55,10 @@ export async function inviteReviewsManager(input: InviteManagerInput): Promise<
     orgId: ctx.orgId,
     extra: {},
     nextPath: "/manager/resenas",
-    revalidate: ["/gestores"],
+    // Sin revalidate aquí (ver nota en comerciales/actions.ts): el refresco lo
+    // hace el modal con router.refresh() al cerrarse, para no desmontar el
+    // botón y perder el enlace.
+    revalidate: [],
   });
 }
 

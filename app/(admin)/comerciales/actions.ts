@@ -110,7 +110,10 @@ export async function inviteSales(input: InviteSalesInput): Promise<
       director_id: parsed.data.directorId,
     },
     nextPath: "/panel",
-    revalidate: ["/comerciales"],
+    // Sin revalidate aquí: refrescaría la lista al instante y, si la página
+    // estaba en empty-state, desmontaría el botón (y su modal con el enlace).
+    // El refresco lo hace el modal con router.refresh() al cerrarse.
+    revalidate: [],
   });
 }
 
