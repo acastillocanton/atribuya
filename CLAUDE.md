@@ -300,7 +300,7 @@ Lotes 1 y 2 hechos (Fases 14-15). Pendiente de portar desde el producto base sin
 - ✅ **Portado (2026-06-08)**: comisiones por reseña, rol "director de oficina" (RLS por equipo/org), autoatribución «Es mía» y autovinculación de huérfanas — todo ya en producción (mig 018-021). Ver §3 / handoff.
 - **🟡 medio**: suite E2E Playwright. *(Caché de rating por ficha: descartada, innecesaria.)*
 - ✅ **Helpdesk (2026-06-10)**: badge de no-leídos en el sidebar (`getSupportUnreadCount()` en los 4 layouts) + acceso a Soporte en mobile (tab en `MobileTabBar`). Hecho.
-- **Capturas `public/help/*.png`**: 7/9 regeneradas (modo demo + Playwright, `scripts/capture-help.py`). Pendientes 01 (email magic link) y 06 (diagrama) — se hacen a mano.
+- **Capturas `public/help/*.png`**: 8/9 hechas. 02-09 vía `scripts/capture-help.py` (modo demo + Playwright); **06 (diagrama de flujo)** generado el 2026-06-10 con `scripts/capture-help-06.py` (renderiza `scripts/help-06-diagram.html`, paleta/fuentes de marca, captura a 2x). Pendiente solo **01 (email magic link)** — captura real de bandeja, a mano.
 
 ---
 

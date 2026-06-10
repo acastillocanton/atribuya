@@ -6,7 +6,7 @@ Las imágenes de esta carpeta se muestran en la página `/ayuda` (manual del com
 
 Hacer cada captura desde producción (https://atribuya.com) **logueado como el comercial de prueba** o cualquier comercial. Resolución mínima recomendada: **1400×900 px**. Formato **PNG**. Sin compresión agresiva — son ilustrativas.
 
-> **Estado (2026-06-06)**: 7 de 9 (02, 03, 04, 05, 07, 08, 09) ya regeneradas con branding Atribuya, capturadas del **modo demo** con `scripts/capture-help.py` (Playwright). Para rehacerlas: `NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= npm run dev` y luego `python3 scripts/capture-help.py`. **Pendientes 01 y 06**: no son pantallas de la app (un email y un diagrama de flujo), hay que hacerlas a mano (ver tabla).
+> **Estado (2026-06-10)**: 8 de 9 (02, 03, 04, 05, 07, 08, 09) regeneradas con branding Atribuya del **modo demo** con `scripts/capture-help.py` (Playwright); **06** (diagrama de flujo) generada con `scripts/capture-help-06.py` (renderiza `scripts/help-06-diagram.html` con la paleta/fuentes de marca y lo captura a 2x). Para rehacer las de pantalla: `NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= npm run dev` y luego `python3 scripts/capture-help.py`. Para rehacer el diagrama: `python3 scripts/capture-help-06.py`. **Pendiente solo 01**: es un email (captura real de bandeja de entrada), hay que hacerla a mano.
 
 | Archivo | Qué tiene que mostrar |
 |---|---|

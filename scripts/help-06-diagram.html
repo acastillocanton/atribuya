@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #F5F5F7;
+    --surface: #FFFFFF;
+    --surface-2: #FAFAFB;
+    --line: #E5E5EA;
+    --line-strong: #D2D2D7;
+    --ink: #1D1D1F;
+    --ink-2: #515154;
+    --ink-3: #6E6E73;
+    --ink-4: #86868B;
+    --ok: #2D7D46;
+    --ok-bg: #E8F0EB;
+    --gold: #B58A2C;
+    --accent: #2563eb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  #canvas {
+    width: 1480px;
+    background: var(--bg);
+    padding: 52px 56px 56px;
+  }
+  .head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .head .logo {
+    width: 30px; height: 30px; border-radius: 7px; display: block;
+  }
+  .head .brand { font-weight: 600; font-size: 16px; letter-spacing: -0.015em; color: var(--ink-2); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: -0.025em;
+    margin-top: 16px;
+    color: var(--ink);
+  }
+  .sub {
+    font-size: 15px;
+    color: var(--ink-3);
+    margin-top: 8px;
+    line-height: 1.5;
+    max-width: 760px;
+  }
+  .flow {
+    margin-top: 38px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr auto 1fr;
+    align-items: stretch;
+    gap: 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 18px 20px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    min-height: 196px;
+  }
+  .card.hero {
+    border-color: var(--ok);
+    background: var(--ok-bg);
+    box-shadow: 0 4px 14px rgba(45,125,70,0.12);
+  }
+  .num {
+    position: absolute;
+    top: -12px; left: 18px;
+    width: 26px; height: 26px;
+    border-radius: 13px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card.hero .num { background: var(--ok); }
+  .icon { font-size: 28px; line-height: 1; margin-top: 4px; }
+  .card h3 {
+    font-size: 16.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .card p {
+    font-size: 13px;
+    color: var(--ink-3);
+    line-height: 1.45;
+    margin-top: auto;
+  }
+  .card.hero h3 { color: #1c5631; }
+  .card.hero p { color: #2f6b44; }
+  .pill {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(45,125,70,0.14);
+    color: var(--ok);
+    margin-top: 2px;
+  }
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    color: var(--line-strong);
+    font-size: 26px;
+    font-weight: 400;
+  }
+  .foot {
+    margin-top: 34px;
+    display: flex;
+    gap: 22px;
+    font-size: 13px;
+    color: var(--ink-4);
+    align-items: center;
+  }
+  .foot b { color: var(--ink-2); font-weight: 600; }
+  .dot { width: 5px; height: 5px; border-radius: 3px; background: var(--line-strong); }
+</style>
+</head>
+<body>
+  <div id="canvas">
+    <div class="head">
+      <img class="logo" src="LOGO_SRC" alt="" />
+      <span class="brand">Atribuya</span>
+    </div>
+    <h1>Cómo se atribuye tu reseña</h1>
+    <p class="sub">Del momento en que el cliente abre tu enlace hasta que la reseña aparece en tu panel. Todo automático.</p>
+
+    <div class="flow">
+      <div class="card">
+        <span class="num">1</span>
+        <div class="icon">🔗</div>
+        <h3>El cliente abre tu enlace</h3>
+        <p>La visita queda registrada con fecha y hora.</p>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="card">
+        <span class="num">2</span>
+        <div class="icon">⭐</div>
+        <h3>Escribe la reseña en Google</h3>
+        <p>Ese mismo día o unos días después.</p>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="card">
+        <span class="num">3</span>
+        <div class="icon">🔄</div>
+        <h3>La app sincroniza con Google</h3>
+        <p>Cada hora, de 6:00 a 23:00.</p>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="card hero">
+        <span class="num">4</span>
+        <div class="icon">🎯</div>
+        <h3>El algoritmo te la atribuye</h3>
+        <span class="pill">Visita &lt; 48 h + nombre parecido</span>
+        <p>Cruza la visita a tu enlace con el autor de la reseña.</p>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="card">
+        <span class="num">5</span>
+        <div class="icon">📩</div>
+        <h3>Lo ves y te avisamos</h3>
+        <p>Aparece en tu panel y recibes un email.</p>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span><b>¿No te aparece?</b> El gestor la atribuye a mano. Siempre cuenta.</span>
+      <span class="dot"></span>
+      <span>Ventana de atribución: <b>48 horas</b></span>
+      <span class="dot"></span>
+      <span>Sincronización: <b>cada hora</b></span>
+    </div>
+  </div>
+</body>
+</html>
