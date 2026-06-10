@@ -5,6 +5,7 @@ import { Pill } from "@/components/ui/Pill";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { isGoogleOAuthConfigured } from "@/lib/google/business-profile";
+import { planLocationLimit } from "@/app/(super)/super/plans";
 import type { OauthStatus } from "@/lib/supabase/types";
 import { AddFichaButton } from "./AddFichaButton";
 import { DeleteFichaButton } from "./DeleteFichaButton";
@@ -51,6 +52,7 @@ export default async function FichasPage({
 
   let locations: LocationRow[] = [];
   let dbError: string | null = null;
+  let planLimit: number | null = null;
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
@@ -65,19 +67,32 @@ export default async function FichasPage({
     } else {
       locations = (data ?? []) as LocationRow[];
     }
+    // Tope de fichas del plan, para mostrar el uso y avisar al llegar al límite.
+    // RLS scopea la fila a la org del admin (mismo patrón que getCurrentOrgContext).
+    const { data: org } = await supabase
+      .from("organizations")
+      .select("plan")
+      .maybeSingle<{ plan: string | null }>();
+    planLimit = planLocationLimit(org?.plan);
   }
+
+  const atLimit = planLimit !== null && locations.length >= planLimit;
+  const rangeLabel =
+    planLimit !== null
+      ? `${locations.length} / ${planLimit} fichas`
+      : `${locations.length} ${locations.length === 1 ? "ficha" : "fichas"}`;
 
   return (
     <>
       <Topbar
         title="Fichas Google"
         subtitle="Fichas de Google Business Profile"
-        range={`${locations.length} ${locations.length === 1 ? "ficha" : "fichas"}`}
+        range={rangeLabel}
         breadcrumb="Atribuya"
         right={
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <SyncNowButton label="Sincronizar todas" variant="ghost" />
-            <AddFichaButton />
+            <AddFichaButton atLimit={atLimit} limit={planLimit ?? undefined} />
           </div>
         }
       />
@@ -101,6 +116,18 @@ export default async function FichasPage({
           <DismissibleBanner tone="warn">
             {OAUTH_ERRORS[oauthError] ?? `Error de OAuth: ${oauthError}`}
           </DismissibleBanner>
+        )}
+        {atLimit && (
+          <Card>
+            <div style={{ fontSize: 13, color: "var(--warn)", fontWeight: 600 }}>
+              Tope de fichas alcanzado
+            </div>
+            <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "var(--ink-3)", lineHeight: 1.5 }}>
+              Tu plan incluye hasta {planLimit}{" "}
+              {planLimit === 1 ? "ficha" : "fichas"}. Para añadir más, amplía el
+              plan desde soporte.
+            </p>
+          </Card>
         )}
 
         {dbError ? (

@@ -12,7 +12,15 @@ type Step = "search" | "choose" | "manual" | "confirm" | "done";
 const PLACE_ID_DOCS =
   "https://developers.google.com/maps/documentation/places/web-service/place-id";
 
-export function AddFichaButton() {
+export function AddFichaButton({
+  atLimit = false,
+  limit,
+}: {
+  /** True cuando la org ya alcanzó el tope de fichas de su plan. */
+  atLimit?: boolean;
+  /** Tope del plan, para el tooltip. */
+  limit?: number;
+} = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("search");
@@ -113,7 +121,17 @@ export function AddFichaButton() {
 
   return (
     <>
-      <GhostBtn primary onClick={() => setOpen(true)}>
+      <GhostBtn
+        primary
+        onClick={() => setOpen(true)}
+        disabled={atLimit}
+        title={
+          atLimit
+            ? `Has alcanzado el tope de ${limit} ${limit === 1 ? "ficha" : "fichas"} de tu plan. Para añadir más, amplía el plan desde soporte.`
+            : undefined
+        }
+        style={atLimit ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+      >
         + Añadir ficha
       </GhostBtn>
       {open && (

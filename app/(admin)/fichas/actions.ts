@@ -10,6 +10,7 @@ import {
   PlacesApiError,
   type PlaceCandidate,
 } from "@/lib/google/places";
+import { planLocationLimit } from "@/app/(super)/super/plans";
 
 /**
  * Comprueba que el caller es admin y devuelve su org_id. Las acciones de
@@ -101,6 +102,31 @@ export async function createLocation(input: CreateLocationInput) {
   } catch (err) {
     return { error: err instanceof Error ? err.message : "No autorizado." };
   }
+
+  // Tope de fichas por plan (enforcement a nivel de app; createLocation es el
+  // único camino de creación y ya está gateado a admin). Best-effort: si no se
+  // puede leer plan o conteo, no bloqueamos (es un freno comercial, no de
+  // seguridad). org_id explícito además de la RLS — defensa en profundidad.
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("plan")
+    .eq("id", orgCtx.orgId)
+    .maybeSingle<{ plan: string | null }>();
+  const limit = planLocationLimit(org?.plan);
+  if (limit !== null) {
+    const { count } = await supabase
+      .from("locations")
+      .select("id", { count: "exact", head: true })
+      .eq("org_id", orgCtx.orgId);
+    if (count !== null && count >= limit) {
+      return {
+        error:
+          `Has alcanzado el tope de ${limit} ${limit === 1 ? "ficha" : "fichas"} ` +
+          `de tu plan. Para añadir más, amplía el plan desde soporte.`,
+      };
+    }
+  }
+
   const payload = {
     name: parsed.data.name.trim(),
     google_place_id: parsed.data.googlePlaceId,
