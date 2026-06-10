@@ -663,3 +663,46 @@ Lote de pendientes menores cerrado. **Sin migración** (ambas tareas a nivel de 
   código del evento sigue en su sitio.
 
 **Verificación**: `npm run typecheck` limpio, `npm test` 206/206.
+
+---
+
+## 19. Fix de seguridad CRITICAL: vista `reviews_active` se saltaba la RLS (mig 022, 2026-06-10)
+
+**Origen**: el Security Advisor de Supabase (Database → Advisors) marcó `public.reviews_active`
+como "Security Definer View" con severidad CRITICAL.
+
+### 19.1 El problema, verificado E2E
+- La vista `reviews_active` (mig 010, azúcar sintáctico `select * from reviews where removed_at is null`)
+  se creó **sin** `security_invoker`. En Postgres una vista ejecuta por defecto con los permisos
+  de su **dueño** (`postgres`), que se salta la RLS de la tabla base.
+- Al vivir en `public`, PostgREST la expone. Resultado: **cualquiera con la anon key** (que va en
+  el bundle JS del navegador) podía leer **todas las reseñas de todas las orgs**, sin login.
+- Verificado antes del fix: `GET /rest/v1/reviews` (anon) → `[]` (RLS bien), pero
+  `GET /rest/v1/reviews_active` (anon) → fila completa de una reseña real (texto, rating,
+  `match_evidence`, ids internos). Clase de fuga del §4 "Never do" de CLAUDE.md.
+- Atenuante: el código de la app **no usa la vista** en ningún sitio (solo la define la mig 010);
+  la exposición era directa vía PostgREST, no a través de la app.
+
+### 19.2 El fix (migración 022)
+- `supabase/migrations/022_reviews_active_security_invoker.sql`:
+  `alter view public.reviews_active set (security_invoker = true);` (Postgres 15+; prod está en 17).
+  Con eso la vista evalúa permisos y RLS como el usuario que consulta, igual que la tabla.
+- Verificado después: la misma petición anónima a `reviews_active` devuelve `[]`.
+- Reversible: `set (security_invoker = false)`. No toca datos.
+
+### 19.3 De paso: reparado el drift del historial de migraciones
+- Las migraciones **015-021** se aplicaron en su día por SQL Editor / Management API sin quedar
+  registradas en el historial remoto del CLI → `supabase db push --linked` habría intentado
+  reaplicarlas.
+- Arreglado con `supabase migration repair --status applied 015 016 017 018 019 020 021 --linked`
+  (solo bookkeeping, no toca esquema) y verificado con `db push --dry-run` (solo 022 pendiente)
+  antes del push real.
+- A partir de ahora el flujo canónico de CLAUDE.md §6 (`migration list` / `db push --linked`)
+  vuelve a reflejar la realidad y es el camino preferido para aplicar migraciones.
+
+### 19.4 Avisos restantes del Advisor (no urgentes)
+- Los warnings naranjas "Auth RLS Initialization Plan" (audit_log, profiles, clients, share_links,
+  reviews, support_*) son **solo de rendimiento**: las policies llaman a `auth.uid()` /
+  `current_org_id()` fila a fila. Fix conocido: envolver en subselect `(select auth.uid())` dentro
+  de cada policy. Con el volumen actual es irrelevante; candidato a una futura migración de
+  housekeeping cuando haya tráfico real.
