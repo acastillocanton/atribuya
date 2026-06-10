@@ -658,5 +658,8 @@ Lote de pendientes menores cerrado. **Sin migración** (ambas tareas a nivel de 
   prod) **ya se ha disparado** en prod (confirmado en Tiempo real) pero aún no figura en Admin →
   Eventos → "Eventos recientes" (latencia ~24-48 h). Falta marcarlo como evento clave (estrella)
   cuando aparezca. GA4 ya no permite precrear el evento clave por nombre. Ver CLAUDE.md §7.
+  **Recordatorio remoto** programado: routine `trig_01MJ5YaQHoa1LywSusPzBYYt` (one-shot, 12-jun
+  2026 09:00 Europe/Madrid) que deja por escrito los pasos manuales de GA4 y verifica que el
+  código del evento sigue en su sitio.
 
 **Verificación**: `npm run typecheck` limpio, `npm test` 206/206.
