@@ -614,3 +614,49 @@ su §4.38) la 2ª señal del matcher. Atribuya se forkeó de una versión anteri
   nombrarlo para auto-atribuirse reseñas. El anti-fraude de duplicados por cliente (mig 015)
   sigue capando varias reseñas del mismo cliente. Si aparecen falsos positivos, el lever es
   subir la exigencia de la mención.
+
+## 18. Pendientes menores: badge helpdesk + acceso mobile + enforcement tope de fichas (2026-06-10)
+
+Lote de pendientes menores cerrado. **Sin migración** (ambas tareas a nivel de app/UI).
+
+### 18.1 Badge de no-leídos del helpdesk en el sidebar + acceso a Soporte en mobile
+- **Helper** `lib/support/unread.ts:getSupportUnreadCount(supabase)` → llama al RPC
+  `support_unread_count()` (mig 016, `SECURITY DEFINER`, ya scopea por org y rol). Best-effort:
+  devuelve `0` si Supabase no está configurado, el RPC falla o no hay sesión. Nunca lanza (un
+  fallo del helpdesk no debe tumbar la navegación). Tipado con `Awaited<ReturnType<typeof
+  createClient>>` (mismo patrón que `lib/supabase/org.ts`; el genérico `SupabaseClient` no
+  encaja con el cliente tipado del proyecto).
+- **`Sidebar`** acepta prop `supportUnreadCount` y pinta un badge en el item "Soporte" (que vive
+  hardcodeado en el footer del aside, fuera de los `groups`). Color `#2563eb` (mismo azul que el
+  indicador de no-leído de `ConversationRow`, coherencia visual; el tema no tiene rojo). Tope
+  visual "9+".
+- Cableado en los **4 layouts** que montan el sidebar: `(admin)`, `(manager)`, `(sales)`,
+  `(profile)`.
+- **Acceso a Soporte en mobile**: el comercial no tenía forma de llegar a `/soporte` en mobile
+  (no hay sidebar, solo `MobileTabBar` con 4 tabs). Añadida 5ª tab "Soporte" con su propio badge
+  (`supportUnreadCount` también se pasa a `MobileTabBar` desde `(sales)` y `(profile)`).
+
+### 18.2 Enforcement del tope de fichas por plan (solo app, sin migración)
+- **Decisión** (ask first → usuario eligió "solo app"): no se toca la BD. Razón: `createLocation`
+  es el **único** camino de creación de fichas y ya está gateado a admin. Si en el futuro se
+  quiere defensa en profundidad en Postgres, sería un trigger (migración → "ask first").
+- **Fuente única** del límite: `app/(super)/super/plans.ts:planLocationLimit(plan)` → `starter=2`,
+  `professional=10`, `custom`/desconocido/legacy (`standard`) = `null` (ilimitado). Los planes no
+  reconocidos se tratan como ilimitados **a propósito**: el enforcement es freno comercial, no de
+  seguridad, y no debe bloquear orgs antiguas sin plan canónico.
+- **Validación** en `createLocation` ([app/(admin)/fichas/actions.ts]): tras `requireOrgContext`,
+  lee `organizations.plan` (RLS scopea a la org del admin), cuenta `locations` con `org_id`
+  explícito (`count: "exact", head: true`) y rechaza si `count >= limit`. Best-effort: si no se
+  puede leer plan/conteo, no bloquea.
+- **UX en `/fichas`**: el contador del topbar muestra "n / tope" cuando hay límite; el botón
+  "+ Añadir ficha" (`AddFichaButton`) se deshabilita con tooltip al llegar al tope; y aparece un
+  aviso ("Tope de fichas alcanzado") sobre la lista. El botón del empty-state no recibe `atLimit`
+  (con 0 fichas nunca se está al tope).
+
+### 18.3 Nota GA4 (no es código)
+- `generate_lead` (`lib/gtag.ts`, disparado en `LeadForm` tras envío exitoso + consentimiento +
+  prod) **ya se ha disparado** en prod (confirmado en Tiempo real) pero aún no figura en Admin →
+  Eventos → "Eventos recientes" (latencia ~24-48 h). Falta marcarlo como evento clave (estrella)
+  cuando aparezca. GA4 ya no permite precrear el evento clave por nombre. Ver CLAUDE.md §7.
+
+**Verificación**: `npm run typecheck` limpio, `npm test` 206/206.
