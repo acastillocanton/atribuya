@@ -8,6 +8,7 @@ import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { MobileProfileAvatar } from "@/components/layout/MobileProfileAvatar";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getSupportUnreadCount } from "@/lib/support/unread";
 
 export default async function SalesLayout({
   children,
@@ -15,6 +16,7 @@ export default async function SalesLayout({
   children: React.ReactNode;
 }) {
   let profile: { full_name: string; role: string; avatar_url: string | null } | null = null;
+  let supportUnread = 0;
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
@@ -28,6 +30,7 @@ export default async function SalesLayout({
         .eq("id", user.id)
         .maybeSingle<{ full_name: string; role: string; avatar_url: string | null }>();
       profile = res.data;
+      supportUnread = await getSupportUnreadCount(supabase);
     }
   }
 
@@ -48,6 +51,7 @@ export default async function SalesLayout({
             subtitle,
             avatarUrl: profile?.avatar_url,
           }}
+          supportUnreadCount={supportUnread}
         />
       </div>
       <main
@@ -62,7 +66,7 @@ export default async function SalesLayout({
           name={profile?.full_name ?? "Comercial"}
           avatarUrl={profile?.avatar_url ?? null}
         />
-        <MobileTabBar />
+        <MobileTabBar supportUnreadCount={supportUnread} />
       </div>
     </Frame>
   );

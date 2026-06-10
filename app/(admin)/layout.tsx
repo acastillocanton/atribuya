@@ -7,6 +7,7 @@ import {
 } from "@/components/layout/Sidebar";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getSupportUnreadCount } from "@/lib/support/unread";
 
 /**
  * Layout del grupo (admin). El gestor de reseñas comparte casi todas las
@@ -22,6 +23,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   let profile: { full_name: string; role: string; avatar_url: string | null } | null = null;
+  let supportUnread = 0;
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
@@ -35,6 +37,7 @@ export default async function AdminLayout({
         .eq("id", user.id)
         .maybeSingle<{ full_name: string; role: string; avatar_url: string | null }>();
       profile = res.data;
+      supportUnread = await getSupportUnreadCount(supabase);
     }
   }
 
@@ -66,7 +69,7 @@ export default async function AdminLayout({
 
   return (
     <Frame>
-      <Sidebar groups={groups} user={user} />
+      <Sidebar groups={groups} user={user} supportUnreadCount={supportUnread} />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflowY: "auto" }}>
         {children}
       </main>

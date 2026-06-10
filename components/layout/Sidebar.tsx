@@ -43,9 +43,12 @@ export type SidebarGroup = {
 type SidebarProps = {
   groups: SidebarGroup[];
   user: { name: string; subtitle: string; avatarUrl?: string | null };
+  /** Conversaciones de soporte con mensajes no leídos. Pinta un badge
+   *  numérico en el item "Soporte" cuando es > 0. */
+  supportUnreadCount?: number;
 };
 
-export function Sidebar({ groups, user }: SidebarProps) {
+export function Sidebar({ groups, user, supportUnreadCount = 0 }: SidebarProps) {
   const pathname = usePathname() ?? "";
   const allItems = useMemo(
     // Los items deshabilitados (ej. "Respuestas · PRONTO", href "#") quedan
@@ -216,9 +219,9 @@ export function Sidebar({ groups, user }: SidebarProps) {
           gap: 4,
         }}
       >
-        {/* Soporte interno (helpdesk) — accesible a los tres roles. Sin badge
-            de no-leídos por ahora (requeriría llamar a support_unread_count()
-            en el layout; se añade cuando la migración 016 esté aplicada). */}
+        {/* Soporte interno (helpdesk) — accesible a los tres roles. El badge
+            de no-leídos lo alimenta support_unread_count() desde el layout
+            (best-effort: 0 si no hay datos → no se pinta). */}
         <Link
           href="/soporte"
           style={{
@@ -244,6 +247,28 @@ export function Sidebar({ groups, user }: SidebarProps) {
             }}
           />
           <span>Soporte</span>
+          {supportUnreadCount > 0 && (
+            <span
+              aria-label={`${supportUnreadCount} sin leer`}
+              style={{
+                marginLeft: "auto",
+                minWidth: 18,
+                height: 18,
+                padding: "0 5px",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 10.5,
+                fontWeight: 700,
+                lineHeight: 1,
+                color: "#fff",
+                background: "#2563eb",
+                borderRadius: 9,
+              }}
+            >
+              {supportUnreadCount > 9 ? "9+" : supportUnreadCount}
+            </span>
+          )}
         </Link>
 
         {/* Centro de ayuda — accesible a los tres roles. Pintado justo

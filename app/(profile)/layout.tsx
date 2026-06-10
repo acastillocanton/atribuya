@@ -10,6 +10,7 @@ import {
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getSupportUnreadCount } from "@/lib/support/unread";
 
 /**
  * Layout del grupo (profile). /perfil es accesible a TODOS los roles
@@ -32,6 +33,7 @@ export default async function ProfileLayout({
     role: string;
     avatar_url: string | null;
   } | null = null;
+  let supportUnread = 0;
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
@@ -45,6 +47,7 @@ export default async function ProfileLayout({
       .eq("id", user.id)
       .maybeSingle<{ full_name: string; role: string; avatar_url: string | null }>();
     profile = res.data;
+    supportUnread = await getSupportUnreadCount(supabase);
   }
 
   const role = profile?.role;
@@ -83,6 +86,7 @@ export default async function ProfileLayout({
             subtitle,
             avatarUrl: profile?.avatar_url,
           }}
+          supportUnreadCount={supportUnread}
         />
       </div>
       <main
@@ -95,7 +99,7 @@ export default async function ProfileLayout({
           tienen esa chrome de navegación. */}
       {isSales && (
         <div className="sales-hide-desktop">
-          <MobileTabBar />
+          <MobileTabBar supportUnreadCount={supportUnread} />
         </div>
       )}
     </Frame>

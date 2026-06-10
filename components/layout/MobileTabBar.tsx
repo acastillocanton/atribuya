@@ -9,6 +9,7 @@ import {
   Link2,
   Star,
   Trophy,
+  MessageCircle,
 } from "lucide-react";
 import { pickActiveId } from "./active-item";
 
@@ -24,18 +25,18 @@ const TABS: Tab[] = [
   { id: "link", label: "Enlace", href: "/panel/enlace", icon: Link2 },
   { id: "reviews", label: "Reseñas", href: "/panel/resenas", icon: Star },
   { id: "ranking", label: "Ranking", href: "/panel/ranking", icon: Trophy },
+  { id: "support", label: "Soporte", href: "/soporte", icon: MessageCircle },
 ];
 
 /**
  * Tab bar fija inferior — solo se ve en mobile (viewport ≤767px) gracias al
  * wrapper `.sales-hide-desktop` que el (sales)/layout pone alrededor.
  *
- * Los 4 items son los del rol comercial. "Clientes" intencionalmente no está
- * aquí: se accede desde el Panel (card "Mis clientes" mobile-only) o por URL
- * directa. Esto mantiene la tab bar visualmente alineada con el mockup
- * (_design_package/Atribuya/screens/mobile.jsx) sin perder funcionalidad real.
+ * Items del rol comercial + Soporte (única vía a /soporte en mobile, donde no
+ * hay sidebar). "Clientes" intencionalmente no está aquí: se accede desde el
+ * Panel (card "Mis clientes" mobile-only) o por URL directa.
  */
-export function MobileTabBar() {
+export function MobileTabBar({ supportUnreadCount = 0 }: { supportUnreadCount?: number } = {}) {
   const pathname = usePathname() ?? "";
   const activeId = useMemo(() => pickActiveId(TABS, pathname), [pathname]);
 
@@ -79,12 +80,38 @@ export function MobileTabBar() {
               minHeight: 44,
             }}
           >
-            <Icon
-              aria-hidden="true"
-              size={20}
-              strokeWidth={on ? 2 : 1.75}
-              style={{ color: on ? "var(--ink)" : "var(--ink-4)" }}
-            />
+            <span style={{ position: "relative", display: "inline-flex" }}>
+              <Icon
+                aria-hidden="true"
+                size={20}
+                strokeWidth={on ? 2 : 1.75}
+                style={{ color: on ? "var(--ink)" : "var(--ink-4)" }}
+              />
+              {t.id === "support" && supportUnreadCount > 0 && (
+                <span
+                  aria-label={`${supportUnreadCount} sin leer`}
+                  style={{
+                    position: "absolute",
+                    top: -5,
+                    right: -8,
+                    minWidth: 15,
+                    height: 15,
+                    padding: "0 4px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    lineHeight: 1,
+                    color: "#fff",
+                    background: "#2563eb",
+                    borderRadius: 8,
+                  }}
+                >
+                  {supportUnreadCount > 9 ? "9+" : supportUnreadCount}
+                </span>
+              )}
+            </span>
             <span style={{ fontSize: 10.5, letterSpacing: "-0.005em" }}>{t.label}</span>
           </Link>
         );
