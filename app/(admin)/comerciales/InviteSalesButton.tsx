@@ -11,9 +11,15 @@ type DirectorOption = { id: string; full_name: string };
 export function InviteSalesButton({
   locations,
   directors = [],
+  atLimit = false,
+  limit,
 }: {
   locations: LocationOption[];
   directors?: DirectorOption[];
+  /** True cuando la org ya alcanzó el tope de comerciales de su plan. */
+  atLimit?: boolean;
+  /** Tope del plan, para el tooltip. */
+  limit?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +79,17 @@ export function InviteSalesButton({
 
   return (
     <>
-      <GhostBtn primary onClick={() => setOpen(true)}>
+      <GhostBtn
+        primary
+        onClick={() => setOpen(true)}
+        disabled={atLimit}
+        title={
+          atLimit
+            ? `Has alcanzado el tope de ${limit} comerciales de tu plan. Para ampliar el equipo, escribe a soporte.`
+            : undefined
+        }
+        style={atLimit ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+      >
         + Invitar comercial
       </GhostBtn>
 

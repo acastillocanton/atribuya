@@ -7,7 +7,17 @@ import { inviteOfficeDirector } from "./actions";
 
 type LocationOption = { id: string; name: string };
 
-export function InviteDirectorButton({ locations }: { locations: LocationOption[] }) {
+export function InviteDirectorButton({
+  locations,
+  atLimit = false,
+  limit,
+}: {
+  locations: LocationOption[];
+  /** True cuando la org ya alcanzó el tope de comerciales de su plan (los directores ocupan plaza). */
+  atLimit?: boolean;
+  /** Tope del plan, para el tooltip. */
+  limit?: number;
+}) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ link: string; email: string; emailSent: boolean } | null>(null);
@@ -52,7 +62,17 @@ export function InviteDirectorButton({ locations }: { locations: LocationOption[
 
   return (
     <>
-      <GhostBtn primary onClick={() => setOpen(true)}>
+      <GhostBtn
+        primary
+        onClick={() => setOpen(true)}
+        disabled={atLimit}
+        title={
+          atLimit
+            ? `Has alcanzado el tope de ${limit} comerciales de tu plan (los directores ocupan plaza). Para ampliar el equipo, escribe a soporte.`
+            : undefined
+        }
+        style={atLimit ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+      >
         + Invitar director
       </GhostBtn>
 

@@ -82,23 +82,33 @@ const FEATURES = [
 
 const PLANS = [
   {
-    name: "Starter",
-    fichas: "Hasta 2 fichas de Google",
+    name: "Básico",
+    equipo: "Hasta 5 comerciales",
+    fichas: "1 ficha de Google",
     price: "45",
-    tagline: "Una clínica, una promoción, un local.",
+    tagline: "La clínica o el local con un equipo pequeño.",
+    featured: false,
+  },
+  {
+    name: "Estándar",
+    equipo: "Hasta 15 comerciales",
+    fichas: "Hasta 3 fichas de Google",
+    price: "99",
+    tagline: "El concesionario o la promotora con red comercial.",
     featured: true,
   },
   {
-    name: "Professional",
+    name: "Plus",
+    equipo: "Hasta 30 comerciales",
     fichas: "Hasta 10 fichas de Google",
-    price: "149",
-    tagline: "La promotora o la red con varias sedes.",
+    price: "199",
+    tagline: "La promotora grande o el grupo con varias sedes.",
     featured: false,
   },
 ];
 
 const PRICING_INCLUDED = [
-  "Comerciales ilimitados, sin coste por usuario",
+  "Reseñas ilimitadas, sin coste por reseña atribuida",
   "Atribución automática de reseñas por ventana temporal y similitud de nombre",
   "Dashboard de admin con métricas por comercial, ficha y ranking",
   "Panel personal de cada comercial con su objetivo y reseñas conseguidas",
@@ -144,7 +154,7 @@ const FAQS: FaqItem[] = [
   {
     q: "¿Cuánto cuesta?",
     a: [
-      "La suscripción mensual va según el número de fichas de Google que gestiones: desde 45€/mes (hasta 2 fichas) o 149€/mes (hasta 10). Los comerciales son ilimitados en todos los planes, así que tu equipo crece sin pagar más. Si tienes más de 10 fichas o eres una cadena, lo vemos a medida.",
+      "La suscripción mensual va según el tamaño de tu equipo comercial: 45€/mes hasta 5 comerciales (con 1 ficha de Google), 99€/mes hasta 15 comerciales (hasta 3 fichas) y 199€/mes hasta 30 comerciales (hasta 10 fichas). Todas las funciones están incluidas en todos los planes. Si tu equipo es mayor o gestionas más fichas, lo vemos a medida.",
       "A eso se suma una implantación llave en mano de 129€ (pago único) que incluye conexión de tus fichas, alta de tu equipo, formación a comerciales y soporte las primeras semanas. Sin permanencia. Para el encaje exacto de tu caso reservamos una llamada de 20 minutos.",
     ],
   },
@@ -563,14 +573,14 @@ export default function HomePage() {
                 className="mt-5 leading-relaxed text-ink-2"
                 style={{ fontSize: "var(--text-lead)" }}
               >
-                Pagas según las fichas de Google que gestionas. Los comerciales
-                son ilimitados en todos los planes. Implantación llave en mano,
+                Pagas según el tamaño de tu equipo comercial. Todas las
+                funciones en todos los planes. Implantación llave en mano,
                 suscripción mensual, cancelas cuando quieras.
               </p>
             </div>
 
-            {/* Dos planes por nº de fichas + a medida — Starter destacado */}
-            <div className="mt-12 grid gap-5 sm:grid-cols-3">
+            {/* Tres planes por nº de comerciales + a medida — Estándar destacado */}
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {PLANS.map((plan) => (
                 <article
                   key={plan.name}
@@ -595,7 +605,7 @@ export default function HomePage() {
                     <span className="text-[14px] text-ink-3">/ mes</span>
                   </p>
                   <p className="mt-3 text-[14.5px] font-medium text-ink">
-                    {plan.fichas}
+                    {plan.equipo}
                   </p>
                   <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
                     {plan.tagline}
@@ -605,7 +615,7 @@ export default function HomePage() {
                       aria-hidden="true"
                       className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
                     />
-                    Comerciales ilimitados
+                    {plan.fichas}
                   </p>
                   <a
                     href="#contacto"
@@ -620,7 +630,7 @@ export default function HomePage() {
                 </article>
               ))}
 
-              {/* Tarjeta a medida — cadenas y más de 10 fichas */}
+              {/* Tarjeta a medida — equipos de más de 30 o más de 10 fichas */}
               <article className="relative flex flex-col rounded-2xl border border-line bg-white p-7 sm:p-8">
                 <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
                   Plan a medida
@@ -631,7 +641,7 @@ export default function HomePage() {
                   </span>
                 </p>
                 <p className="mt-3 text-[14.5px] font-medium text-ink">
-                  Más de 10 fichas de Google
+                  Más de 30 comerciales
                 </p>
                 <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
                   Cadenas y redes con varias sedes.
@@ -641,7 +651,7 @@ export default function HomePage() {
                     aria-hidden="true"
                     className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
                   />
-                  Comerciales ilimitados
+                  Más de 10 fichas de Google
                 </p>
                 <a
                   href="#contacto"

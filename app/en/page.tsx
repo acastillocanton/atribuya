@@ -79,23 +79,33 @@ const FEATURES = [
 
 const PLANS = [
   {
-    name: "Starter",
-    fichas: "Up to 2 Google listings",
+    name: "Basic",
+    equipo: "Up to 5 sales reps",
+    fichas: "1 Google listing",
     price: "45",
-    tagline: "A clinic, a development, a single location.",
+    tagline: "A clinic or a single location with a small team.",
+    featured: false,
+  },
+  {
+    name: "Standard",
+    equipo: "Up to 15 sales reps",
+    fichas: "Up to 3 Google listings",
+    price: "99",
+    tagline: "The dealership or developer with a sales network.",
     featured: true,
   },
   {
-    name: "Professional",
+    name: "Plus",
+    equipo: "Up to 30 sales reps",
     fichas: "Up to 10 Google listings",
-    price: "149",
-    tagline: "The developer or network with several sites.",
+    price: "199",
+    tagline: "The large developer or group with several sites.",
     featured: false,
   },
 ];
 
 const PRICING_INCLUDED = [
-  "Unlimited sales reps, no per-user cost",
+  "Unlimited reviews, no cost per attributed review",
   "Automatic review attribution by time window and name similarity",
   "Admin dashboard with per-rep, per-listing metrics and ranking",
   "Personal panel for each rep with their target and earned reviews",
@@ -141,7 +151,7 @@ const FAQS: FaqItem[] = [
   {
     q: "How much does it cost?",
     a: [
-      "The monthly subscription scales with the number of Google listings you manage: from €45/month (up to 2 listings) or €149/month (up to 10). Sales reps are unlimited on every plan, so your team grows without paying more. More than 10 listings or a chain? We tailor a plan with you.",
+      "The monthly subscription scales with the size of your sales team: €45/month for up to 5 sales reps (with 1 Google listing), €99/month for up to 15 reps (up to 3 listings) and €199/month for up to 30 reps (up to 10 listings). Every feature is included on every plan. Bigger team or more listings? We tailor a plan with you.",
       "On top of that there's a one-time €129 turnkey setup that includes connecting your listings, onboarding your team, training your sales reps and support during the first weeks. No minimum contract. For an exact assessment of your case we book a 20-minute call.",
     ],
   },
@@ -561,14 +571,13 @@ export default function HomePageEn() {
                 className="mt-5 leading-relaxed text-ink-2"
                 style={{ fontSize: "var(--text-lead)" }}
               >
-                You pay by the number of Google listings you manage. Sales reps
-                are unlimited on every plan. Turnkey setup, monthly
-                subscription, cancel anytime.
+                You pay by the size of your sales team. Every feature on every
+                plan. Turnkey setup, monthly subscription, cancel anytime.
               </p>
             </div>
 
-            {/* Two plans by number of listings + custom — Starter highlighted */}
-            <div className="mt-12 grid gap-5 sm:grid-cols-3">
+            {/* Three plans by sales-team size + custom — Standard highlighted */}
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {PLANS.map((plan) => (
                 <article
                   key={plan.name}
@@ -593,7 +602,7 @@ export default function HomePageEn() {
                     <span className="text-[14px] text-ink-3">/ month</span>
                   </p>
                   <p className="mt-3 text-[14.5px] font-medium text-ink">
-                    {plan.fichas}
+                    {plan.equipo}
                   </p>
                   <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
                     {plan.tagline}
@@ -603,7 +612,7 @@ export default function HomePageEn() {
                       aria-hidden="true"
                       className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
                     />
-                    Unlimited sales reps
+                    {plan.fichas}
                   </p>
                   <a
                     href="#contact"
@@ -618,7 +627,7 @@ export default function HomePageEn() {
                 </article>
               ))}
 
-              {/* Custom card — chains and more than 10 listings */}
+              {/* Custom card — teams over 30 reps or more than 10 listings */}
               <article className="relative flex flex-col rounded-2xl border border-line bg-white p-7 sm:p-8">
                 <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
                   Custom plan
@@ -629,7 +638,7 @@ export default function HomePageEn() {
                   </span>
                 </p>
                 <p className="mt-3 text-[14.5px] font-medium text-ink">
-                  More than 10 Google listings
+                  More than 30 sales reps
                 </p>
                 <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
                   Chains and networks with several sites.
@@ -639,7 +648,7 @@ export default function HomePageEn() {
                     aria-hidden="true"
                     className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
                   />
-                  Unlimited sales reps
+                  More than 10 Google listings
                 </p>
                 <a
                   href="#contact"

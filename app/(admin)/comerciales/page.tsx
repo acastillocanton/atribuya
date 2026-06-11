@@ -5,6 +5,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Pill } from "@/components/ui/Pill";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { countSeats, orgSeatLimit } from "@/lib/plan-seats";
 import type { ProfileStatus } from "@/lib/supabase/types";
 import { InviteSalesButton } from "./InviteSalesButton";
 import { DeleteSalesButton } from "./DeleteSalesButton";
@@ -32,6 +33,8 @@ export default async function ComercialesPage() {
   let dbError: string | null = null;
   let viewerRole: string | null = null;
   let orgSlug: string | null = null;
+  let seatLimit: number | null = null;
+  let seatCount: number | null = null;
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
@@ -41,11 +44,24 @@ export default async function ComercialesPage() {
     if (user) {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role, organizations:organizations(slug)")
+        .select("role, org_id, organizations:organizations(slug)")
         .eq("id", user.id)
-        .maybeSingle<{ role: string; organizations: { slug: string } | null }>();
+        .maybeSingle<{
+          role: string;
+          org_id: string | null;
+          organizations: { slug: string } | null;
+        }>();
       viewerRole = profile?.role ?? null;
       orgSlug = profile?.organizations?.slug ?? null;
+      // Tope de comerciales del plan (pricing v3): los seats incluyen a los
+      // directores de oficina, por eso el conteo va por helper y no por la
+      // lista de sales de esta página.
+      if (profile?.org_id) {
+        [seatLimit, seatCount] = await Promise.all([
+          orgSeatLimit(profile.org_id),
+          countSeats(profile.org_id),
+        ]);
+      }
     }
 
     const [salesRes, locRes, dirRes] = await Promise.all([
@@ -83,14 +99,30 @@ export default async function ComercialesPage() {
     paused: salesList.filter((s) => s.status === "paused").length,
   };
 
+  const atSeatLimit =
+    seatLimit !== null && seatCount !== null && seatCount >= seatLimit;
+  const rangeLabel =
+    seatLimit !== null
+      ? `${seatCount ?? stats.total} / ${seatLimit} comerciales`
+      : `${stats.total} en plantilla`;
+
   return (
     <>
       <Topbar
         title="Comerciales"
         subtitle={canEdit ? "Gestión de comerciales" : "Vista solo lectura"}
-        range={`${stats.total} en plantilla`}
+        range={rangeLabel}
         breadcrumb="Atribuya"
-        right={canEdit ? <InviteSalesButton locations={locations} directors={directors} /> : undefined}
+        right={
+          canEdit ? (
+            <InviteSalesButton
+              locations={locations}
+              directors={directors}
+              atLimit={atSeatLimit}
+              limit={seatLimit ?? undefined}
+            />
+          ) : undefined
+        }
       />
 
       <div style={{ flex: 1, padding: "24px 32px 32px", overflow: "auto" }}>
@@ -110,6 +142,21 @@ export default async function ComercialesPage() {
               {dbError}
             </p>
           </Card>
+        )}
+
+        {!dbError && atSeatLimit && (
+          <div style={{ marginBottom: 16 }}>
+            <Card>
+              <div style={{ fontSize: 13, color: "var(--warn)", fontWeight: 600 }}>
+                Tope de comerciales alcanzado
+              </div>
+              <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "var(--ink-3)", lineHeight: 1.5 }}>
+                Tu plan incluye hasta {seatLimit} comerciales (los directores de
+                oficina también ocupan plaza; los perfiles pausados no cuentan).
+                Para ampliar el equipo, escribe a soporte y te cambiamos de plan.
+              </p>
+            </Card>
+          </div>
         )}
 
         {!dbError && (
@@ -158,7 +205,12 @@ export default async function ComercialesPage() {
                       invites a alguien, te daremos un enlace de un solo uso que
                       puedes enviarle por WhatsApp o email.
                     </p>
-                    <InviteSalesButton locations={locations} directors={directors} />
+                    <InviteSalesButton
+                      locations={locations}
+                      directors={directors}
+                      atLimit={atSeatLimit}
+                      limit={seatLimit ?? undefined}
+                    />
                   </>
                 ) : (
                   <p

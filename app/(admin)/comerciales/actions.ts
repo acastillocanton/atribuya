@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createInvitedProfile } from "@/lib/invite";
 import { generateAccessLink } from "@/lib/auth/resend-link";
+import { checkSeatLimit } from "@/lib/plan-seats";
 import { slugify } from "@/lib/utils";
 
 /**
@@ -96,6 +97,9 @@ export async function inviteSales(input: InviteSalesInput): Promise<
   if (!baseSlug) {
     return { ok: false, error: "No se pudo generar el identificador del comercial." };
   }
+  // Tope de comerciales por plan (pricing v3): los seats incluyen directores.
+  const seatBlock = await checkSeatLimit(auth.orgId);
+  if (seatBlock) return { ok: false, error: seatBlock.error };
   return createInvitedProfile({
     fullName: parsed.data.fullName,
     email: parsed.data.email,
@@ -134,6 +138,13 @@ export async function updateSales(input: UpdateSalesInput) {
   const parsed = updateSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  // Reactivar un comercial pausado vuelve a ocupar plaza: revalidar el tope
+  // (excluyendo su propio perfil del conteo, que en pausa no cuenta).
+  if (parsed.data.status !== "paused") {
+    const seatBlock = await checkSeatLimit(auth.orgId, parsed.data.id);
+    if (seatBlock) return { ok: false as const, error: seatBlock.error };
   }
 
   const supabase = await createClient();

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createInvitedProfile } from "@/lib/invite";
 import { generateAccessLink } from "@/lib/auth/resend-link";
+import { checkSeatLimit } from "@/lib/plan-seats";
 import { slugify } from "@/lib/utils";
 import { recordAudit } from "@/lib/audit";
 
@@ -73,6 +74,10 @@ export async function inviteOfficeDirector(input: InviteDirectorInput): Promise<
   const baseSlug = slugify(parsed.data.fullName);
   if (!baseSlug) return { ok: false, error: "No se pudo generar el identificador del director." };
 
+  // Tope de comerciales por plan (pricing v3): el director ocupa plaza.
+  const seatBlock = await checkSeatLimit(guard.orgId);
+  if (seatBlock) return { ok: false, error: seatBlock.error };
+
   return createInvitedProfile({
     fullName: parsed.data.fullName,
     email: parsed.data.email,
@@ -107,6 +112,13 @@ export async function updateDirector(input: z.input<typeof updateDirectorSchema>
   const parsed = updateDirectorSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  // Reactivar un director pausado vuelve a ocupar plaza: revalidar el tope
+  // (excluyendo su propio perfil del conteo, que en pausa no cuenta).
+  if (parsed.data.status !== "paused") {
+    const seatBlock = await checkSeatLimit(guard.orgId, parsed.data.id);
+    if (seatBlock) return { ok: false as const, error: seatBlock.error };
   }
 
   const admin = createServiceClient();

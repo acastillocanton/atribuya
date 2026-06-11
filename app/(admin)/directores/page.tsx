@@ -4,6 +4,8 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Pill } from "@/components/ui/Pill";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getCurrentOrgContext } from "@/lib/supabase/org";
+import { countSeats, orgSeatLimit } from "@/lib/plan-seats";
 import type { ProfileStatus } from "@/lib/supabase/types";
 import { InviteDirectorButton } from "./InviteDirectorButton";
 import { DeleteDirectorButton } from "./DeleteDirectorButton";
@@ -24,6 +26,8 @@ export default async function DirectoresPage() {
   let directors: DirectorRow[] = [];
   let teamCounts: Record<string, number> = {};
   let locations: LocationOption[] = [];
+  let seatLimit: number | null = null;
+  let seatCount: number | null = null;
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
@@ -41,7 +45,20 @@ export default async function DirectoresPage() {
       if (s.director_id) teamCounts[s.director_id] = (teamCounts[s.director_id] ?? 0) + 1;
     }
     if (locRes.data) locations = locRes.data as LocationOption[];
+
+    // Tope de comerciales del plan (pricing v3): el director ocupa plaza,
+    // así que el botón de invitar también se bloquea al llegar al tope.
+    const orgCtx = await getCurrentOrgContext(supabase);
+    if (orgCtx?.orgId) {
+      [seatLimit, seatCount] = await Promise.all([
+        orgSeatLimit(orgCtx.orgId),
+        countSeats(orgCtx.orgId),
+      ]);
+    }
   }
+
+  const atSeatLimit =
+    seatLimit !== null && seatCount !== null && seatCount >= seatLimit;
 
   const stats = {
     total: directors.length,
@@ -57,7 +74,13 @@ export default async function DirectoresPage() {
         subtitle="Directores de oficina y sus equipos"
         range={`${stats.total} directores`}
         breadcrumb="Atribuya"
-        right={<InviteDirectorButton locations={locations} />}
+        right={
+          <InviteDirectorButton
+            locations={locations}
+            atLimit={atSeatLimit}
+            limit={seatLimit ?? undefined}
+          />
+        }
       />
 
       <div style={{ flex: 1, padding: "24px 32px 32px", overflow: "auto" }}>
@@ -81,7 +104,11 @@ export default async function DirectoresPage() {
               invitarlo, asigna sus comerciales desde la ficha de cada comercial
               (campo «Director responsable»).
             </p>
-            <InviteDirectorButton locations={locations} />
+            <InviteDirectorButton
+              locations={locations}
+              atLimit={atSeatLimit}
+              limit={seatLimit ?? undefined}
+            />
           </Card>
         ) : (
           <Card padding={0}>
