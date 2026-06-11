@@ -712,3 +712,49 @@ como "Security Definer View" con severidad CRITICAL.
   `current_org_id()` fila a fila. Fix conocido: envolver en subselect `(select auth.uid())` dentro
   de cada policy. Con el volumen actual es irrelevante; candidato a una futura migración de
   housekeeping cuando haya tráfico real.
+
+## 20. Pricing v3: híbrido por comerciales con tope de fichas (2026-06-11)
+
+Decisión de negocio de Alejandro: casi todo el mercado objetivo (concesionarios, clínicas,
+piso piloto) tiene UNA ficha pero varios comerciales, así que el pricing v2 "por fichas"
+metía a todos en el tier barato para siempre. El valor del producto crece con el equipo.
+
+### 20.1 El modelo
+| Plan | Valor `organizations.plan` | Comerciales | Fichas | Precio |
+|---|---|---|---|---|
+| Básico | `basic` | hasta 5 | 1 | 45 €/mes |
+| Estándar (destacado) | `standard` | hasta 15 | hasta 3 | 99 €/mes |
+| Plus | `plus` | hasta 30 | hasta 10 | 199 €/mes |
+| A medida | `custom` | ilimitado | ilimitado | a hablar |
+
+- **Seats**: cuentan los perfiles `role in (sales, office_director)` con `status in (invited, active)`.
+  Los directores ocupan plaza (son productores con panel propio). Pausar libera la plaza.
+- Bloques holgados a propósito: si compensara esconder comerciales (cuentas compartidas),
+  el matcher perdería el roster y la atribución parecería rota.
+- Legacy v2: `starter`/`professional` conservan su tope de fichas (2/10) y siguen con
+  comerciales ilimitados (era lo vendido). Setup 129 € sin cambios.
+
+### 20.2 Implementación
+- `app/(super)/super/plans.ts`: `PLAN_OPTIONS` v3, `DEFAULT_PLAN = "basic"`,
+  `PLAN_LOCATION_LIMITS` (basic 1 / standard 3 / plus 10 + legacy), nuevo
+  `PLAN_SALES_LIMITS` + `planSalesLimit()`.
+- Nuevo `lib/plan-seats.ts`: `countSeats(orgId, excludeId?)` (service-role + filtro org_id
+  explícito, porque el gestor no tiene SELECT sobre directores), `orgSeatLimit(orgId)` y
+  `checkSeatLimit(orgId, excludeId?)`. Best-effort como el tope de fichas: si no se puede
+  leer plan o conteo, no bloquea (freno comercial, no de seguridad).
+- Enforcement: `inviteSales` y `updateSales` (reactivación con `excludeId`) en
+  `app/(admin)/comerciales/actions.ts`; `inviteOfficeDirector` y `updateDirector` en
+  `app/(admin)/directores/actions.ts`.
+- UX (espejo del patrón de `/fichas`): contador "n / tope comerciales" en el Topbar de
+  `/comerciales`, botones de invitar deshabilitados con tooltip al tope (props
+  `atLimit`/`limit` en `InviteSalesButton` e `InviteDirectorButton`, también en el
+  empty-state), card de aviso en `/comerciales` explicando que los directores ocupan plaza.
+- Landing ES+EN: 3 tarjetas + a medida (grid `sm:grid-cols-2 lg:grid-cols-4`), el destacado
+  pasa de Starter a **Estándar**, la línea principal de cada tarjeta es el nº de comerciales
+  y la ficha pasa al bullet; bullet "Comerciales ilimitados" sustituido por
+  "Reseñas ilimitadas, sin coste por reseña atribuida"; FAQ "¿Cuánto cuesta?" reescrita.
+- Datos: las 2 orgs existentes (Acme Promotora, AleCris) tenían el plan legacy `standard`
+  (que ahora colisionaría con el tier Estándar) → actualizadas a `basic` vía PostgREST con
+  service-role el 2026-06-11. Ambas tienen 1 ficha, encajan.
+- Tests: `app/(super)/super/__tests__/plans.test.ts` fija la tabla de límites por test
+  (un cambio accidental cambia lo que vendemos).
