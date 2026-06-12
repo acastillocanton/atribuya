@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { planSalesLimit } from "@/app/(super)/super/plans";
+import type { Role, ProfileStatus } from "@/lib/supabase/types";
 
 /**
  * Tope de comerciales por plan (pricing v3, 2026-06-11).
@@ -13,8 +14,8 @@ import { planSalesLimit } from "@/app/(super)/super/plans";
  * no se pueden leer, no bloqueamos el alta.
  */
 
-const SEAT_ROLES = ["sales", "office_director"];
-const SEAT_STATUSES = ["invited", "active"];
+const SEAT_ROLES: Role[] = ["sales", "office_director"];
+const SEAT_STATUSES: ProfileStatus[] = ["invited", "active"];
 
 /**
  * Nº de plazas ocupadas en la org. Va por service-role porque el gestor
