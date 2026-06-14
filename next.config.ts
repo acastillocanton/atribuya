@@ -37,10 +37,6 @@ const SECURITY_HEADERS = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  // Defensa en profundidad contra indexación. El meta tag en app/layout.tsx
-  // solo viaja en respuestas HTML; este header cubre redirects 302 (/c/...),
-  // JSON de las API routes y cualquier respuesta no-HTML.
-  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet" },
   {
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
@@ -50,6 +46,23 @@ const SECURITY_HEADERS = [
     value: "max-age=31536000; includeSubDomains",
   },
 ];
+
+// Defensa en profundidad contra indexación. El meta tag en app/layout.tsx
+// solo viaja en respuestas HTML; este header cubre redirects 302 (/c/...),
+// JSON de las API routes y cualquier respuesta no-HTML.
+//
+// IMPORTANTE: NO puede aplicarse a `/:path*`. Las páginas públicas indexables
+// (landing ES `/`, EN `/en`, legales `/terminos` y `/privacidad`) llevan el
+// meta `robots: { index: true }`, pero el header HTTP X-Robots-Tag gana sobre
+// el meta tag (Google aplica la directiva más restrictiva), así que ponerlo
+// global marcaba esas 4 como noindex → "Excluida por noindex" en Search
+// Console. Lo aplicamos a todo MENOS esas páginas + los ficheros de crawl,
+// con el mismo negative-lookahead que usa el matcher del middleware.
+const NOINDEX_HEADERS = [
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet" },
+];
+const INDEXABLE_PATHS_NEGATIVE_LOOKAHEAD =
+  "/((?!$|en$|terminos$|privacidad$|sitemap\\.xml$|robots\\.txt$).*)";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -68,6 +81,10 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: SECURITY_HEADERS,
+      },
+      {
+        source: INDEXABLE_PATHS_NEGATIVE_LOOKAHEAD,
+        headers: NOINDEX_HEADERS,
       },
     ];
   },
