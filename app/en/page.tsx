@@ -4,6 +4,7 @@ import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
 import { ProductShot } from "@/components/landing/ProductShot";
+import { ProductDemo } from "@/components/landing/ProductDemo";
 import { AttributionAnimation } from "@/components/landing/AttributionAnimation";
 
 export const metadata: Metadata = {
@@ -484,7 +485,9 @@ export default function HomePageEn() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-8 md:grid-cols-2">
+          <ProductDemo locale="en" className="mt-12" />
+
+          <div className="mt-8 grid gap-8 md:grid-cols-2">
             <ProductShot
               locale="en"
               className="md:col-span-2"
