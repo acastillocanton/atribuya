@@ -57,7 +57,7 @@ export function AttributionAnimation({ locale }: { locale: Locale }) {
   return (
     <figure className="mx-auto max-w-lg">
       <style>{CSS}</style>
-      <div className="rounded-2xl border border-line bg-bg p-6 sm:p-10">
+      <div className="rounded-2xl bg-bg p-6 sm:p-10">
         <div className="rounded-[14px] border border-line bg-white p-5 shadow-card sm:p-6">
           {/* Cabecera: autor + estrellas + G de Google */}
           <div className="flex items-start justify-between gap-3">
