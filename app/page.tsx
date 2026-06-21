@@ -662,10 +662,26 @@ export default function HomePage() {
               </article>
             </div>
 
-            <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
-              A cualquier plan se suma una implantación llave en mano de 129 €
-              (pago único), sin permanencia.
-            </p>
+            <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-ink/15 bg-bg p-6 shadow-card sm:flex-row sm:items-center sm:gap-7 sm:p-8">
+              <div className="flex items-baseline gap-x-2 sm:flex-col sm:items-start sm:gap-y-1">
+                <span className="font-display text-[2.5rem] font-medium leading-none tracking-tight text-ink sm:text-[3rem]">
+                  129&nbsp;€
+                </span>
+                <span className="text-[13px] font-medium uppercase tracking-[0.12em] text-ink-3">
+                  pago único
+                </span>
+              </div>
+              <div className="sm:border-l sm:border-line sm:pl-7">
+                <p className="text-[15px] font-semibold text-ink">
+                  Implantación llave en mano
+                </p>
+                <p className="mt-1.5 text-[14.5px] leading-relaxed text-ink-2">
+                  Una sola vez, se suma a cualquier plan. Incluye conexión de tus
+                  fichas, alta de tu equipo, formación a comerciales y soporte las
+                  primeras semanas. Sin permanencia.
+                </p>
+              </div>
+            </div>
 
             {/* Lo que incluyen todos los planes */}
             <div className="mt-12">

@@ -659,10 +659,26 @@ export default function HomePageEn() {
               </article>
             </div>
 
-            <p className="mt-5 text-[13px] leading-relaxed text-ink-3">
-              A one-time €129 turnkey setup is added to any plan. No minimum
-              contract.
-            </p>
+            <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-ink/15 bg-bg p-6 shadow-card sm:flex-row sm:items-center sm:gap-7 sm:p-8">
+              <div className="flex items-baseline gap-x-2 sm:flex-col sm:items-start sm:gap-y-1">
+                <span className="font-display text-[2.5rem] font-medium leading-none tracking-tight text-ink sm:text-[3rem]">
+                  €129
+                </span>
+                <span className="text-[13px] font-medium uppercase tracking-[0.12em] text-ink-3">
+                  one-time
+                </span>
+              </div>
+              <div className="sm:border-l sm:border-line sm:pl-7">
+                <p className="text-[15px] font-semibold text-ink">
+                  Turnkey setup
+                </p>
+                <p className="mt-1.5 text-[14.5px] leading-relaxed text-ink-2">
+                  Paid once, added to any plan. Includes connecting your listings,
+                  onboarding your team, training your sales reps and support during
+                  the first weeks. No minimum contract.
+                </p>
+              </div>
+            </div>
 
             {/* What every plan includes */}
             <div className="mt-12">
