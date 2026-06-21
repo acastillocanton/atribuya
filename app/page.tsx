@@ -604,6 +604,10 @@ export default function HomePage() {
                     </span>
                     <span className="text-[14px] text-ink-3">/ mes</span>
                   </p>
+                  <p className="mt-2 text-[13px] font-medium text-ink-2">
+                    + 129&nbsp;€ de implantación
+                    <span className="font-normal text-ink-3"> (pago único)</span>
+                  </p>
                   <p className="mt-3 text-[14.5px] font-medium text-ink">
                     {plan.equipo}
                   </p>
@@ -640,6 +644,10 @@ export default function HomePage() {
                     A medida
                   </span>
                 </p>
+                <p className="mt-2 text-[13px] font-medium text-ink-2">
+                  + 129&nbsp;€ de implantación
+                  <span className="font-normal text-ink-3"> (pago único)</span>
+                </p>
                 <p className="mt-3 text-[14.5px] font-medium text-ink">
                   Más de 30 comerciales
                 </p>
@@ -662,26 +670,11 @@ export default function HomePage() {
               </article>
             </div>
 
-            <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-ink/15 bg-bg p-6 shadow-card sm:flex-row sm:items-center sm:gap-7 sm:p-8">
-              <div className="flex items-baseline gap-x-2 sm:flex-col sm:items-start sm:gap-y-1">
-                <span className="font-display text-[2.5rem] font-medium leading-none tracking-tight text-ink sm:text-[3rem]">
-                  129&nbsp;€
-                </span>
-                <span className="text-[13px] font-medium uppercase tracking-[0.12em] text-ink-3">
-                  pago único
-                </span>
-              </div>
-              <div className="sm:border-l sm:border-line sm:pl-7">
-                <p className="text-[15px] font-semibold text-ink">
-                  Implantación llave en mano
-                </p>
-                <p className="mt-1.5 text-[14.5px] leading-relaxed text-ink-2">
-                  Una sola vez, se suma a cualquier plan. Incluye conexión de tus
-                  fichas, alta de tu equipo, formación a comerciales y soporte las
-                  primeras semanas. Sin permanencia.
-                </p>
-              </div>
-            </div>
+            <p className="mt-6 text-[14px] leading-relaxed text-ink-2">
+              La implantación llave en mano (129 €, pago único) incluye conexión
+              de tus fichas, alta de tu equipo, formación a comerciales y soporte
+              las primeras semanas. Sin permanencia.
+            </p>
 
             {/* Lo que incluyen todos los planes */}
             <div className="mt-12">

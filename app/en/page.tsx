@@ -601,6 +601,10 @@ export default function HomePageEn() {
                     </span>
                     <span className="text-[14px] text-ink-3">/ month</span>
                   </p>
+                  <p className="mt-2 text-[13px] font-medium text-ink-2">
+                    + €129 setup
+                    <span className="font-normal text-ink-3"> (one-time)</span>
+                  </p>
                   <p className="mt-3 text-[14.5px] font-medium text-ink">
                     {plan.equipo}
                   </p>
@@ -637,6 +641,10 @@ export default function HomePageEn() {
                     Custom
                   </span>
                 </p>
+                <p className="mt-2 text-[13px] font-medium text-ink-2">
+                  + €129 setup
+                  <span className="font-normal text-ink-3"> (one-time)</span>
+                </p>
                 <p className="mt-3 text-[14.5px] font-medium text-ink">
                   More than 30 sales reps
                 </p>
@@ -659,26 +667,11 @@ export default function HomePageEn() {
               </article>
             </div>
 
-            <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-ink/15 bg-bg p-6 shadow-card sm:flex-row sm:items-center sm:gap-7 sm:p-8">
-              <div className="flex items-baseline gap-x-2 sm:flex-col sm:items-start sm:gap-y-1">
-                <span className="font-display text-[2.5rem] font-medium leading-none tracking-tight text-ink sm:text-[3rem]">
-                  €129
-                </span>
-                <span className="text-[13px] font-medium uppercase tracking-[0.12em] text-ink-3">
-                  one-time
-                </span>
-              </div>
-              <div className="sm:border-l sm:border-line sm:pl-7">
-                <p className="text-[15px] font-semibold text-ink">
-                  Turnkey setup
-                </p>
-                <p className="mt-1.5 text-[14.5px] leading-relaxed text-ink-2">
-                  Paid once, added to any plan. Includes connecting your listings,
-                  onboarding your team, training your sales reps and support during
-                  the first weeks. No minimum contract.
-                </p>
-              </div>
-            </div>
+            <p className="mt-6 text-[14px] leading-relaxed text-ink-2">
+              The turnkey setup (€129, one-time) includes connecting your
+              listings, onboarding your team, training your sales reps and support
+              during the first weeks. No minimum contract.
+            </p>
 
             {/* What every plan includes */}
             <div className="mt-12">
