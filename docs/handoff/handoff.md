@@ -54,7 +54,7 @@ SaaS B2B multi-tenant que atribuye reseñas de Google Business Profile a comerci
 | 14 | Lote 1 — calidad de reseñas (mig 015) | ✅ | 2026-06-06 |
 | 15 | Lote 2 — features para vender (ranking, soporte, excel, parte por ficha) | ✅ | 2026-06-06 |
 | 16 | Google Cloud — Places API (Vía A) | ✅ | `f755644` · 2026-06-07 |
-| — | Google Cloud — OAuth Business Profile (Vía B) | ❌ rechazada 2026-06-24 — corrección en curso (ver §7.3) | 2026-06-07 |
+| — | Google Cloud — OAuth Business Profile (Vía B) | ⏳ re-solicitud enviada 2026-06-24 (corregida → `castillocanton.com`), esperando aprobación (ver §7.3) | 2026-06-07 |
 | 8 | DPA finalizado + plantilla `.docx` firmable | ✅ | `6b3d598` · 2026-06-07 |
 | — | Reescritura de copy de la landing (tono beneficio-first) | ✅ | 2026-06-07 |
 | — | Asistente de alta de ficha (búsqueda Google, Vía A) + fix OAuth en blanco + reorden sidebar admin (→ §16) | ✅ | `1be88e2`→`8487971` · 2026-06-09 |
@@ -191,15 +191,19 @@ Dos integraciones de Google, ambas en el proyecto Cloud `atribuya`:
   >
   > **Actualización (2026-06-24) — RECHAZADA.** Google respondió: *"No approved project. The listing ID is associated with a different website."* **Causa raíz**: el consent screen del proyecto Cloud `atribuya` tenía homepage/privacidad/términos **vacíos** y el único dominio autorizado era `atribuya.com`, que no coincide con la web de la ficha GBP de Castillo Cantón (`castillocanton.com`). **Plan de corrección** (pasos acordados, en pausa al retomar):
   >
-  > **Paso 1A** (pendiente en Cloud Console — tarea manual del usuario): en Google Cloud → proyecto `atribuya` → Información de la marca, rellenar y guardar:
+  > **Paso 1A** ✅ HECHO (2026-06-24): consent screen del proyecto `atribuya` (Información de la marca) alineado con `castillocanton.com` y guardado:
   > - Página principal: `https://castillocanton.com`
   > - Política de privacidad: `https://castillocanton.com/politica-de-privacidad/`
   > - Condiciones del servicio: `https://castillocanton.com/terminos-de-servicio/`
-  > - Dominio autorizado 2: añadir `castillocanton.com` (además del `atribuya.com` existente)
+  > - Dominio autorizado: añadido `castillocanton.com` (junto al `atribuya.com` existente)
   >
   > **Paso 1B** ✅ HECHO (2026-06-24): página de términos creada en `https://castillocanton.com/terminos-de-servicio/` (live, verificada). Cubre titularidad de Castillo Cantón, propósito, reglas de uso, propiedad intelectual, herramientas, responsabilidad, protección de datos (remite a privacidad/cookies) y jurisdicción española. ⚠️ **Nota**: la página NO menciona Atribuya ni el uso de datos OAuth/GBP, y la privacidad solo cubre el formulario de contacto (Web3Forms). Irrelevante para el rechazo actual (que es de mismatch de dominio), pero **riesgo menor de cara a una futura verificación de scopes sensibles** (`business.manage` es sensible): si Google lo exige, añadir a la privacidad de `castillocanton.com` una cláusula sobre el tratamiento de datos de Google Business Profile vía Atribuya.
   >
-  > **Paso 2** (pendiente): reenviar la solicitud GBP API con el consent screen ya alineado con `castillocanton.com`.
+  > **Paso 2** ✅ HECHO (2026-06-24): formulario GBP API reenviado desde `alejandro@atribuya.com` vía `support.google.com/business/contact/api_default` → opción **"Solicitud de acceso básico a las APIs"**. Campos: nº de proyecto `443155173600`, sitio web `https://castillocanton.com`, motivo = lectura de reseñas con OAuth por cliente (scope `business.manage`, solo lectura, producto Atribuya de Castillo Cantón). Esta vez todo alineado con `castillocanton.com` (la web de la ficha GBP que gestiona la cuenta), que era la causa del rechazo anterior.
+  >
+  > **⚠️ Pendiente de vigilar (2026-06-24)**: (1) **aprobación de Google** — indicador fiable: cuota "Requests per minute" de Business Information API (`0` = pendiente/denegado, `~300` = aprobado); revisar en ~7-10 días. (2) **Banner "Verificación requerida para `alejandro@atribuya.com`"** visto en el formulario: se refiere a la verificación del Perfil de Empresa de Google, no al formulario. Google exige en sus prerequisitos un GBP **verificado y activo**; si la ficha de Castillo Cantón gestionada por esta cuenta no está verificada, completar la verificación, porque sería otro posible motivo de rechazo.
+  >
+  > **Tras aprobación**: subir `GOOGLE_CLIENT_ID`/`SECRET`/`REDIRECT_URI` a Vercel + redeploy + probar OAuth. ⚠️ `REDIRECT_URI` SIN www (`https://atribuya.com/api/google/oauth/callback`).
 
 ### 7.4 Dominio comercial ✅ RESUELTO (2026-06-06)
 
@@ -221,7 +225,7 @@ Los `/terminos` y `/privacidad` están completos. El DPA (Acuerdo de Encargado d
 
 ### 7.7 Camino crítico al primer cliente
 
-En orden: ~~Brevo (§7.2)~~ ✅ → ~~Google Places Vía A (§7.3)~~ ✅ → ~~DPA (§7.6)~~ ✅ → **solo queda Google OAuth Vía B (§7.3)**, solicitud **rechazada el 2026-06-24**. Plan de corrección: paso 1B ✅ página de términos creada (`castillocanton.com/terminos-de-servicio/`); falta paso 1A (alinear consent screen con `castillocanton.com`: rellenar URLs en Cloud Console, manual del usuario) + paso 2 (reenviar solicitud). Ver §7.3 para el detalle exacto del punto en que se pausó. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
+En orden: ~~Brevo (§7.2)~~ ✅ → ~~Google Places Vía A (§7.3)~~ ✅ → ~~DPA (§7.6)~~ ✅ → **solo queda Google OAuth Vía B (§7.3)**, rechazada el 2026-06-24 y **re-solicitud enviada el mismo día** con todo alineado a `castillocanton.com` (consent screen 1A ✅ + términos 1B ✅ + formulario 2 ✅). **Esperando aprobación de Google** (~7-10 días; indicador = cuota de Business Information API). Vigilar también el aviso de verificación del GBP de Castillo Cantón. Ver §7.3 para el detalle exacto del punto en que se pausó. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
 
 ### 7.8 Mejoras de producto pendientes (lotes del producto base)
 
