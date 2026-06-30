@@ -205,6 +205,8 @@ Dos integraciones de Google, ambas en el proyecto Cloud `atribuya`:
   >
   > **Tras aprobación**: subir `GOOGLE_CLIENT_ID`/`SECRET`/`REDIRECT_URI` a Vercel + redeploy + probar OAuth. ⚠️ `REDIRECT_URI` SIN www (`https://atribuya.com/api/google/oauth/callback`).
 
+  > **Actualización (2026-06-30) — 2º RECHAZO + 3ª solicitud enviada.** Google respondió: *"your account did not pass our internal quality checks."* Análisis: el buzón `alejandro@atribuya.com` era un reenviador ImprovMX (no un buzón real), lo que resta credibilidad a la cuenta. Además era la primera vez que se usaba esa cuenta para el formulario. **Correcciones aplicadas**: (1) `alejandro@atribuya.com` convertido a buzón real en Hostinger (ya no es ImprovMX). (2) Añadido `alejandro@atribuya.com` como Propietario en el IAM del proyecto Cloud `443155173600`. (3) Formulario reenviado el 2026-06-30 desde `alejandro@atribuya.com` con nº de proyecto `443155173600`, web `https://atribuya.com`, descripción en español del caso de uso (atribución de reseñas GBP a comerciales, OAuth read-only, scope `business.manage`, desarrollador Castillo Cantón). **Esperando aprobación** (~7-10 días; indicador = cuota Business Information API).
+
 ### 7.4 Dominio comercial ✅ RESUELTO (2026-06-06)
 
 `atribuya.com` comprado en Hostinger y live. DNS: A `@`→`76.76.21.21`, CNAME `www`→`cname.vercel-dns.com`. Configurado en Vercel, Supabase Auth Site URL y `NEXT_PUBLIC_APP_URL` ya apuntan ahí. `atribuya.vercel.app` sigue activo como secundario.
