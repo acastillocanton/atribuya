@@ -71,6 +71,7 @@ SaaS B2B multi-tenant que atribuye reseñas de Google Business Profile a comerci
 app/
 ├── page.tsx                    ← Landing pública (/ y /en)
 ├── en/page.tsx                 ← Versión inglés de la landing
+├── en/(legal)/                 ← /en/terms y /en/privacy (legales en inglés, layout propio)
 ├── login/                      ← OTP magic-link
 ├── o/[orgSlug]/c/[salesSlug]/  ← Redirect a Google Review (ruta pública)
 │   └── [clientSlug]/           ← Versión personalizada por cliente
@@ -222,6 +223,8 @@ Alta manual desde `/super`:
 4. El admin recibe magic link, entra, conecta su GBP
 
 ### 7.6 DPA (Data Processing Agreement) — ✅ FINALIZADO (2026-06-07)
+
+**Actualización (2026-07-01)**: las páginas legales públicas ahora son **bilingües**. Se crearon `/en/terms` y `/en/privacy` (`app/en/(legal)/`, layout propio en inglés que vuelve a `/en`), traducción fiel de las ES. `Footer`/`LeadForm`/`CookieBanner` enlazan a las rutas EN cuando `locale="en"`; el layout legal ES añade un enlace "English". Ambas van al `sitemap.ts` con `index:true`. Además, el **email de contacto de `/terminos` y `/privacidad` pasó de `alejandro@castillocanton.com` a `alejandro@atribuya.com`** (coherencia de marca: web `atribuya.com` con email `@atribuya.com`). ⚠️ **Inconsistencia pendiente**: el DPA (`dpa.md`/`dpa.docx`) sigue usando `alejandro@castillocanton.com` en los datos del Encargado — si se quiere unificar, actualizar ambos ficheros. Se dejó así a propósito de momento (el DPA es documento contractual firmado por Castillo Cantón como entidad).
 
 Los `/terminos` y `/privacidad` están completos. El DPA (Acuerdo de Encargado del Tratamiento, art. 28 RGPD) está **finalizado** en **`docs/legal/dpa.md`** — 15 cláusulas + 3 anexos, modelo Responsable (cliente) / Encargado (Castillo Cantón), subencargados reales (Supabase Fráncfort, Vercel, Brevo, Google + nota de GitHub como no-subencargado). Datos del Encargado unificados con los otros docs legales (dirección completa + `alejandro@castillocanton.com`); plazos rellenos (oposición subencargados 30 d, devolución/supresión 60 d, auditoría 30 d); jurisdicción = tribunales de Castellón. Solo quedan los corchetes del **lado Cliente** para rellenar al firmar. Plantilla firmable en **`docs/legal/dpa.docx`** (Word editable, branding Atribuya). **Sin página pública `/dpa`** (anexo contractual privado, decisión del usuario). No lleva aviso de revisión legal (criterio del titular) — un repaso por un asesor de protección de datos antes del primer uso sería recomendable pero queda a su criterio.
 
