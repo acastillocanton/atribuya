@@ -283,8 +283,8 @@ export default function TerminosPage() {
         Teléfono: +34 644 295 159
         <br />
         Correo de contacto:{" "}
-        <a href="mailto:alejandro@castillocanton.com" style={a}>
-          alejandro@castillocanton.com
+        <a href="mailto:alejandro@atribuya.com" style={a}>
+          alejandro@atribuya.com
         </a>
       </p>
     </>

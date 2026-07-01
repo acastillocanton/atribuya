@@ -45,7 +45,7 @@ export function CookieBanner({
           <p className="mt-1 text-[13.5px] leading-relaxed text-ink-3">
             {t.body}{" "}
             <Link
-              href="/privacidad"
+              href={locale === "es" ? "/privacidad" : "/en/privacy"}
               className="font-medium text-ink-2 underline underline-offset-2 transition hover:text-ink"
             >
               {t.privacy}

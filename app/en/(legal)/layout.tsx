@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-export default function LegalLayout({ children }: { children: ReactNode }) {
+export default function EnLegalLayout({ children }: { children: ReactNode }) {
   return (
     <main
       style={{
@@ -22,7 +22,7 @@ export default function LegalLayout({ children }: { children: ReactNode }) {
       >
         <header style={{ marginBottom: 36, paddingBottom: 24, borderBottom: "1px solid var(--line)" }}>
           <Link
-            href="/"
+            href="/en"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -63,17 +63,17 @@ export default function LegalLayout({ children }: { children: ReactNode }) {
             © {new Date().getFullYear()} Atribuya
           </span>
           <span style={{ display: "flex", gap: 16 }}>
-            <Link href="/privacidad" style={{ color: "var(--ink-3)", textDecoration: "none" }}>
-              Política de Privacidad
-            </Link>
-            <Link href="/terminos" style={{ color: "var(--ink-3)", textDecoration: "none" }}>
-              Términos del Servicio
-            </Link>
-            <Link href="/login" style={{ color: "var(--ink-3)", textDecoration: "none" }}>
-              Iniciar sesión
+            <Link href="/en/privacy" style={{ color: "var(--ink-3)", textDecoration: "none" }}>
+              Privacy Policy
             </Link>
             <Link href="/en/terms" style={{ color: "var(--ink-3)", textDecoration: "none" }}>
-              English
+              Terms of Service
+            </Link>
+            <Link href="/login" style={{ color: "var(--ink-3)", textDecoration: "none" }}>
+              Sign in
+            </Link>
+            <Link href="/terminos" style={{ color: "var(--ink-3)", textDecoration: "none" }}>
+              Español
             </Link>
           </span>
         </footer>

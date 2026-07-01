@@ -60,7 +60,7 @@ const DICTS = {
     ctaSending: "Sending…",
     consent1: "By submitting you accept that we contact you by email to schedule the demo. We don't share your data with third parties. More in our",
     consent2: "privacy policy",
-    privacyHref: "/privacidad",
+    privacyHref: "/en/privacy",
     thanksHref: "/en/thanks",
   },
 } as const;
