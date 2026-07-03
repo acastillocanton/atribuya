@@ -96,9 +96,12 @@ export async function GET(request: NextRequest) {
   // Validación Zod de los filtros (defensa en profundidad; el query-builder ya
   // parametriza, pero cumplimos la regla "validar todo input externo").
   const UUID = z.string().uuid();
-  const salesIdRaw = url.searchParams.get("sales_id");
-  const locationIdRaw = url.searchParams.get("location_id");
-  const matchStateRaw = url.searchParams.get("match_state");
+  // `|| null`: el formulario de export (GET) manda los filtros por defecto como
+  // cadena vacía (`?sales_id=&location_id=&match_state=`). Tratamos "" como
+  // ausente para no rechazar (400) la descarga "de todo", que es el caso normal.
+  const salesIdRaw = url.searchParams.get("sales_id") || null;
+  const locationIdRaw = url.searchParams.get("location_id") || null;
+  const matchStateRaw = url.searchParams.get("match_state") || null;
   let salesId: string | null = null;
   let locationId: string | null = null;
   let matchState: string | null = null;
@@ -395,7 +398,10 @@ function renderSummarySheet(
   }
   const countedBySales = new Map<string, number>();
   for (const r of reviews) {
-    if (r.match_state !== "counted" || !r.sales_id) continue;
+    // Excluir is_duplicate: "contadas" = reseñas abonables (mismo criterio que
+    // el KPI global y el hero del comercial). Si no, la suma por comercial
+    // superaría al Total deduplicado del propio Excel.
+    if (r.match_state !== "counted" || r.is_duplicate || !r.sales_id) continue;
     countedBySales.set(r.sales_id, (countedBySales.get(r.sales_id) ?? 0) + 1);
   }
   // Incluimos en la tabla a todos los comerciales activos + cualquiera con
@@ -526,7 +532,7 @@ function renderSummarySheet(
   const fichasRows = allLocations
     .map((l) => {
       const rs = reviewsByLocation.get(l.id) ?? [];
-      const cnt = rs.filter((r) => r.match_state === "counted").length;
+      const cnt = rs.filter((r) => r.match_state === "counted" && !r.is_duplicate).length;
       const avgLoc = rs.length > 0 ? rs.reduce((s, r) => s + r.rating, 0) / rs.length : null;
       return { name: l.name, total: rs.length, counted: cnt, avg: avgLoc };
     })

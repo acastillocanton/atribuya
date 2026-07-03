@@ -33,6 +33,8 @@ type ReviewRow = {
   google_created_at: string;
   match_state: string;
   match_confidence: number;
+  // Opcional para no tocar las filas de demo; en datos reales viene del select.
+  is_duplicate?: boolean;
   client: { full_name: string; slug: string } | null;
   location: { name: string } | null;
 };
@@ -90,7 +92,7 @@ export default async function MisResenasPage({
     const reviewsRes = await supabase
       .from("reviews")
       .select(
-        "id, author_name, rating, text, google_created_at, match_state, match_confidence, client:clients(full_name, slug), location:locations(name)",
+        "id, author_name, rating, text, google_created_at, match_state, match_confidence, is_duplicate, client:clients(full_name, slug), location:locations(name)",
       )
       .eq("sales_id", user.id)
       .is("removed_at", null)
@@ -102,9 +104,10 @@ export default async function MisResenasPage({
     reviews = reviewsRes.data ?? [];
   }
 
-  // KPIs del rango
+  // KPIs del rango. "Contadas" = abonables → excluye duplicadas, igual que el
+  // hero de /panel y el cálculo del €, para no contradecirse entre pantallas.
   const total = reviews.length;
-  const counted = reviews.filter((r) => r.match_state === "counted").length;
+  const counted = reviews.filter((r) => r.match_state === "counted" && !r.is_duplicate).length;
   const pending = reviews.filter((r) => r.match_state === "pending").length;
   const avgRating =
     reviews.length > 0

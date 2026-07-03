@@ -31,6 +31,7 @@ type ReviewRow = {
   match_state: string;
   match_confidence: number;
   removed_at: string | null;
+  is_duplicate: boolean;
   sales: { full_name: string; slug: string } | null;
   client: { full_name: string } | null;
   location: { name: string } | null;
@@ -75,7 +76,7 @@ export default async function ManagerResenasPage({
   let query = supabase
     .from("reviews")
     .select(
-      "id, author_name, rating, text, google_created_at, match_state, match_confidence, removed_at, sales:profiles!reviews_sales_id_fkey(full_name, slug), client:clients(full_name), location:locations(name)",
+      "id, author_name, rating, text, google_created_at, match_state, match_confidence, removed_at, is_duplicate, sales:profiles!reviews_sales_id_fkey(full_name, slug), client:clients(full_name), location:locations(name)",
     )
     .gte("google_created_at", range.startIso)
     .lt("google_created_at", range.endIso)
@@ -115,7 +116,8 @@ export default async function ManagerResenasPage({
   const sales = salesRes.data ?? [];
   const locations = locationsRes.data ?? [];
 
-  const counted = reviews.filter((r) => r.match_state === "counted").length;
+  // "Atribuidas" = abonables → excluye duplicadas (coherente con export/panel/€).
+  const counted = reviews.filter((r) => r.match_state === "counted" && !r.is_duplicate).length;
   const pending = reviews.filter((r) => r.match_state === "pending").length;
   const unmatched = reviews.filter((r) => r.match_state === "unmatched").length;
   const avg =

@@ -173,11 +173,20 @@ export async function syncPlaces(args: SyncPlacesArgs = {}): Promise<SyncPlacesR
     };
   }
 
+  // Doble conteo cross-vía: una ficha puede tener a la vez `google_place_id`
+  // (Vía A) y `oauth_status='connected'` (Vía B). Si ambos crons la procesan,
+  // la MISMA reseña entra dos veces con ids de namespace distintos
+  // (`places:<id>` vs el id crudo de Business Profile), el unique
+  // (location_id, google_review_id) no colisiona, y una reseña sin `client_id`
+  // (no deduplicable) contaría DOBLE al comercial. La Vía B (OAuth) trae TODAS
+  // las reseñas y es autoritativa cuando está conectada, así que Places la
+  // salta. Fichas con oauth_status NULL o desconectado siguen por Vía A.
   let locationsQuery = admin
     .from("locations")
     .select("id, name, google_place_id, org_id")
     .not("google_place_id", "is", null)
-    .in("org_id", activeOrgIds);
+    .in("org_id", activeOrgIds)
+    .or("oauth_status.is.null,oauth_status.neq.connected");
   if (filter && filter.length > 0) {
     locationsQuery = locationsQuery.in("id", filter);
   }
