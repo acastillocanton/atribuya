@@ -139,7 +139,7 @@ export async function rejectReview(reviewId: string) {
   }
 
   if (prev?.client_id) {
-    await recomputeClientPrincipal(createServiceClient(), prev.client_id);
+    await recomputeClientPrincipal(createServiceClient(), prev.client_id, admin.orgId);
   }
 
   await audit(parsed.data, "reject", { rejected_by: admin.userId });
@@ -229,9 +229,9 @@ export async function reassignReview(input: z.input<typeof reassignSchema>) {
   // segunda del mismo cliente → debe quedar duplicada y no contar doble) y en
   // el antiguo (por si esta era su principal).
   const svc = createServiceClient();
-  if (newClientId) await recomputeClientPrincipal(svc, newClientId);
+  if (newClientId) await recomputeClientPrincipal(svc, newClientId, admin.orgId);
   if (oldClientId && oldClientId !== newClientId) {
-    await recomputeClientPrincipal(svc, oldClientId);
+    await recomputeClientPrincipal(svc, oldClientId, admin.orgId);
   }
 
   await audit(parsed.data.reviewId, "reassign", {
@@ -283,7 +283,7 @@ export async function markReviewRemoved(reviewId: string) {
   // Al salir del conjunto activo del cliente, reasentar su principal (si era
   // la principal, promueve la siguiente; si no, no cambia nada).
   if (prev?.client_id) {
-    await recomputeClientPrincipal(createServiceClient(), prev.client_id);
+    await recomputeClientPrincipal(createServiceClient(), prev.client_id, actor.orgId);
   }
 
   await audit(parsed.data, "mark_removed", {
@@ -332,7 +332,7 @@ export async function restoreReview(reviewId: string) {
   // Al reingresar al conjunto activo, recalcular la principal del cliente
   // (la restaurada puede ser más antigua que la que se promovió al eliminarla).
   if (prev?.client_id) {
-    await recomputeClientPrincipal(createServiceClient(), prev.client_id);
+    await recomputeClientPrincipal(createServiceClient(), prev.client_id, actor.orgId);
   }
 
   await audit(parsed.data, "restore", {
@@ -384,18 +384,37 @@ export async function claimReview(input: z.input<typeof claimSchema>) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, org_id")
     .eq("id", user.id)
-    .maybeSingle<{ role: string }>();
+    .maybeSingle<{ role: string; org_id: string | null }>();
   if (profile?.role !== "sales") {
     return { ok: false as const, error: "Solo el comercial puede reclamar una reseña." };
   }
+  if (!profile.org_id) {
+    return { ok: false as const, error: "Tu perfil no tiene organización asignada." };
+  }
+  const orgId = profile.org_id;
 
-  // Cliente: nuevo (reusa createClientRecord, que valida org y unicidad de slug)
-  // o uno existente del propio comercial (la RLS de clients garantiza pertenencia).
+  // Cliente: uno EXISTENTE del propio comercial, o uno nuevo (createClientRecord
+  // valida org y unicidad de slug).
   let clientId: string | null = parsed.data.clientId ?? null;
   let wasNewClient = false;
-  if (!clientId && parsed.data.newClientName) {
+  if (clientId) {
+    // Validar el cliente existente contra la RLS de `clients` (cookie-client):
+    // solo devuelve los del propio comercial en su org. IMPRESCINDIBLE: el claim
+    // escribe client_id directo y la policy reviews_sales_claim_update (mig 019)
+    // NO restringe client_id; sin esta comprobación un sales podría vincular un
+    // client_id de OTRA org y el recompute (service-role) tocaría is_duplicate de
+    // reseñas ajenas (escritura cross-tenant).
+    const { data: ownClient } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("id", clientId)
+      .maybeSingle<{ id: string }>();
+    if (!ownClient) {
+      return { ok: false as const, error: "El cliente seleccionado no es válido." };
+    }
+  } else if (parsed.data.newClientName) {
     const created = await createClientRecord({ fullName: parsed.data.newClientName });
     if (!created.ok) return { ok: false as const, error: created.error };
     clientId = created.client.id;
@@ -430,7 +449,7 @@ export async function claimReview(input: z.input<typeof claimSchema>) {
   // `is_duplicate`, así que se hace por service-client tras el claim (que ya
   // validó ficha/org/estado). Sin cliente, no hay dedup posible.
   if (clientId) {
-    await recomputeClientPrincipal(createServiceClient(), clientId);
+    await recomputeClientPrincipal(createServiceClient(), clientId, orgId);
   }
 
   await audit(parsed.data.reviewId, "claim", {

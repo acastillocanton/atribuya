@@ -61,6 +61,9 @@ export function decideFromPrincipals(
  *
  * @param admin service-client
  * @param args.clientId el client_id de la reseña entrante
+ * @param args.orgId org del cliente — filtro OBLIGATORIO: service-client salta
+ *        RLS, así que un client_id mal-vinculado (p. ej. de otra org) no debe
+ *        poder arrastrar reseñas de esa org al conjunto (regla §4 / MEMORY).
  * @param args.incomingGoogleCreatedAt ISO timestamp de la reseña entrante
  * @param args.excludeReviewId opcional — id de la reseña entrante si ya existe
  *        en BD (caso confirm/reassign que UPDATE-an y no deben contarse a sí
@@ -70,6 +73,7 @@ export async function decideDuplicateForClient(
   admin: ServiceClient,
   args: {
     clientId: string;
+    orgId: string;
     incomingGoogleCreatedAt: string;
     excludeReviewId?: string;
   },
@@ -78,6 +82,7 @@ export async function decideDuplicateForClient(
     .from("reviews")
     .select("id, google_created_at")
     .eq("client_id", args.clientId)
+    .eq("org_id", args.orgId)
     .eq("is_duplicate", false)
     .is("removed_at", null);
   if (args.excludeReviewId) {
@@ -125,16 +130,21 @@ export function pickPrincipalId(
  * (reasignar, reclamar «Es mía», rechazar, marcar/restaurar eliminada), donde
  * una reseña puede entrar o salir del cliente y hay que reasentar la principal
  * sin arrastrar el estado previo. Service-client: mira todas las reseñas del
- * cliente saltando RLS (el client_id ya está aislado por org).
+ * cliente saltando RLS. `orgId` es OBLIGATORIO y filtra todas las queries: sin
+ * él, un client_id mal-vinculado (input del cliente en el claim) podría tocar
+ * `is_duplicate` de reseñas de OTRA org (regla §4 / MEMORY: service-role
+ * siempre re-filtra org_id).
  */
 export async function recomputeClientPrincipal(
   admin: ServiceClient,
   clientId: string,
+  orgId: string,
 ): Promise<void> {
   const { data: rows } = await admin
     .from("reviews")
     .select("id, google_created_at, fetched_at")
     .eq("client_id", clientId)
+    .eq("org_id", orgId)
     .is("removed_at", null)
     .returns<
       { id: string; google_created_at: string; fetched_at: string | null }[]
@@ -142,12 +152,13 @@ export async function recomputeClientPrincipal(
 
   const list = rows ?? [];
   const principalId = pickPrincipalId(list);
-  if (!principalId) return; // el cliente no tiene reseñas activas
+  if (!principalId) return; // el cliente no tiene reseñas activas en esta org
 
   const { error: pErr } = await admin
     .from("reviews")
     .update({ is_duplicate: false } as never)
-    .eq("id", principalId);
+    .eq("id", principalId)
+    .eq("org_id", orgId);
   if (pErr) {
     console.error("[duplicate-detection] recompute principal failed:", pErr);
   }
@@ -157,7 +168,8 @@ export async function recomputeClientPrincipal(
     const { error: dErr } = await admin
       .from("reviews")
       .update({ is_duplicate: true } as never)
-      .in("id", dupIds);
+      .in("id", dupIds)
+      .eq("org_id", orgId);
     if (dErr) {
       console.error("[duplicate-detection] recompute duplicates failed:", dErr);
     }
