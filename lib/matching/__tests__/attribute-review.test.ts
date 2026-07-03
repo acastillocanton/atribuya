@@ -76,6 +76,16 @@ describe("nameSimilarity", () => {
     expect(nameSimilarity("", "Antonio Ramírez")).toBe(0);
     expect(nameSimilarity("Antonio Ramírez", "")).toBe(0);
   });
+
+  it("cliente de UN solo token vs autor más largo → 55, NO 90 (#10)", () => {
+    // "María" (1 token) contra una "María Palenciano" orgánica ajena no debe
+    // auto-contar: cae a 55 (pending, revisión humana), no a 90.
+    expect(nameSimilarity("María", "María Palenciano")).toBe(55);
+  });
+
+  it("cliente de un token idéntico al autor sigue siendo 100 (match exacto)", () => {
+    expect(nameSimilarity("María", "maría")).toBe(100);
+  });
 });
 
 describe("attributeReview — flujo con autor real", () => {
@@ -233,6 +243,21 @@ describe("mentionsCommercial", () => {
     expect(mentionsCommercial(null, "Tono Pérez")).toBe(false);
     expect(mentionsCommercial("Tono Pérez", null)).toBe(false);
     expect(mentionsCommercial("", "Tono Pérez")).toBe(false);
+  });
+
+  it("nombre-palabra común no dispara por la palabra suelta (#5)", () => {
+    // "Mar" es stopword: una reseña de playa no debe atribuirse a la comercial.
+    expect(mentionsCommercial("vistas al mar increíbles", "Mar García")).toBe(false);
+    expect(mentionsCommercial("qué paz y qué sol", "Sol Cruz")).toBe(false);
+  });
+
+  it("nombre-palabra común: aún casa por el apellido no-stopword (#5)", () => {
+    // Se sigue detectando a "Mar García" si mencionan "García".
+    expect(mentionsCommercial("gracias García, un crack", "Mar García")).toBe(true);
+  });
+
+  it("comercial cuyos tokens son TODOS stopwords → nunca casa por mención (#5)", () => {
+    expect(mentionsCommercial("el sol y el mar", "Sol Mar")).toBe(false);
   });
 });
 

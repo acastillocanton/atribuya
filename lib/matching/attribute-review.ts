@@ -56,6 +56,31 @@ export const PENDING_THRESHOLD = 40;
 /** Token mínimo del nombre del comercial que cuenta como mención (evita que
  *  partículas tipo "de"/"la" o iniciales sueltas disparen falsos positivos). */
 const MIN_MENTION_TOKEN_LEN = 3;
+
+/**
+ * Palabras que NO cuentan como mención de un comercial aunque coincidan con un
+ * token de su nombre. Cubre dos casos: (a) nombres de pila que son a la vez
+ * palabras españolas muy frecuentes en reseñas ("Mar", "Sol", "Cruz", "Paz",
+ * "Luz", "Rosa"...), que si no un comercial así llamado absorbería toda reseña
+ * con esa palabra ("vistas al mar"); (b) palabras funcionales/comunes ≥3 letras
+ * por defensa. Tokens ya normalizados (sin acentos, minúsculas).
+ *
+ * Efecto: un comercial "Mar García" sigue detectándose por "garcia" (y por la
+ * vía normal ventana+nombre); solo se ignora el token-palabra. Ajustable.
+ */
+const STOPWORDS_ES = new Set<string>([
+  // nombres de pila que son palabra común
+  "mar", "sol", "cruz", "paz", "luz", "rosa", "pilar", "nieves", "gloria",
+  "alba", "aurora", "estrella", "leon", "vega", "prado", "rio", "campo",
+  "flor", "perla", "consuelo", "dolores", "amparo", "remedios", "milagros",
+  "angeles", "blanca", "clara", "oliva", "belen", "rocio", "coral", "socorro",
+  "salud", "reyes", "mercedes",
+  // palabras funcionales / muy comunes (≥3 letras)
+  "que", "los", "las", "del", "por", "con", "una", "uno", "unos", "unas",
+  "sus", "mas", "muy", "este", "esta", "estos", "estas", "ese", "esa", "eso",
+  "para", "como", "pero", "sin", "son", "fue", "han", "hay", "nos", "les",
+  "todo", "toda", "nada", "algo", "aqui", "alli", "muchas", "gracias",
+]);
 /** Confianza cuando el comercial mencionado SÍ tiene un enlace abierto en la
  *  ventana temporal (hay cliente candidato). */
 const MENTION_COUNT_CONFIDENCE = 85;
@@ -156,8 +181,14 @@ export function nameSimilarity(clientName: string, authorName: string): number {
   const authorSet = new Set(authorTokens);
   const intersection = [...clientSet].filter((t) => authorSet.has(t));
 
-  // Todos los tokens del cliente aparecen en el autor.
-  if (intersection.length === clientTokens.length) return 90;
+  // Todos los tokens del cliente aparecen en el autor. Solo es fiable con ≥2
+  // tokens: un cliente registrado con un único token ("María") casaría con
+  // cualquier "María Palenciano" orgánica ajena y se auto-contaría por error.
+  // Con 1 token dejamos que caiga al caso "solo primer nombre" (55 → pending,
+  // revisión humana). El match exacto de 1 token ya lo captura el 100 de arriba.
+  if (clientTokens.length >= 2 && intersection.length === clientTokens.length) {
+    return 90;
+  }
 
   // Primer nombre coincide + algún apellido más, o el autor incluye una
   // inicial del primer apellido del cliente ("Antonio R.").
@@ -197,7 +228,7 @@ export function mentionsCommercial(
 ): boolean {
   if (!text || !fullName) return false;
   const nameTokens = tokenize(fullName).filter(
-    (t) => t.length >= MIN_MENTION_TOKEN_LEN,
+    (t) => t.length >= MIN_MENTION_TOKEN_LEN && !STOPWORDS_ES.has(t),
   );
   if (nameTokens.length === 0) return false;
   const textTokens = new Set(tokenize(text));
