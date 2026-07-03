@@ -1,0 +1,22 @@
+-- Atribuya — migration 023
+-- Fix de integridad del audit trail: elimina la policy `audit_log_self_insert`
+-- (creada en la mig 008), que quedó SIN USO y abría un hueco de no-repudio.
+--
+-- Su `WITH CHECK` solo exigía `actor_id = auth.uid()`, dejando `org_id`,
+-- `entity_type`, `entity_id`, `action` y `payload` completamente libres. Por
+-- tanto, cualquier usuario autenticado (p. ej. un `sales`) podía, vía PostgREST
+-- directo con su JWT, FABRICAR entradas de auditoría arbitrarias —incluidas
+-- filas con el `org_id` de OTRA org o `null`— contaminando el registro forense
+-- que el modelo multi-tenant (§5.3) trata como control de seguridad clave.
+--
+-- Todos los inserts REALES de auditoría van por service-role
+-- (`lib/audit.ts:recordAudit`), que salta RLS, así que eliminar esta policy no
+-- rompe ningún flujo y restaura el invariante que el propio código documenta
+-- ("ningún rol puede INSERT desde contexto-usuario"). Si en el futuro algún
+-- endpoint necesita registrar auditoría desde contexto-usuario, se añadirá una
+-- policy correctamente acotada (p. ej. `actor_id = auth.uid() AND
+-- org_id = public.current_org_id()` + restricción de `entity_type`/`action`).
+--
+-- Idempotente.
+
+drop policy if exists audit_log_self_insert on public.audit_log;

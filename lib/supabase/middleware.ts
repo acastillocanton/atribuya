@@ -58,21 +58,25 @@ function isBlockedBot(ua: string | null): boolean {
 //  - /privacidad, /terminos  legal pages linked from OAuth consent
 //  - /gracias          confirmación tras enviar el formulario de la landing
 //  - /_next, /favicon  framework + static assets
-const PUBLIC_PREFIXES = [
+// Prefijos de PÁGINAS/rutas públicas que hacen match por LÍMITE DE SEGMENTO
+// (pathname === p || empieza por `p + "/"`). Así `/login` no abre `/loginX` ni
+// `/terminos` abre `/terminos-falso` — el `startsWith` laxo anterior sí lo haría.
+const PUBLIC_SEGMENT_PREFIXES = [
   "/login",
   "/accept-invite",
-  "/auth/",
+  "/auth",
   "/api/cron",
   "/api/google/oauth/callback",
   "/privacidad",
   "/terminos",
   "/gracias",
   "/en",
-  "/robots.txt",
-  "/sitemap.xml",
-  "/_next",
-  "/favicon",
 ];
+
+// Assets y ficheros de crawl: match por prefijo crudo (p. ej. `/favicon.ico`,
+// `/_next/static/...`). No son superficie sensible.
+const PUBLIC_ASSET_PREFIXES = ["/_next", "/favicon"];
+const PUBLIC_EXACT_PATHS = new Set<string>(["/robots.txt", "/sitemap.xml"]);
 
 // Public pages que SÍ queremos que Google / Slack / LinkedIn / etc. puedan
 // indexar y previsualizar. La landing comercial, las páginas legales y los
@@ -99,7 +103,11 @@ const PUBLIC_LANDING_REGEX = /^\/o\/[^/]+\/c(\/|$)/;
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_LANDING_REGEX.test(pathname)) return true;
-  return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p));
+  if (PUBLIC_EXACT_PATHS.has(pathname)) return true;
+  if (PUBLIC_ASSET_PREFIXES.some((p) => pathname.startsWith(p))) return true;
+  return PUBLIC_SEGMENT_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
 }
 
 // Allowlist of route prefixes per role. Keep this explicit — do NOT use a

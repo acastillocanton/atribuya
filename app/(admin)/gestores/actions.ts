@@ -42,6 +42,17 @@ export async function inviteReviewsManager(input: InviteManagerInput): Promise<
         "Tu perfil no tiene organización asignada. Pide al super-admin que te asocie a una.",
     };
   }
+  // Solo un admin puede dar de alta un gestor de reseñas. El server action es
+  // una superficie HTTP aparte del middleware: sin este guard, cualquier
+  // usuario con org (p. ej. un comercial) podría crearse un gestor —que tiene
+  // lectura de toda la org— vía createInvitedProfile (service-role, salta RLS).
+  // Idéntico a resendManagerAccess/deleteReviewsManager.
+  const { data: actor } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", ctx.userId)
+    .maybeSingle<{ role: string }>();
+  if (actor?.role !== "admin") return { ok: false, error: "No autorizado." };
   const baseSlug = slugify(parsed.data.fullName);
   if (!baseSlug) {
     return { ok: false, error: "No se pudo generar el identificador del gestor." };
