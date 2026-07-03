@@ -54,3 +54,12 @@ supabase/.branches/
 # proyecto original ReseñaHub — repo git independiente anidado, NO debe rastrearse aquí
 # (sirve solo como fuente de referencia para portar features). Tiene su propio .git/node_modules/.next.
 00 - Proyecto Original./
+
+# artefactos locales que NO deben acabar en el repo (es PÚBLICO):
+# - graphify-out/: mapa completo de la arquitectura del código (graph.json, resúmenes LLM)
+# - Venta/: material de negocio (buyer personas, etc.)
+# - .bd.txt / .tmpbuild/: notas y builds temporales
+graphify-out/
+Venta/
+.bd.txt
+.tmpbuild/
