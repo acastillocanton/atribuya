@@ -21,7 +21,9 @@ const CATEGORIES: SupportCategory[] = [
 ];
 
 const createConversationSchema = z.object({
-  subject: z.string().min(3).max(200),
+  // Sin saltos de línea: `subject` acaba en la cabecera Subject de un email
+  // (aunque Nodemailer ya rechaza CRLF, cortamos el vector en el borde).
+  subject: z.string().min(3).max(200).regex(/^[^\r\n]+$/, "Asunto inválido."),
   body: z.string().min(1).max(5000),
   category: z.enum(CATEGORIES as [SupportCategory, ...SupportCategory[]]).default("general"),
   linkedReviewId: z.string().uuid().nullable().optional(),
@@ -97,13 +99,13 @@ async function getResponderEmails(orgId: string): Promise<string[]> {
   }
 
   if (missingIds.length > 0) {
-    const { data: { users } } = await srv.auth.admin.listUsers({ perPage: 100 });
-    if (users) {
-      const authMap = new Map(users.map((u) => [u.id, u.email]));
-      for (const id of missingIds) {
-        const authEmail = authMap.get(id);
-        if (authEmail) emails.push(authEmail);
-      }
+    // Resolvemos por id (getUserById), NO con listUsers({perPage:100}): esto
+    // último solo miraba la primera página de TODOS los usuarios del proyecto,
+    // así que con >100 usuarios auth un responder con profiles.email NULL
+    // fuera de esa página no se encontraba. missingIds es un edge case raro.
+    for (const id of missingIds) {
+      const { data: { user: authUser } } = await srv.auth.admin.getUserById(id);
+      if (authUser?.email) emails.push(authUser.email);
     }
   }
 
@@ -146,6 +148,29 @@ export async function createConversation(
 
   const supabase = await createClient();
 
+  // Los punteros linked_* deben ser de la MISMA org: leerlos con el cookie-client
+  // (RLS los oculta si son de otra org). Si un id no pertenece, lo dejamos en
+  // null para no crear un puntero colgante cross-org (las FK de la mig 016 solo
+  // validan existencia, no org).
+  let linkedReviewId = parsed.data.linkedReviewId ?? null;
+  let linkedClientId = parsed.data.linkedClientId ?? null;
+  if (linkedReviewId) {
+    const { data } = await supabase
+      .from("reviews")
+      .select("id")
+      .eq("id", linkedReviewId)
+      .maybeSingle<{ id: string }>();
+    if (!data) linkedReviewId = null;
+  }
+  if (linkedClientId) {
+    const { data } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("id", linkedClientId)
+      .maybeSingle<{ id: string }>();
+    if (!data) linkedClientId = null;
+  }
+
   // Crear conversación via cookie-client (RLS fuerza opener_id = self + org_id).
   const { data: conv, error: convErr } = await supabase
     .from("support_conversations")
@@ -154,8 +179,8 @@ export async function createConversation(
       subject: parsed.data.subject,
       category: parsed.data.category,
       opener_id: user.id,
-      linked_review_id: parsed.data.linkedReviewId ?? null,
-      linked_client_id: parsed.data.linkedClientId ?? null,
+      linked_review_id: linkedReviewId,
+      linked_client_id: linkedClientId,
     } as never)
     .select("id")
     .single();
@@ -199,19 +224,26 @@ export async function createConversation(
     payload: { category: parsed.data.category, opener: user.id },
   });
 
-  // Notificación por email a los respondedores de la org (best-effort).
+  // Notificación por email a los respondedores de la org (best-effort). Debe
+  // ir con await: en serverless la instancia se congela al responder y un
+  // sendMail sin await se cortaría a medias (email perdido sin traza). El
+  // try/catch preserva el best-effort: un fallo de email no rompe la creación.
   const responderEmails = await getResponderEmails(user.orgId);
   const openerEmail = user.email || await getProfileEmail(user.id);
-  notifySupportMessage({
-    conversationId: convId,
-    subject: parsed.data.subject,
-    messagePreview: parsed.data.body.slice(0, 500),
-    authorName: user.fullName,
-    isFromOpener: true,
-    openerEmail,
-    responderEmails,
-    appBase: appBase(),
-  }).catch((err) => console.error("[support] notify failed:", err));
+  try {
+    await notifySupportMessage({
+      conversationId: convId,
+      subject: parsed.data.subject,
+      messagePreview: parsed.data.body.slice(0, 500),
+      authorName: user.fullName,
+      isFromOpener: true,
+      openerEmail,
+      responderEmails,
+      appBase: appBase(),
+    });
+  } catch (err) {
+    console.error("[support] notify failed:", err);
+  }
 
   revalidatePath("/soporte");
   return { ok: true, conversationId: convId };
@@ -292,16 +324,22 @@ export async function sendMessage(
 
     const responderEmails = await getResponderEmails(user.orgId);
 
-    notifySupportMessage({
-      conversationId: parsed.data.conversationId,
-      subject: opener.subject,
-      messagePreview: parsed.data.body.slice(0, 500),
-      authorName: user.fullName,
-      isFromOpener,
-      openerEmail,
-      responderEmails,
-      appBase: appBase(),
-    }).catch((err) => console.error("[support] notify failed:", err));
+    // await + try/catch: ver nota en createConversation (evita el email
+    // perdido por congelación de la instancia serverless).
+    try {
+      await notifySupportMessage({
+        conversationId: parsed.data.conversationId,
+        subject: opener.subject,
+        messagePreview: parsed.data.body.slice(0, 500),
+        authorName: user.fullName,
+        isFromOpener,
+        openerEmail,
+        responderEmails,
+        appBase: appBase(),
+      });
+    } catch (err) {
+      console.error("[support] notify failed:", err);
+    }
   }
 
   revalidatePath(`/soporte/${parsed.data.conversationId}`);

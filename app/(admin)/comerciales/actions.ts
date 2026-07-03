@@ -41,6 +41,40 @@ async function assertCanManageSales(): Promise<
   return { ok: true, orgId: actor.org_id };
 }
 
+/**
+ * Valida (defensa en profundidad, #13) que la ficha y, si viene, el director
+ * responsable pertenecen a la MISMA org. La RLS ancla el `org_id` de la fila
+ * del perfil pero NO el de los ids que se le asignan; sin esto un admin podría
+ * asignar a un comercial un `location_id`/`director_id` de otra org (si conoce
+ * el UUID), contaminando el roster del matcher. Vía service-role con filtro
+ * `org_id` explícito para no depender de las policies de SELECT del rol actor.
+ */
+async function assertLocationAndDirectorInOrg(
+  orgId: string,
+  locationId: string,
+  directorId: string | null,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const admin = createServiceClient();
+  const { data: loc } = await admin
+    .from("locations")
+    .select("id")
+    .eq("id", locationId)
+    .eq("org_id", orgId)
+    .maybeSingle<{ id: string }>();
+  if (!loc) return { ok: false, error: "La ficha seleccionada no es válida." };
+  if (directorId) {
+    const { data: dir } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("id", directorId)
+      .eq("role", "office_director")
+      .eq("org_id", orgId)
+      .maybeSingle<{ id: string }>();
+    if (!dir) return { ok: false, error: "El director seleccionado no es válido." };
+  }
+  return { ok: true };
+}
+
 // Tarifa €/reseña: acepta string del formulario ("", "20", "2,5"), número o
 // null. Vacío → null (tarifa sin configurar). Negativos/no-numéricos → null.
 const commissionRateSchema = z
@@ -97,6 +131,13 @@ export async function inviteSales(input: InviteSalesInput): Promise<
   if (!baseSlug) {
     return { ok: false, error: "No se pudo generar el identificador del comercial." };
   }
+  // #13: ficha y director deben ser de esta org.
+  const belongs = await assertLocationAndDirectorInOrg(
+    auth.orgId,
+    parsed.data.locationId,
+    parsed.data.directorId,
+  );
+  if (!belongs.ok) return { ok: false, error: belongs.error };
   // Tope de comerciales por plan (pricing v3): los seats incluyen directores.
   const seatBlock = await checkSeatLimit(auth.orgId);
   if (seatBlock) return { ok: false, error: seatBlock.error };
@@ -140,14 +181,35 @@ export async function updateSales(input: UpdateSalesInput) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  // Reactivar un comercial pausado vuelve a ocupar plaza: revalidar el tope
-  // (excluyendo su propio perfil del conteo, que en pausa no cuenta).
+  const supabase = await createClient();
+
+  // #13: ficha y director deben ser de esta org.
+  const belongs = await assertLocationAndDirectorInOrg(
+    auth.orgId,
+    parsed.data.locationId,
+    parsed.data.directorId,
+  );
+  if (!belongs.ok) return { ok: false as const, error: belongs.error };
+
+  // Tope de plazas (#12): solo se valida cuando la edición AÑADE una plaza, es
+  // decir, reactivar un perfil que estaba pausado. Editar un perfil que ya
+  // ocupaba plaza (invited/active) no consume una nueva, aunque la org esté por
+  // encima del tope (p. ej. plan rebajado de standard legacy a basic) — si no,
+  // el admin no podría ni tocar la tarifa de un comercial existente.
   if (parsed.data.status !== "paused") {
-    const seatBlock = await checkSeatLimit(auth.orgId, parsed.data.id);
-    if (seatBlock) return { ok: false as const, error: seatBlock.error };
+    const { data: current } = await supabase
+      .from("profiles")
+      .select("status")
+      .eq("id", parsed.data.id)
+      .eq("org_id", auth.orgId)
+      .maybeSingle<{ status: string }>();
+    const wasOccupying = current?.status === "active" || current?.status === "invited";
+    if (!wasOccupying) {
+      const seatBlock = await checkSeatLimit(auth.orgId, parsed.data.id);
+      if (seatBlock) return { ok: false as const, error: seatBlock.error };
+    }
   }
 
-  const supabase = await createClient();
   // RLS: admin (profiles_admin_all) + reviews_manager (profiles_manager_update_sales
   // de la migración 005) son los únicos que pueden hacer UPDATE en filas con
   // role='sales'. Middleware también gatea esta ruta.

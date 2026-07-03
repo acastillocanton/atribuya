@@ -307,11 +307,25 @@ export async function deleteLocation(id: string) {
   if (!id || typeof id !== "string") {
     return { error: "Id inválido." };
   }
+  // Alineado con el resto del módulo (defensa en profundidad): guard de rol
+  // admin + filtro org_id explícito + comprobación de filas afectadas. Antes
+  // dependía solo de la RLS y devolvía { ok:true } aunque un id de otra org
+  // borrara 0 filas (falso positivo engañoso).
+  const auth = await assertCanManageLocations();
+  if (!auth.ok) return { error: auth.error };
   const supabase = await createClient();
-  const { error } = await supabase.from("locations").delete().eq("id", id);
+  const { data: deleted, error } = await supabase
+    .from("locations")
+    .delete()
+    .eq("id", id)
+    .eq("org_id", auth.orgId)
+    .select("id");
   if (error) {
     console.error("[fichas] deleteLocation failed:", error);
     return { error: "No se pudo eliminar." };
+  }
+  if (!deleted || deleted.length === 0) {
+    return { error: "Ficha no encontrada." };
   }
   revalidatePath("/fichas");
   return { ok: true };
