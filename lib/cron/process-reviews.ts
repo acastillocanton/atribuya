@@ -307,6 +307,7 @@ export async function processFreshReviews(
     const dup = result.client_id
       ? await decideDuplicateForClient(admin, {
           clientId: result.client_id,
+          orgId: location.org_id,
           incomingGoogleCreatedAt: fr.google_created_at,
         })
       : { newIsDuplicate: false, demotedReviewId: null };
@@ -361,7 +362,8 @@ export async function processFreshReviews(
       const { error: demoteErr } = await admin
         .from("reviews")
         .update({ is_duplicate: true } as never)
-        .eq("id", dup.demotedReviewId);
+        .eq("id", dup.demotedReviewId)
+        .eq("org_id", location.org_id);
       if (demoteErr) {
         console.error("[cron] demote principal failed:", demoteErr, dup.demotedReviewId);
         // Fail-safe anti-doble-conteo: la nueva se insertó como principal pero
@@ -370,7 +372,8 @@ export async function processFreshReviews(
         await admin
           .from("reviews")
           .update({ is_duplicate: true } as never)
-          .eq("id", inserted.id);
+          .eq("id", inserted.id)
+          .eq("org_id", location.org_id);
         await admin.from("audit_log").insert({
           entity_type: "review",
           entity_id: inserted.id,

@@ -58,9 +58,12 @@ const MESSAGES = {
 function makeSchema(locale: Locale) {
   const m = MESSAGES[locale];
   return z.object({
-    name: z.string().trim().min(2, m.nameShort).max(120, m.nameLong),
+    // `.regex(/^[^\r\n]+$/)`: name/company acaban en cabeceras del email de
+    // aviso (Subject / cuerpo). `.trim()` no quita CRLF internos → cortamos el
+    // vector de inyección de cabeceras en el borde (Nodemailer también lo hace).
+    name: z.string().trim().min(2, m.nameShort).max(120, m.nameLong).regex(/^[^\r\n]+$/, m.nameLong),
     email: z.string().trim().toLowerCase().email(m.emailInvalid).max(160),
-    company: z.string().trim().min(2, m.companyShort).max(200, m.companyLong),
+    company: z.string().trim().min(2, m.companyShort).max(200, m.companyLong).regex(/^[^\r\n]+$/, m.companyLong),
     phone: z
       .string()
       .trim()

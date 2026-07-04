@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { exchangeCodeForTokens, getUserInfo } from "@/lib/google/business-profile";
 
@@ -44,6 +45,41 @@ export async function GET(request: NextRequest) {
   const [, locationId] = state.split(".");
   if (!locationId || !/^[0-9a-f-]{36}$/i.test(locationId)) {
     fichasUrl.searchParams.set("oauth_error", "bad_state");
+    return clearCookieAndRedirect(fichasUrl);
+  }
+
+  // Defensa en profundidad (#6): el check de cookie-state solo frena CSRF de
+  // terceros; NO acredita al llamante (quien llama directo controla a la vez
+  // cookie y query, y el location_id viaja en el state). El callback aterriza
+  // en el navegador AUTENTICADO del admin que inició el flujo, así que aquí
+  // exigimos que haya un admin logueado y que la ficha del state sea de SU org
+  // (la RLS solo devuelve la location si es de su org). Sin esto, alguien
+  // podría escribir sus tokens de Google sobre la ficha de OTRA org
+  // intercambiando el location_id del state (secuestro de conexión).
+  const cookieClient = await createClient();
+  const {
+    data: { user },
+  } = await cookieClient.auth.getUser();
+  if (!user) {
+    fichasUrl.searchParams.set("oauth_error", "not_authenticated");
+    return clearCookieAndRedirect(fichasUrl);
+  }
+  const { data: actor } = await cookieClient
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle<{ role: string }>();
+  if (actor?.role !== "admin") {
+    fichasUrl.searchParams.set("oauth_error", "forbidden");
+    return clearCookieAndRedirect(fichasUrl);
+  }
+  const { data: ownedLoc } = await cookieClient
+    .from("locations")
+    .select("id")
+    .eq("id", locationId)
+    .maybeSingle<{ id: string }>();
+  if (!ownedLoc) {
+    fichasUrl.searchParams.set("oauth_error", "forbidden");
     return clearCookieAndRedirect(fichasUrl);
   }
 

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { decideFromPrincipals } from "@/lib/cron/duplicate-detection";
+import {
+  decideFromPrincipals,
+  pickPrincipalId,
+} from "@/lib/cron/duplicate-detection";
 
 describe("decideFromPrincipals", () => {
   it("returns newIsDuplicate=false when there's no principal previa", () => {
@@ -96,5 +99,74 @@ describe("decideFromPrincipals", () => {
     const r3 = decideFromPrincipals(principals, "2026-05-26T10:00:00Z");
     expect(r3.newIsDuplicate).toBe(false);
     expect(r3.demotedReviewId).toBe("rev2");
+  });
+});
+
+describe("pickPrincipalId", () => {
+  it("devuelve null si no hay reseñas activas", () => {
+    expect(pickPrincipalId([])).toBeNull();
+  });
+
+  it("elige la reseña de google_created_at más antiguo", () => {
+    const id = pickPrincipalId([
+      { id: "b", google_created_at: "2026-05-26T12:00:00Z" },
+      { id: "a", google_created_at: "2026-05-26T08:00:00Z" },
+      { id: "c", google_created_at: "2026-05-26T15:00:00Z" },
+    ]);
+    expect(id).toBe("a");
+  });
+
+  it("desempata por fetched_at cuando google_created_at coincide", () => {
+    const id = pickPrincipalId([
+      {
+        id: "b",
+        google_created_at: "2026-05-26T10:00:00Z",
+        fetched_at: "2026-05-27T09:00:00Z",
+      },
+      {
+        id: "a",
+        google_created_at: "2026-05-26T10:00:00Z",
+        fetched_at: "2026-05-27T08:00:00Z",
+      },
+    ]);
+    expect(id).toBe("a");
+  });
+
+  it("desempata por id cuando google_created_at y fetched_at coinciden", () => {
+    const id = pickPrincipalId([
+      {
+        id: "zzz",
+        google_created_at: "2026-05-26T10:00:00Z",
+        fetched_at: "2026-05-27T08:00:00Z",
+      },
+      {
+        id: "aaa",
+        google_created_at: "2026-05-26T10:00:00Z",
+        fetched_at: "2026-05-27T08:00:00Z",
+      },
+    ]);
+    expect(id).toBe("aaa");
+  });
+
+  it("trata fetched_at ausente/null como el más tardío (nulls al final)", () => {
+    const id = pickPrincipalId([
+      { id: "sinfetch", google_created_at: "2026-05-26T10:00:00Z" },
+      {
+        id: "confetch",
+        google_created_at: "2026-05-26T10:00:00Z",
+        fetched_at: "2026-05-27T08:00:00Z",
+      },
+    ]);
+    expect(id).toBe("confetch");
+  });
+
+  it("caso reject/remove: sale la principal, la siguiente más antigua toma el relevo", () => {
+    // Antes: 'p' era principal (08:00). Se elimina/rechaza → queda fuera del
+    // conjunto activo. pickPrincipalId sobre lo que queda promociona la de 11:00.
+    const remaining = [
+      { id: "q", google_created_at: "2026-05-26T14:00:00Z" },
+      { id: "r", google_created_at: "2026-05-26T11:00:00Z" },
+    ];
+    expect(pickPrincipalId(remaining)).toBe("r");
   });
 });

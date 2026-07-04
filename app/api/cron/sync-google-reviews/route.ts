@@ -269,18 +269,38 @@ export async function GET(request: NextRequest) {
 
       // Convertimos las reseñas de Google al shape común y delegamos en el
       // helper compartido con el cron de Places (matcher + insert + notif).
-      const freshNormalized: FreshReview[] = fresh.map((gr) => {
+      // Descartamos reseñas con rating desconocido (starRatingToInt→0, p. ej.
+      // STAR_RATING_UNSPECIFIED) o fecha no parseable: `reviews.rating` tiene
+      // CHECK(1..5) y aguas abajo se hace new Date(google_created_at).getTime()
+      // para la ventana temporal. Paridad con la vía Places (mapPlacesReview),
+      // que ya filtra rating fuera de 1-5.
+      let droppedInvalid = 0;
+      const freshNormalized: FreshReview[] = [];
+      for (const gr of fresh) {
+        const rating = starRatingToInt(gr.starRating);
+        const createdMs = gr.createTime
+          ? new Date(gr.createTime).getTime()
+          : Number.NaN;
+        if (rating < 1 || rating > 5 || Number.isNaN(createdMs)) {
+          droppedInvalid++;
+          continue;
+        }
         const rawAuthor = gr.reviewer?.displayName?.trim() ?? "";
         const hasAuthorName = rawAuthor.length > 0;
-        return {
+        freshNormalized.push({
           google_review_id: gr.reviewId,
           author_name: hasAuthorName ? rawAuthor : "Anónimo",
           hasAuthorName,
-          rating: starRatingToInt(gr.starRating),
+          rating,
           text: gr.comment ?? null,
           google_created_at: gr.createTime,
-        };
-      });
+        });
+      }
+      if (droppedInvalid > 0) {
+        console.warn(
+          `[sync-google-reviews] ${loc.id}: ${droppedInvalid} reseña(s) descartada(s) por rating/fecha inválidos`,
+        );
+      }
 
       const { notifications, lowRatingAlerts } = await processFreshReviews(
         {

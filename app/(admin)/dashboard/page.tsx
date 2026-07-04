@@ -229,7 +229,12 @@ export default async function DashboardPage({
   const reviewsCountedBySales = new Map<string, number>();
   for (const r of reviewsMonth) {
     if (!r.sales_id) continue;
-    reviewsBySales.set(r.sales_id, (reviewsBySales.get(r.sales_id) ?? 0) + 1);
+    // Columna "reseñas" del comercial: excluye duplicadas para cuadrar con el
+    // ranking (`getLeaderboard` filtra is_duplicate=false). El total de la org
+    // (`reviewsCount`) y la media sí usan todas las reseñas del mes.
+    if (!r.is_duplicate) {
+      reviewsBySales.set(r.sales_id, (reviewsBySales.get(r.sales_id) ?? 0) + 1);
+    }
     // `counted` = reseñas pagables: excluye duplicadas (migración 015).
     if (r.match_state === "counted" && !r.is_duplicate) {
       reviewsCountedBySales.set(

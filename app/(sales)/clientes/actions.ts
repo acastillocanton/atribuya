@@ -382,6 +382,7 @@ async function linkOrphanCore(
 
   const dup = await decideDuplicateForClient(admin, {
     clientId,
+    orgId: scope.orgId,
     incomingGoogleCreatedAt: review.google_created_at,
     excludeReviewId: review.id,
   });
@@ -405,7 +406,8 @@ async function linkOrphanCore(
     await admin
       .from("reviews")
       .update({ is_duplicate: true } as never)
-      .eq("id", dup.demotedReviewId);
+      .eq("id", dup.demotedReviewId)
+      .eq("org_id", scope.orgId);
   }
 
   await recordAudit({

@@ -1,0 +1,8 @@
+00 - Proyecto Original./
+
+# nunca ingerir secretos ni artefactos locales al grafo
+.env
+.env.local
+.env*.local
+graphify-out/
+Venta/

@@ -145,7 +145,9 @@ export async function buildSalesReport(
     labelCell.value = label;
     labelCell.font = { bold: true, color: { argb: "FF666666" } };
     const valueCell = ws.getCell(`B${rowIdx}`);
-    valueCell.value = value;
+    // Algunos valores (nombre del comercial, nombre de la ficha) son texto de
+    // origen usuario → excelSafe contra inyección de fórmulas.
+    valueCell.value = excelSafe(value);
   });
 
   // Fila vacía (8) y tabla a partir de la 9.

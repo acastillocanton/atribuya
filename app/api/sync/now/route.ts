@@ -26,6 +26,8 @@ export const maxDuration = 60;
 
 type Payload = { location_id?: string };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const {
@@ -52,12 +54,35 @@ export async function POST(request: NextRequest) {
     // body vacío o no-JSON → equivalente a sin filtro
   }
 
-  let locationIds: string[] | null = null;
+  // Multi-tenant (§5.1): NUNCA confiar en el location_id del cliente ni dejar
+  // que `syncPlaces` barra todas las orgs. Acotamos SIEMPRE a las fichas de la
+  // org del llamante. El cookie-client + RLS solo devuelve locations de su org,
+  // así que la propia lectura hace de control de pertenencia.
+  let locationIds: string[];
 
   if (profile.role === "admin" || profile.role === "reviews_manager") {
     if (typeof body.location_id === "string" && body.location_id.length > 0) {
-      locationIds = [body.location_id];
-    } // si no, todas
+      if (!UUID_RE.test(body.location_id)) {
+        return NextResponse.json({ error: "bad_location_id" }, { status: 400 });
+      }
+      // Verificar pertenencia: RLS solo devuelve la ficha si es de su org.
+      const { data: owned } = await supabase
+        .from("locations")
+        .select("id")
+        .eq("id", body.location_id)
+        .maybeSingle<{ id: string }>();
+      if (!owned) {
+        return NextResponse.json({ error: "location_not_found" }, { status: 404 });
+      }
+      locationIds = [owned.id];
+    } else {
+      // Sin location_id → todas las fichas DE SU ORG (no de todas las orgs).
+      const { data: locs } = await supabase
+        .from("locations")
+        .select("id")
+        .returns<{ id: string }[]>();
+      locationIds = (locs ?? []).map((l) => l.id);
+    }
   } else if (profile.role === "sales") {
     if (!profile.location_id) {
       return NextResponse.json(
@@ -68,6 +93,20 @@ export async function POST(request: NextRequest) {
     locationIds = [profile.location_id];
   } else {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
+  // Sin fichas propias → nada que sincronizar. IMPORTANTE devolver aquí: pasar
+  // un array vacío a syncPlaces desactivaría el filtro y barrería todas las orgs.
+  if (locationIds.length === 0) {
+    return NextResponse.json({
+      ok: true,
+      locations_processed: 0,
+      notify_attempted: 0,
+      notify_failed: 0,
+      removed: 0,
+      restored: 0,
+      summary: [],
+    });
   }
 
   const result = await syncPlaces({ locationIds });

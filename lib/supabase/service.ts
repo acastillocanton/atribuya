@@ -1,3 +1,6 @@
+// Cinturón: rompe el build si este módulo (que lee la service-role key y salta
+// RLS) se importara alguna vez desde un Client Component.
+import "server-only";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 

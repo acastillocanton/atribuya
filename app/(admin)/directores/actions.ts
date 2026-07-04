@@ -36,6 +36,24 @@ async function assertCanManageDirectors(): Promise<
   return { ok: true, orgId: actor.org_id };
 }
 
+/**
+ * Valida (#13) que la ficha pertenece a la org. Service-role con filtro org_id
+ * explícito (el gestor no tiene por qué ver todas las locations por RLS).
+ */
+async function assertLocationInOrg(
+  orgId: string,
+  locationId: string,
+): Promise<boolean> {
+  const admin = createServiceClient();
+  const { data } = await admin
+    .from("locations")
+    .select("id")
+    .eq("id", locationId)
+    .eq("org_id", orgId)
+    .maybeSingle<{ id: string }>();
+  return data !== null;
+}
+
 const commissionRateSchema = z
   .union([z.string(), z.number(), z.null(), z.undefined()])
   .transform((v) => {
@@ -73,6 +91,11 @@ export async function inviteOfficeDirector(input: InviteDirectorInput): Promise<
   }
   const baseSlug = slugify(parsed.data.fullName);
   if (!baseSlug) return { ok: false, error: "No se pudo generar el identificador del director." };
+
+  // #13: la ficha debe ser de esta org.
+  if (!(await assertLocationInOrg(guard.orgId, parsed.data.locationId))) {
+    return { ok: false, error: "La ficha seleccionada no es válida." };
+  }
 
   // Tope de comerciales por plan (pricing v3): el director ocupa plaza.
   const seatBlock = await checkSeatLimit(guard.orgId);
@@ -114,14 +137,30 @@ export async function updateDirector(input: z.input<typeof updateDirectorSchema>
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  // Reactivar un director pausado vuelve a ocupar plaza: revalidar el tope
-  // (excluyendo su propio perfil del conteo, que en pausa no cuenta).
-  if (parsed.data.status !== "paused") {
-    const seatBlock = await checkSeatLimit(guard.orgId, parsed.data.id);
-    if (seatBlock) return { ok: false as const, error: seatBlock.error };
+  const admin = createServiceClient();
+
+  // #13: la ficha debe ser de esta org.
+  if (!(await assertLocationInOrg(guard.orgId, parsed.data.locationId))) {
+    return { ok: false as const, error: "La ficha seleccionada no es válida." };
   }
 
-  const admin = createServiceClient();
+  // Tope de plazas (#12): solo cuando la edición reactiva un perfil pausado
+  // (añade plaza). Editar uno que ya ocupaba plaza no consume una nueva aunque
+  // la org esté por encima del tope.
+  if (parsed.data.status !== "paused") {
+    const { data: current } = await admin
+      .from("profiles")
+      .select("status")
+      .eq("id", parsed.data.id)
+      .eq("org_id", guard.orgId)
+      .maybeSingle<{ status: string }>();
+    const wasOccupying = current?.status === "active" || current?.status === "invited";
+    if (!wasOccupying) {
+      const seatBlock = await checkSeatLimit(guard.orgId, parsed.data.id);
+      if (seatBlock) return { ok: false as const, error: seatBlock.error };
+    }
+  }
+
   const { error } = await admin
     .from("profiles")
     .update({

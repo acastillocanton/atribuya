@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { parseRange, thisMonthRange, lastMonthRange } from "@/lib/date-range";
+import { excelSafe } from "@/lib/reports/excel-safe";
 // Tipos de exceljs SOLO (import type) — no se incluye en el bundle.
 import type ExcelJS from "exceljs";
 
@@ -89,14 +91,42 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const fromParam = url.searchParams.get("from");
   const toParam = url.searchParams.get("to");
-  const salesId = url.searchParams.get("sales_id");
-  const locationId = url.searchParams.get("location_id");
-  const matchState = url.searchParams.get("match_state");
   const range = parseRange(fromParam, toParam);
+
+  // Validación Zod de los filtros (defensa en profundidad; el query-builder ya
+  // parametriza, pero cumplimos la regla "validar todo input externo").
+  const UUID = z.string().uuid();
+  // `|| null`: el formulario de export (GET) manda los filtros por defecto como
+  // cadena vacía (`?sales_id=&location_id=&match_state=`). Tratamos "" como
+  // ausente para no rechazar (400) la descarga "de todo", que es el caso normal.
+  const salesIdRaw = url.searchParams.get("sales_id") || null;
+  const locationIdRaw = url.searchParams.get("location_id") || null;
+  const matchStateRaw = url.searchParams.get("match_state") || null;
+  let salesId: string | null = null;
+  let locationId: string | null = null;
+  let matchState: string | null = null;
+  if (salesIdRaw !== null) {
+    const r = UUID.safeParse(salesIdRaw);
+    if (!r.success) return NextResponse.json({ error: "bad_sales_id" }, { status: 400 });
+    salesId = r.data;
+  }
+  if (locationIdRaw !== null) {
+    const r = UUID.safeParse(locationIdRaw);
+    if (!r.success) return NextResponse.json({ error: "bad_location_id" }, { status: 400 });
+    locationId = r.data;
+  }
+  if (matchStateRaw !== null) {
+    const r = z.enum(["counted", "pending", "unmatched"]).safeParse(matchStateRaw);
+    if (!r.success) return NextResponse.json({ error: "bad_match_state" }, { status: 400 });
+    matchState = r.data;
+  }
 
   const supabase = await createClient();
 
-  // Defensa en profundidad: solo manager o admin.
+  // Defensa en profundidad: solo manager o admin. Leemos también org_id para
+  // filtrar explícitamente por org en TODAS las queries (§4: filtrar por org_id
+  // aunque la RLS también lo haga — si este endpoint se refactorizara a
+  // service-role, sin este filtro sería un volcado cross-org).
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -105,12 +135,16 @@ export async function GET(request: NextRequest) {
   }
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, org_id")
     .eq("id", user.id)
-    .maybeSingle<{ role: string }>();
+    .maybeSingle<{ role: string; org_id: string | null }>();
   if (profile?.role !== "admin" && profile?.role !== "reviews_manager") {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
+  if (!profile.org_id) {
+    return NextResponse.json({ error: "no_org" }, { status: 403 });
+  }
+  const orgId = profile.org_id;
 
   // Límite defensivo para no timeout en Vercel (60s) ni saturar memoria al
   // generar el Excel. Si el rango pide más, el caller debería trocear (la UI
@@ -123,6 +157,7 @@ export async function GET(request: NextRequest) {
     .select(
       "id, google_review_id, author_name, rating, text, google_created_at, match_state, match_confidence, sales_id, location_id, is_duplicate, sales:profiles!reviews_sales_id_fkey(full_name, slug), client:clients(full_name), location:locations(name)",
     )
+    .eq("org_id", orgId)
     .is("removed_at", null)
     .gte("google_created_at", range.startIso)
     .lt("google_created_at", range.endIso)
@@ -139,6 +174,7 @@ export async function GET(request: NextRequest) {
   let shareLinksQuery = supabase
     .from("share_links")
     .select("sales_id, location_id, opened_at")
+    .eq("org_id", orgId)
     .gte("opened_at", range.startIso)
     .lt("opened_at", range.endIso)
     .limit(SHARE_LINKS_HARD_LIMIT);
@@ -153,6 +189,7 @@ export async function GET(request: NextRequest) {
   let monthlyQuery = supabase
     .from("reviews")
     .select("sales_id, location_id, rating, google_created_at")
+    .eq("org_id", orgId)
     .eq("match_state", "counted")
     .eq("is_duplicate", false)
     .is("removed_at", null)
@@ -168,8 +205,14 @@ export async function GET(request: NextRequest) {
       .from("profiles")
       .select("id, full_name, monthly_goal, status, location_id")
       .eq("role", "sales")
+      .eq("org_id", orgId)
       .returns<SalesProfile[]>(),
-    supabase.from("locations").select("id, name").order("name").returns<LocationLite[]>(),
+    supabase
+      .from("locations")
+      .select("id, name")
+      .eq("org_id", orgId)
+      .order("name")
+      .returns<LocationLite[]>(),
     monthlyQuery.returns<MonthlyReviewRow[]>(),
   ]);
   const reviews = reviewsRes.data;
@@ -211,17 +254,19 @@ export async function GET(request: NextRequest) {
   sheet.getRow(1).alignment = { vertical: "middle" };
 
   for (const r of reviews ?? []) {
+    // excelSafe en toda celda de texto de origen externo (autor/comentario de
+    // Google, nombres) para neutralizar inyección de fórmulas al abrir el .xlsx.
     sheet.addRow({
       fecha: new Date(r.google_created_at),
-      autor: r.author_name,
+      autor: excelSafe(r.author_name),
       estrellas: r.rating,
-      comentario: r.text ?? "",
-      ficha: r.location?.name ?? "",
-      comercial: r.sales?.full_name ?? "Sin atribuir",
-      cliente: r.client?.full_name ?? "",
+      comentario: excelSafe(r.text ?? ""),
+      ficha: excelSafe(r.location?.name ?? ""),
+      comercial: excelSafe(r.sales?.full_name ?? "Sin atribuir"),
+      cliente: excelSafe(r.client?.full_name ?? ""),
       match: MATCH_LABEL[r.match_state] ?? r.match_state,
       confianza: r.match_confidence,
-      google_id: r.google_review_id,
+      google_id: excelSafe(r.google_review_id),
     });
   }
 
@@ -353,7 +398,10 @@ function renderSummarySheet(
   }
   const countedBySales = new Map<string, number>();
   for (const r of reviews) {
-    if (r.match_state !== "counted" || !r.sales_id) continue;
+    // Excluir is_duplicate: "contadas" = reseñas abonables (mismo criterio que
+    // el KPI global y el hero del comercial). Si no, la suma por comercial
+    // superaría al Total deduplicado del propio Excel.
+    if (r.match_state !== "counted" || r.is_duplicate || !r.sales_id) continue;
     countedBySales.set(r.sales_id, (countedBySales.get(r.sales_id) ?? 0) + 1);
   }
   // Incluimos en la tabla a todos los comerciales activos + cualquiera con
@@ -404,7 +452,7 @@ function renderSummarySheet(
     rows.forEach((row, idx) => {
       const rowIdx = headerRow + 1 + idx;
       const r = sheet.getRow(rowIdx);
-      r.getCell(1).value = row.name;
+      r.getCell(1).value = excelSafe(row.name);
       r.getCell(2).value = row.visits;
       r.getCell(3).value = row.counted;
       r.getCell(4).value = row.conversion !== null ? row.conversion / 100 : "—";
@@ -484,7 +532,7 @@ function renderSummarySheet(
   const fichasRows = allLocations
     .map((l) => {
       const rs = reviewsByLocation.get(l.id) ?? [];
-      const cnt = rs.filter((r) => r.match_state === "counted").length;
+      const cnt = rs.filter((r) => r.match_state === "counted" && !r.is_duplicate).length;
       const avgLoc = rs.length > 0 ? rs.reduce((s, r) => s + r.rating, 0) / rs.length : null;
       return { name: l.name, total: rs.length, counted: cnt, avg: avgLoc };
     })
@@ -500,7 +548,7 @@ function renderSummarySheet(
     fichasRows.forEach((row, idx) => {
       const rowIdx = locHeaderRow + 1 + idx;
       const r = sheet.getRow(rowIdx);
-      r.getCell(1).value = row.name;
+      r.getCell(1).value = excelSafe(row.name);
       r.getCell(2).value = row.total;
       r.getCell(3).value = row.counted;
       r.getCell(4).value = row.avg !== null ? Number(row.avg.toFixed(2)) : "—";
@@ -652,7 +700,7 @@ function renderMonthlyByFichaSheet(
 
     for (const row of rows) {
       const rr = sheet.getRow(r);
-      rr.getCell(1).value = row.name;
+      rr.getCell(1).value = excelSafe(row.name);
       rr.getCell(2).value = row.prev;
       rr.getCell(3).value = row.cur;
       rr.getCell(1).alignment = { horizontal: "left" };
