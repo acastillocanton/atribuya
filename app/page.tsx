@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
 import { HowItWorks } from "@/components/sections/HowItWorks";
+import { ProductShot } from "@/components/landing/ProductShot";
 import { HubTeasers } from "@/components/sections/HubTeasers";
 import { WhyAtribuya } from "@/components/sections/WhyAtribuya";
 import { SectionCta } from "@/components/sections/SectionCta";
@@ -355,6 +356,59 @@ export default function HomePage() {
         {/* =========================== Cómo funciona =========================== */}
         <section id="como-funciona" aria-label="Cómo funciona">
           <HowItWorks locale="es" />
+        </section>
+
+        {/* === Producto real — enseñar el panel, no solo contarlo === */}
+        <section
+          aria-label="El producto por dentro"
+          className="border-t border-line bg-white"
+        >
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+            <div className="grid items-center gap-y-10 gap-x-12 md:grid-cols-12">
+              <div className="md:col-span-5">
+                <h2
+                  className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
+                  style={{ fontSize: "var(--text-h2)" }}
+                >
+                  Todo tu equipo,{" "}
+                  <em className="font-light text-ink-2">en un panel.</em>
+                </h2>
+                <p className="mt-5 max-w-md leading-relaxed text-ink-2">
+                  Cada comercial, sus reseñas y su valoración media en una sola
+                  vista. Ves quién te trae negocio sin abrir un Excel, y las
+                  dudosas se resuelven con un clic.
+                </p>
+                <a
+                  href="/producto"
+                  className="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-ink underline decoration-line-strong underline-offset-4 transition hover:decoration-ink"
+                >
+                  Ver el producto por dentro
+                  <svg
+                    className="h-3.5 w-3.5 shrink-0"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
+                  </svg>
+                </a>
+              </div>
+              <div className="md:col-span-7">
+                <ProductShot
+                  src="/landing/dashboard.png"
+                  alt="Panel de Atribuya: reseñas y valoración media por comercial"
+                  width={2880}
+                  height={1800}
+                  url="atribuya.com/dashboard"
+                  locale="es"
+                  caption="Panel del administrador: métricas por comercial, en tiempo real."
+                />
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* ===================== Por qué Atribuya (4 voces) ===================== */}
