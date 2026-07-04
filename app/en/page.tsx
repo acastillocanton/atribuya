@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
 import { HowItWorks } from "@/components/sections/HowItWorks";
+import { ProductShot } from "@/components/landing/ProductShot";
 import { HubTeasers } from "@/components/sections/HubTeasers";
 import { WhyAtribuya } from "@/components/sections/WhyAtribuya";
 import { SectionCta } from "@/components/sections/SectionCta";
@@ -192,51 +193,10 @@ export default function HomePageEn() {
       <main id="contenido">
         {/* ========================== Hero — Stat-Led ========================== */}
         <section
-          aria-label="Pilot results"
+          aria-label="Atribuya"
           className="mx-auto max-w-6xl px-5 pb-16 pt-10 sm:pb-20 sm:pt-16"
         >
-          <div className="grid items-end gap-y-10 gap-x-12 md:grid-cols-12">
-            <div className="md:col-span-7">
-              <p
-                className="font-display font-light italic leading-[0.85] tracking-[-0.04em] text-ink"
-                style={{ fontSize: "var(--text-stat)" }}
-              >
-                100<span className="not-italic font-normal">%</span>
-              </p>
-              <p className="mt-4 max-w-md text-[15px] leading-snug text-ink-2 sm:text-[16px]">
-                of the pilot's verified reviews, attributed to their rep. Most
-                on their own; a few with one click.
-              </p>
-            </div>
-
-            <dl className="grid grid-cols-2 gap-y-6 gap-x-6 md:col-span-5 md:grid-cols-1 md:gap-y-7">
-              <div>
-                <dt
-                  className="font-display font-light italic leading-none tracking-tight text-ink"
-                  style={{ fontSize: "var(--text-stat-sm)" }}
-                >
-                  Day 1
-                </dt>
-                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  you see which rep brings each review, and who's falling behind.
-                </dd>
-              </div>
-              <div>
-                <dt
-                  className="font-display font-light italic leading-none tracking-tight text-ink"
-                  style={{ fontSize: "var(--text-stat-sm)" }}
-                >
-                  0
-                </dt>
-                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  arguments over &ldquo;whose review was this?&rdquo;
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          <hr className="my-12 border-line sm:my-14" />
-
+          {/* H1 + subhead + CTA (left) · proof card (right) — asymmetric */}
           <div className="grid items-center gap-y-10 gap-x-12 md:grid-cols-12">
             <div className="md:col-span-7">
               <h1
@@ -290,6 +250,51 @@ export default function HomePageEn() {
             </div>
           </div>
 
+          {/* Pilot proof — the 100% becomes support, not the lead */}
+          <dl className="mt-12 grid gap-x-10 gap-y-8 border-t border-line pt-10 sm:mt-14 sm:grid-cols-3">
+            <div>
+              <dt
+                className="font-display font-light italic leading-none tracking-tight text-accent"
+                style={{ fontSize: "var(--text-stat-sm)" }}
+              >
+                100<span className="not-italic">%</span>
+              </dt>
+              <dd className="mt-2 max-w-[17rem] text-[14px] leading-snug text-ink-3">
+                of the pilot's verified reviews, attributed to their rep. Most on
+                their own; the rest, one click away.
+              </dd>
+            </div>
+            <div>
+              <dt
+                className="font-display font-light italic leading-none tracking-tight text-accent"
+                style={{ fontSize: "var(--text-stat-sm)" }}
+              >
+                0
+              </dt>
+              <dd className="mt-2 max-w-[17rem] text-[14px] leading-snug text-ink-3">
+                arguments over who each review belonged to.
+              </dd>
+            </div>
+            <div>
+              <dt
+                className="font-display font-light italic leading-none tracking-tight text-accent"
+                style={{ fontSize: "var(--text-stat-sm)" }}
+              >
+                Day 1
+              </dt>
+              <dd className="mt-2 max-w-[17rem] text-[14px] leading-snug text-ink-3">
+                up and running: you see which rep brings each review from the very
+                first day.
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-6 text-[12px] leading-relaxed text-ink-4">
+            Data from Atribuya's pilot deployment with a real estate developer: 4
+            sales reps, 1 Google Business Profile listing, first month. Industry,
+            size and metrics are real; customer name kept confidential pending
+            commercial release.
+          </p>
+
           {/* Sectors — point at the customer, don't hide them */}
           <div className="mt-12 border-t border-line pt-10 sm:mt-14">
             <p
@@ -311,13 +316,6 @@ export default function HomePageEn() {
             </ul>
           </div>
 
-          {/* Pilot data attribution */}
-          <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
-            Data from Atribuya's pilot deployment with a real estate developer:
-            4 sales reps, 1 Google Business Profile listing, first month.
-            Industry, size and metrics are real; customer name kept confidential
-            pending commercial release.
-          </p>
         </section>
 
         {/* ============================= Problem ============================= */}
@@ -358,6 +356,59 @@ export default function HomePageEn() {
           <HowItWorks locale="en" />
         </section>
 
+        {/* === Real product — show the panel, don't just describe it === */}
+        <section
+          aria-label="Inside the product"
+          className="border-t border-line bg-white"
+        >
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+            <div className="grid items-center gap-y-10 gap-x-12 md:grid-cols-12">
+              <div className="md:col-span-5">
+                <h2
+                  className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
+                  style={{ fontSize: "var(--text-h2)" }}
+                >
+                  Your whole team,{" "}
+                  <em className="font-light text-accent">in one panel.</em>
+                </h2>
+                <p className="mt-5 max-w-md leading-relaxed text-ink-2">
+                  Every rep, their reviews and their average rating in a single
+                  view. You see who drives the business without opening a
+                  spreadsheet, and the doubtful ones are resolved with one click.
+                </p>
+                <a
+                  href="/en/product"
+                  className="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-accent underline decoration-line-strong underline-offset-4 transition hover:decoration-accent"
+                >
+                  See the product from the inside
+                  <svg
+                    className="h-3.5 w-3.5 shrink-0"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
+                  </svg>
+                </a>
+              </div>
+              <div className="md:col-span-7">
+                <ProductShot
+                  src="/landing/dashboard.png"
+                  alt="Atribuya dashboard: reviews and average rating per sales rep"
+                  width={2880}
+                  height={1800}
+                  url="atribuya.com/dashboard"
+                  locale="en"
+                  caption="The admin dashboard: per-rep metrics, in real time."
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ===================== Why Atribuya (4 voices) ===================== */}
         <WhyAtribuya locale="en" />
 
@@ -387,6 +438,40 @@ export default function HomePageEn() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        {/* === Mid-page CTA — a conversion point halfway down === */}
+        <section aria-label="Book a demo" className="border-t border-line bg-bg">
+          <div className="mx-auto max-w-6xl px-5 py-12 sm:py-14">
+            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <p
+                className="max-w-xl font-display font-medium leading-tight tracking-tight text-ink"
+                style={{ fontSize: "var(--text-h3)" }}
+              >
+                Can you see who drives your business?{" "}
+                <em className="font-light text-accent">
+                  Check it with your team.
+                </em>
+              </p>
+              <a
+                href="/en/demo"
+                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-accent px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-accent-strong"
+              >
+                Request a demo
+                <svg
+                  className="h-3.5 w-3.5 shrink-0"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
+                </svg>
+              </a>
+            </div>
           </div>
         </section>
 
@@ -440,6 +525,52 @@ export default function HomePageEn() {
               type="application/ld+json"
               dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
             />
+          </div>
+        </section>
+
+        {/* ===== Trust — real signals, no fake logos or testimonials ===== */}
+        <section
+          aria-label="Trust and compliance"
+          className="border-t border-line bg-white"
+        >
+          <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+            <dl className="grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <dt className="font-display text-lg font-medium tracking-tight text-ink">
+                  Official Google APIs
+                </dt>
+                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
+                  We read reviews via the official Google Business Profile and
+                  Places APIs. No scraping.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-display text-lg font-medium tracking-tight text-ink">
+                  GDPR compliant
+                </dt>
+                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
+                  Data on European servers, encrypted in transit and at rest.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-display text-lg font-medium tracking-tight text-ink">
+                  Signed DPA
+                </dt>
+                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
+                  A data processing agreement with each customer, under Article
+                  28 of GDPR.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-display text-lg font-medium tracking-tight text-ink">
+                  Isolated per customer
+                </dt>
+                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
+                  Each organization is isolated at the database level (Postgres
+                  Row Level Security).
+                </dd>
+              </div>
+            </dl>
           </div>
         </section>
 
