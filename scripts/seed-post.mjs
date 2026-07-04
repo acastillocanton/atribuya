@@ -155,6 +155,19 @@ async function uploadAuthorPhoto() {
   return { _type: "image", asset: { _type: "reference", _ref: asset._id } };
 }
 
+// Sube la imagen de portada del artículo (asset local del repo). Da al post un
+// `mainImage` real → hero, og:image y `image` del JSON-LD (campo del rich result
+// de Article). Ids content-addressed → relanzar no duplica.
+async function uploadCover() {
+  const buffer = readFileSync(new URL("../public/landing/ranking.png", import.meta.url));
+  const asset = await client.assets.upload("image", buffer, { filename: "ranking.png" });
+  return {
+    _type: "image",
+    asset: { _type: "reference", _ref: asset._id },
+    alt: "Ranking de comerciales por reseñas conseguidas en el panel de Atribuya",
+  };
+}
+
 // Perfiles verificables del autor (sameAs). El primero, LinkedIn, refuerza el
 // E-E-A-T; añade aquí la URL personal cuando la tengas.
 const AUTHOR_SAME_AS = [
@@ -217,13 +230,17 @@ async function run() {
   await client.createOrReplace(category);
   console.log(`  ✓ categoría "${category.title}"`);
 
+  const cover = await uploadCover();
+  console.log(`  ✓ portada subida (${cover.asset._ref})`);
+
   const existing = await client.getDocument(postId).catch(() => null);
   if (existing && !force) {
-    console.log(`  • el post ya existe (${postId}). Usa --force para sobrescribir el cuerpo.`);
-    return;
+    await client.patch(postId).set({ mainImage: cover }).commit();
+    console.log(`  • post existente: actualizada la portada (usa --force para reescribir el cuerpo).`);
+  } else {
+    await client.createOrReplace({ ...post, mainImage: cover });
+    console.log(`  ✓ artículo "${post.title}"`);
   }
-  await client.createOrReplace(post);
-  console.log(`  ✓ artículo "${post.title}"`);
   console.log(`\nURL: https://atribuya.com/blog/${post.slug.current}`);
   console.log("Visible tras la revalidación ISR (máx. 600s) o al redeploy.");
 }

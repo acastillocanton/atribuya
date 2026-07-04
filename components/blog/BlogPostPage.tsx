@@ -35,6 +35,10 @@ export async function BlogPostPage({
     : null;
   const authorBase = locale === "es" ? "/blog/autor" : "/en/blog/author";
   const authorHref = post.author?.slug ? `${authorBase}/${post.author.slug}` : null;
+  // URL absoluta de la página de autor: enlaza el BlogPosting con la misma
+  // entidad Person que emite AuthorPage (@id `…#person`), cerrando el grafo
+  // artículo → autor → sameAs (LinkedIn/X/web). Señal E-E-A-T.
+  const authorUrlAbs = authorHref ? `https://atribuya.com${authorHref}` : null;
 
   const postJsonLd = {
     "@context": "https://schema.org",
@@ -45,18 +49,44 @@ export async function BlogPostPage({
     datePublished: post.publishedAt,
     dateModified: post._updatedAt,
     ...(post.author
-      ? { author: { "@type": "Person", name: post.author.name } }
+      ? {
+          author: {
+            "@type": "Person",
+            name: post.author.name,
+            ...(authorUrlAbs
+              ? { "@id": `${authorUrlAbs}#person`, url: authorUrlAbs }
+              : {}),
+            ...(authorAvatarUrl ? { image: authorAvatarUrl } : {}),
+          },
+        }
       : {}),
     publisher: { "@id": "https://atribuya.com/#organization" },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     inLanguage: t.inLanguage,
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: locale === "es" ? "Inicio" : "Home",
+        item: locale === "es" ? "https://atribuya.com/" : "https://atribuya.com/en",
+      },
+      { "@type": "ListItem", position: 2, name: "Blog", item: t.base },
+      { "@type": "ListItem", position: 3, name: post.title, item: url },
+    ],
+  };
+
   return (
     <article className="mx-auto max-w-3xl px-5 py-14 sm:py-20">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([postJsonLd, breadcrumbJsonLd]),
+        }}
       />
       <div className="flex flex-wrap items-center gap-2 text-xs text-ink-4">
         <time dateTime={post.publishedAt}>

@@ -188,6 +188,14 @@ const siteJsonLd = {
       name: "Atribuya",
       url: "https://atribuya.com/",
       logo: "https://atribuya.com/icon.png",
+      description:
+        "Software que atribuye cada reseña de Google Business Profile al comercial que la consiguió, en automático y sin pedirle el nombre al cliente. Un producto de Castillo Cantón.",
+      founder: {
+        "@type": "Person",
+        "@id": "https://atribuya.com/blog/autor/alejandro-castillo#person",
+        name: "Alejandro Castillo",
+        url: "https://atribuya.com/blog/autor/alejandro-castillo",
+      },
       sameAs: ["https://www.linkedin.com/company/atribuya"],
     },
   ],
