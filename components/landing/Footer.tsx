@@ -10,6 +10,10 @@ const STRINGS = {
       "Sabes qué comercial te trae cada reseña de Google.",
     altLangHref: "/en",
     altLangLabel: "English",
+    product: { href: "/producto", label: "Producto" },
+    pricing: { href: "/precios", label: "Precios" },
+    cases: { href: "/casos", label: "Casos" },
+    demo: { href: "/demo", label: "Demo" },
     blog: { href: "/blog", label: "Blog" },
     terms: { href: "/terminos", label: "Términos" },
     privacy: { href: "/privacidad", label: "Privacidad" },
@@ -21,6 +25,10 @@ const STRINGS = {
       "You know which rep brings in every Google review.",
     altLangHref: "/",
     altLangLabel: "Español",
+    product: { href: "/en/product", label: "Product" },
+    pricing: { href: "/en/pricing", label: "Pricing" },
+    cases: { href: "/en/case-studies", label: "Case studies" },
+    demo: { href: "/en/demo", label: "Demo" },
     blog: { href: "/en/blog", label: "Blog" },
     terms: { href: "/en/terms", label: "Terms" },
     privacy: { href: "/en/privacy", label: "Privacy" },
@@ -64,6 +72,18 @@ export function Footer({ locale }: { locale: Locale }) {
               className="transition hover:text-ink"
             >
               {t.altLangLabel}
+            </Link>
+            <Link href={t.product.href} className="transition hover:text-ink">
+              {t.product.label}
+            </Link>
+            <Link href={t.pricing.href} className="transition hover:text-ink">
+              {t.pricing.label}
+            </Link>
+            <Link href={t.cases.href} className="transition hover:text-ink">
+              {t.cases.label}
+            </Link>
+            <Link href={t.demo.href} className="transition hover:text-ink">
+              {t.demo.label}
             </Link>
             <Link href={t.blog.href} className="transition hover:text-ink">
               {t.blog.label}

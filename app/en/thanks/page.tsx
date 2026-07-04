@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Header } from "@/components/landing/Header";
+import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function ThanksPage() {
   return (
     <div className="min-h-screen bg-bg font-text text-ink">
-      <Header locale="en" />
+      <SiteHeader locale="en" />
 
       <main
         id="contenido"

@@ -16,9 +16,17 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 // autenticada (/dashboard, /panel, etc.) NO se rastrea: ni banner ni GA.
 function isPublicPath(p: string): boolean {
   if (p === "/" || p === "/en" || p === "/blog") return true;
-  return ["/en/", "/blog/", "/gracias", "/terminos", "/privacidad"].some(
-    (prefix) => p.startsWith(prefix),
-  );
+  return [
+    "/en/",
+    "/blog/",
+    "/producto",
+    "/precios",
+    "/casos",
+    "/demo",
+    "/gracias",
+    "/terminos",
+    "/privacidad",
+  ].some((prefix) => p.startsWith(prefix));
 }
 
 function localeFor(p: string): "es" | "en" {

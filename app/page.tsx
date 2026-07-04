@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { LeadForm } from "@/components/landing/LeadForm";
-import { Header } from "@/components/landing/Header";
+import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
-import { ProductShot } from "@/components/landing/ProductShot";
 import { AttributionAnimation } from "@/components/landing/AttributionAnimation";
+import { HubTeasers } from "@/components/sections/HubTeasers";
+import { SectionCta } from "@/components/sections/SectionCta";
 
-// La landing comercial es la ÚNICA página del producto que queremos indexada.
-// Sobrescribimos los robots heredados de app/layout.tsx (que son noindex global
-// para proteger las rutas autenticadas).
+// La home es indexable: sobrescribe el noindex global de app/layout.tsx.
 export const metadata: Metadata = {
   title: "Atribuya: sabe qué comercial te trae cada reseña de Google",
   description:
@@ -78,47 +76,6 @@ const FEATURES = [
   "Cuenta las reseñas con texto y las de solo estrellas. No se te escapa ninguna.",
   "Te avisa si una reseña desaparece, la borre el cliente o la borre Google.",
   "¿Varias oficinas o fichas? Las gestionas todas desde la misma cuenta.",
-];
-
-const PLANS = [
-  {
-    name: "Básico",
-    equipo: "Hasta 5 comerciales",
-    fichas: "1 ficha de Google",
-    price: "45",
-    tagline: "La clínica o el local con un equipo pequeño.",
-    featured: false,
-  },
-  {
-    name: "Estándar",
-    equipo: "Hasta 15 comerciales",
-    fichas: "Hasta 3 fichas de Google",
-    price: "99",
-    tagline: "El concesionario o la promotora con red comercial.",
-    featured: true,
-  },
-  {
-    name: "Plus",
-    equipo: "Hasta 30 comerciales",
-    fichas: "Hasta 10 fichas de Google",
-    price: "199",
-    tagline: "La promotora grande o el grupo con varias sedes.",
-    featured: false,
-  },
-];
-
-const PRICING_INCLUDED = [
-  "Reseñas ilimitadas, sin coste por reseña atribuida",
-  "Atribución automática de reseñas por ventana temporal y similitud de nombre",
-  "Dashboard de admin con métricas por comercial, ficha y ranking",
-  "Panel personal de cada comercial con su objetivo y reseñas conseguidas",
-  "Roles (admin, comercial, manager de reseñas) con permisos diferenciados",
-  "Aislamiento total de datos con cifrado y backups diarios",
-  "Conformidad RGPD y DPA firmado",
-  "Implantación completa en pocos días laborables",
-  "Formación de 30 minutos a tu equipo comercial",
-  "Soporte por email con respuesta en menos de 24 horas",
-  "Exportación completa de tus datos cuando quieras",
 ];
 
 type FaqItem = { q: string; a: string[] };
@@ -195,9 +152,8 @@ const faqJsonLd = {
   })),
 };
 
-// WebSite + Organization en la home: es lo que Google usa para mostrar
-// "Atribuya" como nombre del sitio en la SERP (en vez de "atribuya.com")
-// y para asociar el logo a la marca.
+// WebSite + Organization: nombre del sitio en la SERP y logo de marca.
+// El SoftwareApplication con las ofertas vive ahora en /precios.
 const siteJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -218,25 +174,6 @@ const siteJsonLd = {
       logo: "https://atribuya.com/icon.png",
       sameAs: ["https://www.linkedin.com/company/atribuya"],
     },
-    {
-      "@type": "SoftwareApplication",
-      "@id": "https://atribuya.com/#software",
-      name: "Atribuya",
-      url: "https://atribuya.com/",
-      applicationCategory: "BusinessApplication",
-      operatingSystem: "Web",
-      description:
-        "Atribuye cada reseña de Google Business Profile al comercial que la consiguió, en automático y sin pedirle el nombre al cliente.",
-      publisher: { "@id": "https://atribuya.com/#organization" },
-      // Precios desde PLANS: si cambian las tarjetas, cambia el JSON-LD solo.
-      offers: PLANS.map((p) => ({
-        "@type": "Offer",
-        name: `Plan ${p.name}`,
-        price: p.price,
-        priceCurrency: "EUR",
-        url: "https://atribuya.com/#precios",
-      })),
-    },
   ],
 };
 
@@ -247,7 +184,7 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
       />
-      <Header locale="es" />
+      <SiteHeader locale="es" />
 
       <main id="contenido">
         {/* ========================== Hero — Stat-Led ========================== */}
@@ -319,7 +256,7 @@ export default function HomePage() {
               </p>
               <div className="mt-8">
                 <a
-                  href="#contacto"
+                  href="/demo"
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
                 >
                   Quiero saber quién me genera negocio
@@ -452,383 +389,96 @@ export default function HomePage() {
             ))}
           </ol>
 
-          {/* El "money shot" del paso 03, en movimiento: una reseña entra sin el
-              nombre del comercial y Atribuya la asigna sola (animación en bucle). */}
+          {/* El "money shot" del paso 03, en movimiento. */}
           <div className="mt-14">
             <AttributionAnimation locale="es" />
-          </div>
-        </section>
-
-        {/* ============================= Caso real ============================= */}
-        <section
-          id="caso"
-          aria-label="Caso real"
-          className="border-t border-line bg-white"
-        >
-          <div className="mx-auto max-w-3xl px-5 py-16 sm:py-24">
-            <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-              Caso real
-            </p>
-            <h2
-              className="mt-3 font-display font-medium leading-[1.1] tracking-[-0.02em] text-ink"
-              style={{ fontSize: "var(--text-h2)" }}
-            >
-              Una promotora con piso piloto en la
-              <em className="font-light text-ink-2"> Costa de Castellón.</em>
-            </h2>
-            <div
-              className="mt-7 space-y-5 leading-relaxed text-ink-2"
-              style={{ fontSize: "var(--text-lead)" }}
-            >
-              <p>
-                Cuatro comerciales, una ficha de Google Business Profile en el
-                piso piloto. Antes de Atribuya, el administrador tardaba{" "}
-                <strong className="font-semibold text-ink">
-                  dos tardes al mes
-                </strong>{" "}
-                atribuyendo reseñas en una hoja de Excel, y aun así había
-                discusiones sobre a quién pertenecía cada una.
-              </p>
-              <p>
-                En el primer mes con Atribuya, el sistema atribuyó{" "}
-                <strong className="font-semibold text-ink">
-                  el 100% de las reseñas verificadas
-                </strong>{" "}
-                a su comercial responsable, sin intervención manual. La hoja de
-                Excel desapareció. Las discusiones también.
-              </p>
-              <p className="text-ink-3">
-                Como referencia: <span className="tabular-nums">≈ 8 h/mes</span>{" "}
-                que recuperaron frente a la atribución manual, y cero disputas
-                internas sobre la propiedad de una reseña.
-              </p>
-            </div>
-            <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
-              Sector, tamaño y métricas reales; nombre del cliente reservado
-              hasta firma de permiso comercial.
-            </p>
-          </div>
-        </section>
-
-        {/* ====================== Ver Atribuya por dentro ====================== */}
-        <section
-          id="producto"
-          aria-label="El producto por dentro"
-          className="mx-auto max-w-6xl px-5 py-16 sm:py-24"
-        >
-          <div className="max-w-2xl">
-            <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-              El producto por dentro
-            </p>
-            <h2
-              className="mt-3 font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
-              style={{ fontSize: "var(--text-h2)" }}
-            >
-              Míralo por dentro.
-              <br />
-              <em className="font-light text-ink-2">Sin maquetar.</em>
-            </h2>
-            <p className="mt-5 leading-relaxed text-ink-2">
-              Pantallas reales del producto. El administrador ve a todo el equipo
-              de un vistazo. Cada comercial ve solo lo suyo. Clic en cualquiera
-              para ampliarla.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-8 md:grid-cols-2">
-            <ProductShot
-              locale="es"
-              className="md:col-span-2"
-              src="/landing/dashboard.png"
-              width={2880}
-              height={1800}
-              url="atribuya.com/dashboard"
-              alt="Panel del administrador de Atribuya con el resumen del equipo, la conversión y el leaderboard"
-              caption="El panel del administrador: reseñas, conversión, valoración media y el equipo entero en una pantalla."
-            />
-            <ProductShot
-              locale="es"
-              className="md:col-span-2"
-              src="/landing/ranking.png"
-              width={2880}
-              height={1800}
-              url="atribuya.com/ranking"
-              alt="Ranking del equipo comercial en Atribuya, ordenado por reseñas conseguidas"
-              caption="Ranking del equipo en tiempo real. Quién llega al objetivo y quién no, sin montar una hoja de cálculo."
-            />
-            <ProductShot
-              locale="es"
-              src="/landing/enlace-qr.png"
-              width={2880}
-              height={1800}
-              url="atribuya.com/panel/enlace"
-              alt="Pantalla del comercial con su enlace personalizado y su código QR para compartir"
-              caption="Cada comercial genera su enlace y su QR para compartir con el cliente en un toque."
-            />
-            <ProductShot
-              locale="es"
-              src="/landing/mis-resenas.png"
-              width={2880}
-              height={1800}
-              url="atribuya.com/panel/resenas"
-              alt="Pantalla del comercial con la lista de reseñas que ha conseguido"
-              caption="El comercial ve sus reseñas conseguidas y su progreso hacia el objetivo."
-            />
           </div>
         </section>
 
         {/* =========================== Características =========================== */}
         <section
           aria-label="Qué incluye"
-          className="mx-auto max-w-6xl px-5 py-16 sm:py-24"
-        >
-          <h2
-            className="max-w-2xl font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
-            style={{ fontSize: "var(--text-h2)" }}
-          >
-            <em className="font-light">Lo que está</em> en la caja.
-          </h2>
-          <ul className="mt-10 grid gap-x-10 gap-y-4 md:grid-cols-2">
-            {FEATURES.map((f) => (
-              <li
-                key={f}
-                className="flex items-start gap-3 border-b border-line py-3 text-ink-2"
-              >
-                <span
-                  aria-hidden="true"
-                  className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
-                />
-                <span className="text-[15px] leading-relaxed">{f}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {/* ============================== Precios ============================== */}
-        <section
-          id="precios"
-          aria-label="Precios"
           className="border-t border-line bg-white"
         >
           <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-            <div className="max-w-2xl">
-              <h2
-                className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
-                style={{ fontSize: "var(--text-h2)" }}
-              >
-                Un plan <em className="font-light">para cada tamaño.</em>
-              </h2>
-              <p
-                className="mt-5 leading-relaxed text-ink-2"
-                style={{ fontSize: "var(--text-lead)" }}
-              >
-                Pagas según el tamaño de tu equipo comercial. Todas las
-                funciones en todos los planes. Implantación llave en mano,
-                suscripción mensual, cancelas cuando quieras.
-              </p>
-            </div>
-
-            {/* Tres planes por nº de comerciales + a medida — Estándar destacado */}
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {PLANS.map((plan) => (
-                <article
-                  key={plan.name}
-                  className={
-                    plan.featured
-                      ? "relative flex flex-col rounded-2xl border border-ink/15 bg-bg p-7 shadow-card sm:p-8"
-                      : "relative flex flex-col rounded-2xl border border-line bg-white p-7 sm:p-8"
-                  }
+            <h2
+              className="max-w-2xl font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
+              style={{ fontSize: "var(--text-h2)" }}
+            >
+              <em className="font-light">Lo que está</em> en la caja.
+            </h2>
+            <ul className="mt-10 grid gap-x-10 gap-y-4 md:grid-cols-2">
+              {FEATURES.map((f) => (
+                <li
+                  key={f}
+                  className="flex items-start gap-3 border-b border-line py-3 text-ink-2"
                 >
-                  {plan.featured && (
-                    <span className="absolute -top-3 left-7 rounded-full bg-ink px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
-                      Más elegido
-                    </span>
-                  )}
-                  <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-                    Plan {plan.name}
-                  </p>
-                  <p className="mt-4 flex min-h-[2.5rem] items-baseline gap-x-1.5 sm:min-h-[3rem]">
-                    <span className="font-display text-[2.5rem] font-medium leading-none tracking-tight text-ink sm:text-[3rem]">
-                      {plan.price}&nbsp;€
-                    </span>
-                    <span className="text-[14px] text-ink-3">/ mes</span>
-                  </p>
-                  <p className="mt-2 text-[13px] font-medium text-ink-2">
-                    + 129&nbsp;€ de implantación
-                    <span className="font-normal text-ink-3"> (pago único)</span>
-                  </p>
-                  <p className="mt-3 text-[14.5px] font-medium text-ink">
-                    {plan.equipo}
-                  </p>
-                  <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
-                    {plan.tagline}
-                  </p>
-                  <p className="mb-6 mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
-                    <span
-                      aria-hidden="true"
-                      className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
-                    />
-                    {plan.fichas}
-                  </p>
-                  <a
-                    href="#contacto"
-                    className={
-                      plan.featured
-                        ? "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2"
-                        : "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
-                    }
-                  >
-                    Empezar
-                  </a>
-                </article>
-              ))}
-
-              {/* Tarjeta a medida — equipos de más de 30 o más de 10 fichas */}
-              <article className="relative flex flex-col rounded-2xl border border-line bg-white p-7 sm:p-8">
-                <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-                  Plan a medida
-                </p>
-                <p className="mt-4 flex min-h-[2.5rem] items-end sm:min-h-[3rem]">
-                  <span className="font-display text-[1.75rem] font-medium leading-none tracking-tight text-ink sm:text-[2rem]">
-                    A medida
-                  </span>
-                </p>
-                <p className="mt-2 text-[13px] font-medium text-ink-2">
-                  + 129&nbsp;€ de implantación
-                  <span className="font-normal text-ink-3"> (pago único)</span>
-                </p>
-                <p className="mt-3 text-[14.5px] font-medium text-ink">
-                  Más de 30 comerciales
-                </p>
-                <p className="mt-1 text-[14px] leading-relaxed text-ink-3">
-                  Cadenas y redes con varias sedes.
-                </p>
-                <p className="mb-6 mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
                   <span
                     aria-hidden="true"
-                    className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
+                    className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
                   />
-                  Más de 10 fichas de Google
-                </p>
-                <a
-                  href="#contacto"
-                  className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
-                >
-                  Hablemos
-                </a>
-              </article>
-            </div>
-
-            <p className="mt-6 text-[14px] leading-relaxed text-ink-2">
-              La implantación llave en mano (129 €, pago único) incluye conexión
-              de tus fichas, alta de tu equipo, formación a comerciales y soporte
-              las primeras semanas. Sin permanencia.
-            </p>
-
-            {/* Lo que incluyen todos los planes */}
-            <div className="mt-12">
-              <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-                Todos los planes incluyen
-              </p>
-              <ul className="mt-4 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
-                {PRICING_INCLUDED.map((it) => (
-                  <li key={it} className="flex items-start gap-2.5">
-                    <span
-                      aria-hidden="true"
-                      className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
-                    />
-                    <span className="text-[14.5px] leading-relaxed text-ink-2">
-                      {it}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                  <span className="text-[15px] leading-relaxed">{f}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
+
+        {/* ===================== Explora (hub de secciones) ===================== */}
+        <HubTeasers locale="es" />
 
         {/* ================================ FAQ ================================ */}
         <section
           id="faq"
           aria-label="Preguntas frecuentes"
-          className="mx-auto max-w-3xl px-5 py-16 sm:py-24"
-        >
-          <h2
-            className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
-            style={{ fontSize: "var(--text-h2)" }}
-          >
-            <em className="font-light">Lo que nos suelen</em> preguntar.
-          </h2>
-          <div className="mt-10 divide-y divide-line border-y border-line">
-            {FAQS.map(({ q, a }) => (
-              <details
-                key={q}
-                name="faq"
-                className="group open:bg-white"
-              >
-                <summary className="flex cursor-pointer list-none items-start justify-between gap-6 px-5 py-5 [&::-webkit-details-marker]:hidden sm:px-6">
-                  <span className="font-display text-[17px] font-medium leading-snug tracking-tight text-ink sm:text-[18px]">
-                    {q}
-                  </span>
-                  <svg
-                    className="mt-1.5 h-4 w-4 shrink-0 text-ink-3 transition-transform duration-200 group-open:rotate-180"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M4 6l4 4 4-4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </summary>
-                <div className="space-y-3 px-5 pb-6 text-[15px] leading-relaxed text-ink-2 sm:px-6">
-                  {a.map((p, i) => (
-                    <p key={i}>{p}</p>
-                  ))}
-                </div>
-              </details>
-            ))}
-          </div>
-          {/* JSON-LD FAQPage para rich snippets en Google. Renderiza inline
-              en el SSR para que Googlebot lo lea en el primer fetch. */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-          />
-        </section>
-
-        {/* ============================= Contacto ============================= */}
-        <section
-          id="contacto"
-          aria-label="Solicitar demo"
-          className="border-t border-line bg-white"
+          className="border-t border-line"
         >
           <div className="mx-auto max-w-3xl px-5 py-16 sm:py-24">
             <h2
               className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
               style={{ fontSize: "var(--text-h2)" }}
             >
-              <em className="font-light">¿Quieres saber</em>
-              <br />
-              quién de tu equipo te genera negocio?
+              <em className="font-light">Lo que nos suelen</em> preguntar.
             </h2>
-            <p
-              className="mt-5 max-w-xl leading-relaxed text-ink-2"
-              style={{ fontSize: "var(--text-lead)" }}
-            >
-              Respondemos en menos de 24&nbsp;h. La demo dura 20 minutos: te
-              enseñamos la app en vivo con datos de ejemplo y vemos si encaja
-              en tu equipo.
-            </p>
-            <div className="mt-10">
-              <LeadForm locale="es" />
+            <div className="mt-10 divide-y divide-line border-y border-line">
+              {FAQS.map(({ q, a }) => (
+                <details key={q} name="faq" className="group open:bg-white">
+                  <summary className="flex cursor-pointer list-none items-start justify-between gap-6 px-5 py-5 [&::-webkit-details-marker]:hidden sm:px-6">
+                    <span className="font-display text-[17px] font-medium leading-snug tracking-tight text-ink sm:text-[18px]">
+                      {q}
+                    </span>
+                    <svg
+                      className="mt-1.5 h-4 w-4 shrink-0 text-ink-3 transition-transform duration-200 group-open:rotate-180"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M4 6l4 4 4-4"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </summary>
+                  <div className="space-y-3 px-5 pb-6 text-[15px] leading-relaxed text-ink-2 sm:px-6">
+                    {a.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </div>
+                </details>
+              ))}
             </div>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+            />
           </div>
         </section>
+
+        {/* ============================ CTA final ============================ */}
+        <SectionCta locale="es" />
       </main>
 
       <Footer locale="es" />

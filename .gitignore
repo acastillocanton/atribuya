@@ -63,3 +63,4 @@ graphify-out/
 Venta/
 .bd.txt
 .tmpbuild/
+.env*

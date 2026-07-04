@@ -1,4 +1,4 @@
-import { BlogHeader } from "@/components/blog/BlogHeader";
+import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 
 export default function BlogLayoutEn({
@@ -8,7 +8,7 @@ export default function BlogLayoutEn({
 }) {
   return (
     <div className="min-h-screen bg-bg font-text text-ink">
-      <BlogHeader locale="en" />
+      <SiteHeader locale="en" altLangHref="/blog" />
       <main>{children}</main>
       <Footer locale="en" />
     </div>
