@@ -195,53 +195,9 @@ export default function HomePage() {
       <main id="contenido">
         {/* ========================== Hero — Stat-Led ========================== */}
         <section
-          aria-label="Resultado del piloto"
+          aria-label="Atribuya"
           className="mx-auto max-w-6xl px-5 pb-16 pt-10 sm:pb-20 sm:pt-16"
         >
-          <div className="grid items-end gap-y-10 gap-x-12 md:grid-cols-12">
-            {/* Stat dominante */}
-            <div className="md:col-span-7">
-              <p
-                className="font-display font-light italic leading-[0.85] tracking-[-0.04em] text-ink"
-                style={{ fontSize: "var(--text-stat)" }}
-              >
-                100<span className="not-italic font-normal">%</span>
-              </p>
-              <p className="mt-4 max-w-md text-[15px] leading-snug text-ink-2 sm:text-[16px]">
-                de las reseñas verificadas del piloto, atribuidas a su
-                comercial. La mayoría solas; alguna, con un clic.
-              </p>
-            </div>
-
-            {/* Stats secundarias */}
-            <dl className="grid grid-cols-2 gap-y-6 gap-x-6 md:col-span-5 md:grid-cols-1 md:gap-y-7">
-              <div>
-                <dt
-                  className="font-display font-light italic leading-none tracking-tight text-ink"
-                  style={{ fontSize: "var(--text-stat-sm)" }}
-                >
-                  Día 1
-                </dt>
-                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  ves qué comercial trae cada reseña, y quién no llega.
-                </dd>
-              </div>
-              <div>
-                <dt
-                  className="font-display font-light italic leading-none tracking-tight text-ink"
-                  style={{ fontSize: "var(--text-stat-sm)" }}
-                >
-                  0
-                </dt>
-                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
-                  discusiones de «¿de quién era esta reseña?».
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          <hr className="my-12 border-line sm:my-14" />
-
           {/* H1 + subhead + CTA (izq) · tarjeta de prueba (der) — asimétrico */}
           <div className="grid items-center gap-y-10 gap-x-12 md:grid-cols-12">
             <div className="md:col-span-7">
@@ -296,6 +252,51 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Prueba del piloto — el 100% pasa a ser apoyo, no protagonista */}
+          <dl className="mt-12 grid gap-x-10 gap-y-8 border-t border-line pt-10 sm:mt-14 sm:grid-cols-3">
+            <div>
+              <dt
+                className="font-display font-light italic leading-none tracking-tight text-ink"
+                style={{ fontSize: "var(--text-stat-sm)" }}
+              >
+                100<span className="not-italic">%</span>
+              </dt>
+              <dd className="mt-2 max-w-[17rem] text-[14px] leading-snug text-ink-3">
+                de las reseñas verificadas del piloto, atribuidas a su
+                comercial. La mayoría solas; el resto, a un clic.
+              </dd>
+            </div>
+            <div>
+              <dt
+                className="font-display font-light italic leading-none tracking-tight text-ink"
+                style={{ fontSize: "var(--text-stat-sm)" }}
+              >
+                0
+              </dt>
+              <dd className="mt-2 max-w-[17rem] text-[14px] leading-snug text-ink-3">
+                discusiones sobre a quién pertenecía cada reseña.
+              </dd>
+            </div>
+            <div>
+              <dt
+                className="font-display font-light italic leading-none tracking-tight text-ink"
+                style={{ fontSize: "var(--text-stat-sm)" }}
+              >
+                Día 1
+              </dt>
+              <dd className="mt-2 max-w-[17rem] text-[14px] leading-snug text-ink-3">
+                operativo: ves qué comercial trae cada reseña desde el primer
+                día.
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-6 text-[12px] leading-relaxed text-ink-4">
+            Datos del despliegue piloto de Atribuya en una promotora
+            inmobiliaria real: 4 comerciales, 1 ficha de Google Business
+            Profile, primer mes. Sector, tamaño y métricas reales; nombre del
+            cliente reservado hasta firma de permiso comercial.
+          </p>
+
           {/* Sectores — señalar al cliente con el dedo, no esconderlo */}
           <div className="mt-12 border-t border-line pt-10 sm:mt-14">
             <p
@@ -316,14 +317,6 @@ export default function HomePage() {
               ))}
             </ul>
           </div>
-
-          {/* Atribución del dato del piloto */}
-          <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
-            Datos del despliegue piloto de Atribuya en una promotora
-            inmobiliaria real: 4 comerciales, 1 ficha de Google Business
-            Profile, primer mes. Sector, tamaño y métricas reales; nombre del
-            cliente reservado hasta firma de permiso comercial.
-          </p>
         </section>
 
         {/* ============================= Problema ============================= */}
