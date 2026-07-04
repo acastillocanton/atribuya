@@ -18,7 +18,8 @@ const CSP = [
   "img-src 'self' https: data: blob:",
   // googletagmanager.com sirve el gtag.js de Google Analytics 4. Solo se carga
   // tras el consentimiento del usuario (banner) y en páginas públicas.
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
+  // core.sanity-cdn.com sirve el bridge.js del Studio embebido de Sanity.
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://core.sanity-cdn.com",
   // fonts.googleapis.com es el CSS de Google Fonts (Inter); fonts.gstatic.com
   // sirve los .woff2 reales.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
