@@ -5,7 +5,7 @@ const T = {
   es: {
     heading: (
       <>
-        <em className="font-light">Explora</em> Atribuya.
+        <em className="font-light text-accent">Explora</em> Atribuya.
       </>
     ),
     more: "Ver más",
@@ -30,7 +30,7 @@ const T = {
   en: {
     heading: (
       <>
-        <em className="font-light">Explore</em> Atribuya.
+        <em className="font-light text-accent">Explore</em> Atribuya.
       </>
     ),
     more: "Learn more",

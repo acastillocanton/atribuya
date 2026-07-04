@@ -31,7 +31,7 @@ export function SectionCta({ locale }: { locale: Locale }) {
         </div>
         <Link
           href={routes[locale].demo}
-          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-accent-strong"
         >
           {ctaLabel[locale]}
           <svg

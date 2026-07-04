@@ -13,7 +13,7 @@ const T: Record<
       <>
         Tres pasos.
         <br />
-        <em className="font-light text-ink-2">Cero fricción para el cliente.</em>
+        <em className="font-light text-accent">Cero fricción para el cliente.</em>
       </>
     ),
     lead: "El cliente no instala nada, no rellena formularios y no escribe el nombre del comercial. Solo deja la reseña en Google como siempre.",
@@ -40,7 +40,7 @@ const T: Record<
       <>
         Three steps.
         <br />
-        <em className="font-light text-ink-2">
+        <em className="font-light text-accent">
           Zero friction for the customer.
         </em>
       </>
@@ -94,7 +94,7 @@ export function HowItWorks({
           <li key={s.n} className="relative">
             <span
               aria-hidden="true"
-              className="font-display font-light italic leading-none tracking-[-0.04em] text-ink-4"
+              className="font-display font-light italic leading-none tracking-[-0.04em] text-accent"
               style={{ fontSize: "clamp(3.5rem, 2rem + 6vw, 5.5rem)" }}
             >
               {s.n}

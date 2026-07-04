@@ -76,7 +76,7 @@ export function SiteHeader({
           </Link>
           <Link
             href={cta.href}
-            className="rounded-full bg-ink px-4 py-2 text-[13.5px] font-semibold text-white transition hover:bg-ink-2"
+            className="rounded-full bg-accent px-4 py-2 text-[13.5px] font-semibold text-white transition hover:bg-accent-strong"
           >
             {cta.label}
           </Link>
@@ -86,7 +86,7 @@ export function SiteHeader({
         <div className="flex items-center gap-2 md:hidden">
           <Link
             href={cta.href}
-            className="rounded-full bg-ink px-3.5 py-1.5 text-[13px] font-semibold text-white transition hover:bg-ink-2"
+            className="rounded-full bg-accent px-3.5 py-1.5 text-[13px] font-semibold text-white transition hover:bg-accent-strong"
           >
             {cta.label}
           </Link>

@@ -198,7 +198,7 @@ export function PricingSection({
             }
           >
             {plan.featured && (
-              <span className="absolute -top-3 left-7 rounded-full bg-ink px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
+              <span className="absolute -top-3 left-7 rounded-full bg-accent px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
                 {t.popular}
               </span>
             )}
@@ -216,7 +216,7 @@ export function PricingSection({
             <p className="mb-6 mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
               <span
                 aria-hidden="true"
-                className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
+                className="inline-flex h-1.5 w-1.5 rounded-full bg-accent"
               />
               {plan.fichas}
             </p>
@@ -224,7 +224,7 @@ export function PricingSection({
               href={demo}
               className={
                 plan.featured
-                  ? "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2"
+                  ? "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-accent-strong"
                   : "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
               }
             >
@@ -251,7 +251,7 @@ export function PricingSection({
           <p className="mb-6 mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
             <span
               aria-hidden="true"
-              className="inline-flex h-1.5 w-1.5 rounded-full bg-ok"
+              className="inline-flex h-1.5 w-1.5 rounded-full bg-accent"
             />
             {t.customFichas}
           </p>
@@ -275,7 +275,7 @@ export function PricingSection({
             <li key={it} className="flex items-start gap-2.5">
               <span
                 aria-hidden="true"
-                className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
+                className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
               />
               <span className="text-[14.5px] leading-relaxed text-ink-2">
                 {it}

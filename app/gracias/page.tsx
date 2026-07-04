@@ -55,7 +55,7 @@ export default function GraciasPage() {
 
         <Link
           href="/"
-          className="mt-10 inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2"
+          className="mt-10 inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-accent-strong"
         >
           Volver al inicio
         </Link>

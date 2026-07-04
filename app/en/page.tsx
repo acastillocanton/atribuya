@@ -258,7 +258,7 @@ export default function HomePageEn() {
                 <div className="flex flex-wrap items-center gap-3">
                   <a
                     href="/en/demo"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-accent-strong"
                   >
                     Show me who drives my business
                     <svg
@@ -297,7 +297,7 @@ export default function HomePageEn() {
               style={{ fontSize: "var(--text-h3)" }}
             >
               Got a sales team and Google reviews?{" "}
-              <em className="font-light text-ink-2">This is for you.</em>
+              <em className="font-light text-accent">This is for you.</em>
             </p>
             <ul className="mt-5 flex flex-wrap gap-2.5">
               {SECTORS.map((s) => (
@@ -371,7 +371,7 @@ export default function HomePageEn() {
               className="max-w-2xl font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
               style={{ fontSize: "var(--text-h2)" }}
             >
-              <em className="font-light">What's</em> in the box.
+              <em className="font-light text-accent">What's</em> in the box.
             </h2>
             <ul className="mt-10 grid gap-x-10 gap-y-4 md:grid-cols-2">
               {FEATURES.map((f) => (
@@ -381,7 +381,7 @@ export default function HomePageEn() {
                 >
                   <span
                     aria-hidden="true"
-                    className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
+                    className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
                   />
                   <span className="text-[15px] leading-relaxed">{f}</span>
                 </li>
@@ -404,7 +404,7 @@ export default function HomePageEn() {
               className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
               style={{ fontSize: "var(--text-h2)" }}
             >
-              <em className="font-light">What people</em> usually ask.
+              <em className="font-light text-accent">What people</em> usually ask.
             </h2>
             <div className="mt-10 divide-y divide-line border-y border-line">
               {FAQS.map(({ q, a }) => (

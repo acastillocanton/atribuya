@@ -5,7 +5,7 @@ const T = {
   es: {
     heading: (
       <>
-        <em className="font-light">¿Quieres saber</em>
+        <em className="font-light text-accent">¿Quieres saber</em>
         <br />
         quién de tu equipo te genera negocio?
       </>
@@ -15,7 +15,7 @@ const T = {
   en: {
     heading: (
       <>
-        <em className="font-light">Want to know</em>
+        <em className="font-light text-accent">Want to know</em>
         <br />
         who on your team drives the business?
       </>

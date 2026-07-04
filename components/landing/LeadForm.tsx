@@ -236,7 +236,7 @@ export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex w-full items-center justify-center rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2 disabled:cursor-wait disabled:opacity-70 sm:w-auto"
+        className="inline-flex w-full items-center justify-center rounded-full bg-accent px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-accent-strong disabled:cursor-wait disabled:opacity-70 sm:w-auto"
       >
         {pending ? t.ctaSending : t.cta}
       </button>

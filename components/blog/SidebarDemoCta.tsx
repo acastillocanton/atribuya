@@ -31,7 +31,7 @@ export function SidebarDemoCta({ locale }: { locale: BlogLocale }) {
       <p className="mt-2 text-sm leading-relaxed text-ink-3">{t.body}</p>
       <Link
         href={t.href}
-        className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-2"
+        className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-strong"
       >
         {t.cta}
       </Link>

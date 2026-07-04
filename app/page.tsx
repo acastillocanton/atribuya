@@ -221,7 +221,7 @@ export default function HomePage() {
                 <div className="flex flex-wrap items-center gap-3">
                   <a
                     href="/demo"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-accent-strong"
                   >
                     Quiero saber quién me genera negocio
                     <svg
@@ -305,7 +305,7 @@ export default function HomePage() {
               style={{ fontSize: "var(--text-h3)" }}
             >
               ¿Tienes red comercial y reseñas de Google?{" "}
-              <em className="font-light text-ink-2">Esto es para ti.</em>
+              <em className="font-light text-accent">Esto es para ti.</em>
             </p>
             <ul className="mt-5 flex flex-wrap gap-2.5">
               {SECTORS.map((s) => (
@@ -371,7 +371,7 @@ export default function HomePage() {
                   style={{ fontSize: "var(--text-h2)" }}
                 >
                   Todo tu equipo,{" "}
-                  <em className="font-light text-ink-2">en un panel.</em>
+                  <em className="font-light text-accent">en un panel.</em>
                 </h2>
                 <p className="mt-5 max-w-md leading-relaxed text-ink-2">
                   Cada comercial, sus reseñas y su valoración media en una sola
@@ -424,7 +424,7 @@ export default function HomePage() {
               className="max-w-2xl font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
               style={{ fontSize: "var(--text-h2)" }}
             >
-              <em className="font-light">Lo que está</em> en la caja.
+              <em className="font-light text-accent">Lo que está</em> en la caja.
             </h2>
             <ul className="mt-10 grid gap-x-10 gap-y-4 md:grid-cols-2">
               {FEATURES.map((f) => (
@@ -434,7 +434,7 @@ export default function HomePage() {
                 >
                   <span
                     aria-hidden="true"
-                    className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
+                    className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
                   />
                   <span className="text-[15px] leading-relaxed">{f}</span>
                 </li>
@@ -452,13 +452,13 @@ export default function HomePage() {
                 style={{ fontSize: "var(--text-h3)" }}
               >
                 ¿Ves quién te genera negocio?{" "}
-                <em className="font-light text-ink-2">
+                <em className="font-light text-accent">
                   Compruébalo con tu equipo.
                 </em>
               </p>
               <a
                 href="/demo"
-                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2"
+                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-accent px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-accent-strong"
               >
                 Pedir demo
                 <svg
@@ -491,7 +491,7 @@ export default function HomePage() {
               className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
               style={{ fontSize: "var(--text-h2)" }}
             >
-              <em className="font-light">Lo que nos suelen</em> preguntar.
+              <em className="font-light text-accent">Lo que nos suelen</em> preguntar.
             </h2>
             <div className="mt-10 divide-y divide-line border-y border-line">
               {FAQS.map(({ q, a }) => (

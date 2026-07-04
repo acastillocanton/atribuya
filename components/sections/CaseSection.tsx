@@ -21,7 +21,7 @@ const T: Record<
     heading: (
       <>
         Una promotora con piso piloto en la
-        <em className="font-light text-ink-2"> Costa de Castellón.</em>
+        <em className="font-light text-accent"> Costa de Castellón.</em>
       </>
     ),
     p1: (
@@ -64,7 +64,7 @@ const T: Record<
     heading: (
       <>
         A real estate developer with a model home on the
-        <em className="font-light text-ink-2"> Mediterranean coast.</em>
+        <em className="font-light text-accent"> Mediterranean coast.</em>
       </>
     ),
     p1: (

@@ -8,7 +8,7 @@ const T = {
       <>
         Míralo por dentro.
         <br />
-        <em className="font-light text-ink-2">Sin maquetar.</em>
+        <em className="font-light text-accent">Sin maquetar.</em>
       </>
     ),
     lead: "Pantallas reales del producto. El administrador ve a todo el equipo de un vistazo. Cada comercial ve solo lo suyo. Clic en cualquiera para ampliarla.",
@@ -53,7 +53,7 @@ const T = {
       <>
         See it from the inside.
         <br />
-        <em className="font-light text-ink-2">No mockups.</em>
+        <em className="font-light text-accent">No mockups.</em>
       </>
     ),
     lead: "Real screens from the product. The admin sees the whole team at a glance. Each rep sees only their own. Click any one to enlarge it.",

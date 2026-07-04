@@ -8,7 +8,7 @@ const T = {
   es: {
     heading: (
       <>
-        Más que un ranking. <em className="font-light text-ink-2">Una forma de dirigir.</em>
+        Más que un ranking. <em className="font-light text-accent">Una forma de dirigir.</em>
       </>
     ),
     cards: [
@@ -33,7 +33,7 @@ const T = {
   en: {
     heading: (
       <>
-        More than a ranking. <em className="font-light text-ink-2">A way to lead.</em>
+        More than a ranking. <em className="font-light text-accent">A way to lead.</em>
       </>
     ),
     cards: [
