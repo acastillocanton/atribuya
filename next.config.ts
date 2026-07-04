@@ -27,8 +27,10 @@ const CSP = [
   // Google APIs (mybusiness*) + endpoints de recogida de GA4 (g/collect, que
   // usa subdominios regionales como region1.google-analytics.com).
   // Sanity: el Studio embebido en /studio habla con <projectId>.api.sanity.io
-  // (REST + login + listeners WebSocket) y apicdn.sanity.io (CDN de datos).
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://api.sanity.io https://*.api.sanity.io wss://*.api.sanity.io https://*.apicdn.sanity.io",
+  // (REST + login + listeners WebSocket), apicdn.sanity.io (CDN de datos),
+  // cdn.sanity.io (assets/imágenes vía fetch) y sanity-cdn.com (auto-update de
+  // los módulos del Studio).
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://api.sanity.io https://*.api.sanity.io wss://*.api.sanity.io https://*.apicdn.sanity.io https://cdn.sanity.io https://sanity-cdn.com https://*.sanity-cdn.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
