@@ -117,10 +117,16 @@ export function MobileMenu({
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     onClick={() => setOpen(false)}
-                    className={`block rounded-lg px-3 py-3 font-display text-[17px] font-semibold transition ${
-                      active ? "bg-bg text-ink" : "text-ink hover:bg-bg"
+                    className={`flex items-center gap-2.5 rounded-lg px-3 py-3 font-display text-[17px] font-semibold transition ${
+                      active ? "text-ink" : "text-ink-3 hover:bg-bg hover:text-ink"
                     }`}
                   >
+                    {active ? (
+                      <span
+                        aria-hidden="true"
+                        className="h-4 w-0.5 shrink-0 rounded-full bg-ink"
+                      />
+                    ) : null}
                     {item.label}
                   </a>
                 </li>

@@ -9,6 +9,7 @@ import { makeBreadcrumb } from "@/lib/marketing/seo";
 import { extractToc } from "@/lib/blog/toc";
 import { formatPostDate } from "./PostCard";
 import { ArticleToc } from "./ArticleToc";
+import { SidebarDemoCta } from "./SidebarDemoCta";
 import { makePtComponents } from "./PortableTextComponents";
 
 const STRINGS = {
@@ -92,7 +93,9 @@ export async function BlogPostPage({
         items={bc.items}
         className="mx-auto w-full max-w-6xl px-5 pt-6"
       />
-      <article className="mx-auto max-w-3xl px-5 pb-14 pt-8 sm:pb-20">
+      <div className="mx-auto max-w-6xl px-5 pb-14 pt-8 sm:pb-20">
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12 xl:gap-16">
+          <article className="min-w-0 max-w-3xl">
         <div className="flex flex-wrap items-center gap-2 text-xs text-ink-4">
         <time dateTime={post.publishedAt}>
           {formatPostDate(post.publishedAt, locale)}
@@ -173,7 +176,15 @@ export async function BlogPostPage({
           {t.back}
         </Link>
       </div>
-      </article>
+          </article>
+
+          <aside className="mt-12 lg:mt-0">
+            <div className="lg:sticky lg:top-28">
+              <SidebarDemoCta locale={locale} />
+            </div>
+          </aside>
+        </div>
+      </div>
     </>
   );
 }
