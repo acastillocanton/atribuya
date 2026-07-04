@@ -779,3 +779,22 @@ metía a todos en el tier barato para siempre. El valor del producto crece con e
   service-role el 2026-06-11. Ambas tienen 1 ficha, encajan.
 - Tests: `app/(super)/super/__tests__/plans.test.ts` fija la tabla de límites por test
   (un cambio accidental cambia lo que vendemos).
+
+## 21. Blog bilingüe con Sanity CMS + mejoras SERP (2026-07-04)
+
+**SERP (commits `e071544`, `fbbeb7f`)**: el snippet de Google mostraba favicon de globo, título truncado y sitename "atribuya.com". Fixes: `app/favicon.ico` multi-res 16/32/48 (antes 404) + `app/icon.png` a 192×192 (Google exige múltiplos de 48), titles ES/EN a menos de 60 chars alineados con OG, descriptions a ~155, y JSON-LD `WebSite` + `Organization` + `SoftwareApplication` (ofertas generadas desde el array `PLANS`, nunca se desincronizan de las tarjetas) en ambas homes. Pendiente del usuario: pedir reindexación en Search Console.
+
+**Blog (commit `dd87602`)**: `/blog` (ES) + `/en/blog` (EN) + Sanity Studio embebido en `/studio`.
+
+- **Paquetes**: `sanity@4.22` + `next-sanity@11.6` + `@sanity/vision@4.22` + `@sanity/image-url@2.1` + `@portabletext/react@6.2` + `styled-components@6.4` (peer). ⚠️ **NO subir a sanity v5 / next-sanity v12**: exigen React 19.2+/Next 16.
+- **Estructura**: `sanity.config.ts` (raíz), `sanity/env.ts` (guard `isSanityConfigured()`), `sanity/schemaTypes/` (post con campo `language` es/en, author, category, blockContent), `sanity/lib/` (client lazy, urlFor, queries GROQ con fetchers que devuelven vacío en fallo), `components/blog/` (BlogHeader, PostCard, PortableTextComponents, BlogIndexPage/BlogPostPage compartidos por locale), rutas finas en `app/blog/` y `app/en/blog/` (ISR 600s, `generateStaticParams` por idioma, metadata completa, JSON-LD Blog/BlogPosting), `app/studio/[[...tool]]/` (force-dynamic, noindex).
+- **Modo degradado**: sin `NEXT_PUBLIC_SANITY_PROJECT_ID` el build pasa, /blog muestra estado vacío, /studio muestra aviso, sitemap omite posts.
+- **Infra tocada**: `lib/supabase/middleware.ts` (`/blog` y `/studio` en `PUBLIC_SEGMENT_PREFIXES`; bot-gate con `isPublicSeoPath()` por prefijos), `next.config.ts` (CSP connect-src +sanity, `images.remotePatterns` cdn.sanity.io, lookahead X-Robots-Tag +blog), `app/robots.ts`, `app/sitemap.ts` (async con posts), `components/analytics/Analytics.tsx` (+/blog con GA4 y banner).
+- **Bugfix de paso**: `/en/terms` y `/en/privacy` recibían `X-Robots-Tag: noindex` y 403 a bots pese a estar en el sitemap (lookahead y `PUBLIC_SEO_PATHS` no las incluían). Verificado corregido en prod.
+
+**Activación pendiente (usuario)**:
+1. Crear proyecto en sanity.io/manage (plan Free), dataset `production` público.
+2. `NEXT_PUBLIC_SANITY_PROJECT_ID` + `NEXT_PUBLIC_SANITY_DATASET=production` en `.env.local` y Vercel (Production + Preview) + redeploy.
+3. En sanity.io/manage → API → CORS origins: `http://localhost:3000` y `https://atribuya.com`, ambos con Allow credentials (login del Studio embebido).
+4. Entrar en `atribuya.com/studio`, crear autor + categorías + primer post por idioma (respetar estilo de copy: sin guiones largos, sin oraciones que empiecen por «Y»).
+5. Invitar editores en sanity.io/manage → Members (auth independiente de Supabase).
