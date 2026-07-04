@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { breadcrumbJsonLd } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = {
   title: "Términos del Servicio · Atribuya",
@@ -9,6 +10,18 @@ export const metadata: Metadata = {
 export default function TerminosPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbJsonLd({
+              locale: "es",
+              name: "Términos del Servicio",
+              path: "/terminos",
+            }),
+          ),
+        }}
+      />
       <h1 style={h1}>Términos del Servicio</h1>
       <p style={lede}>
         Última actualización: 24 de mayo de 2026.

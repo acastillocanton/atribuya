@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { breadcrumbJsonLd } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = {
   title: "Terms of Service · Atribuya",
@@ -11,6 +12,18 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbJsonLd({
+              locale: "en",
+              name: "Terms of Service",
+              path: "/en/terms",
+            }),
+          ),
+        }}
+      />
       <h1 style={h1}>Terms of Service</h1>
       <p style={lede}>Last updated: May 24, 2026.</p>
 
