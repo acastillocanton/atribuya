@@ -135,7 +135,7 @@ export function MobileMenu({
           </ul>
         </nav>
         <div className="border-t border-line px-2 py-2">
-          <p className="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wide text-ink-4">
+          <p className="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wide text-ink-3">
             {locale === "es" ? "Idioma" : "Language"}
           </p>
           {LANGS.map(({ code, label, Flag }) => {

@@ -14,7 +14,7 @@ type FormState =
   | { kind: "success" };
 
 const inputClass =
-  "w-full rounded-md border border-line bg-white px-3 py-2.5 text-[15px] text-ink placeholder:text-ink-4 outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10";
+  "w-full rounded-md border border-line bg-white px-3 py-2.5 text-[15px] text-ink placeholder:text-ink-3 outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10";
 
 const labelClass = "block text-[13px] font-semibold text-ink-2 mb-1.5";
 

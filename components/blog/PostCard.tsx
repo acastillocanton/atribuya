@@ -39,7 +39,7 @@ export function PostCard({
           </div>
         ) : null}
         <div className="p-5">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-ink-4">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
             <time dateTime={post.publishedAt}>
               {formatPostDate(post.publishedAt, locale)}
             </time>
@@ -59,7 +59,7 @@ export function PostCard({
             {post.excerpt}
           </p>
           {post.author ? (
-            <p className="mt-4 text-xs font-medium text-ink-4">
+            <p className="mt-4 text-xs font-medium text-ink-3">
               {post.author.name}
             </p>
           ) : null}

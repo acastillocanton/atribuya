@@ -22,7 +22,7 @@ export function ArticleToc({
       open
       className="group my-10 rounded-xl border border-line bg-surface px-5 py-4"
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[11px] font-medium uppercase tracking-[0.14em] text-ink-4 [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[11px] font-medium uppercase tracking-[0.14em] text-ink-3 [&::-webkit-details-marker]:hidden">
         <span>{LABEL[locale]}</span>
         <svg
           viewBox="0 0 20 20"

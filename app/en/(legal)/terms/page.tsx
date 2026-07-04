@@ -306,7 +306,7 @@ const h1: React.CSSProperties = {
 const lede: React.CSSProperties = {
   margin: "0 0 28px",
   fontSize: 13.5,
-  color: "var(--ink-4)",
+  color: "var(--ink-3)",
 };
 const h2: React.CSSProperties = {
   fontFamily: "var(--font-display)",

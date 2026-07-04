@@ -86,7 +86,7 @@ export function LoginForm({ next, error, sent }: Props) {
         style={{
           display: "block",
           fontSize: 11.5,
-          color: "var(--ink-4)",
+          color: "var(--ink-3)",
           textTransform: "uppercase",
           letterSpacing: "0.04em",
           marginBottom: 6,

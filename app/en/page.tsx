@@ -288,7 +288,7 @@ export default function HomePageEn() {
               </dd>
             </div>
           </dl>
-          <p className="mt-6 text-[12px] leading-relaxed text-ink-4">
+          <p className="mt-6 text-[12px] leading-relaxed text-ink-3">
             Data from Atribuya's pilot deployment with a real estate developer: 4
             sales reps, 1 Google Business Profile listing, first month. Industry,
             size and metrics are real; customer name kept confidential pending

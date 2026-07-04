@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: "Términos del Servicio · Atribuya",
   description:
     "Términos y condiciones del servicio Atribuya: SaaS multi-tenant para atribución automática de reseñas de Google Business Profile a comerciales individuales.",
+  robots: { index: true, follow: true },
+  alternates: {
+    canonical: "https://atribuya.com/terminos",
+    languages: {
+      "es-ES": "https://atribuya.com/terminos",
+      "en-US": "https://atribuya.com/en/terms",
+    },
+  },
 };
 
 const bc = makeBreadcrumb({
@@ -318,7 +326,7 @@ const h1: React.CSSProperties = {
 const lede: React.CSSProperties = {
   margin: "0 0 28px",
   fontSize: 13.5,
-  color: "var(--ink-4)",
+  color: "var(--ink-3)",
 };
 const h2: React.CSSProperties = {
   fontFamily: "var(--font-display)",

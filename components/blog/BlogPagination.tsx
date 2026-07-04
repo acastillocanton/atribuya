@@ -68,7 +68,7 @@ export function BlogPagination({
       <ol className="flex items-center gap-1.5">
         {pageWindow(current, totalPages).map((p, i) =>
           p === "…" ? (
-            <li key={`gap-${i}`} className="px-1 text-sm text-ink-4" aria-hidden="true">
+            <li key={`gap-${i}`} className="px-1 text-sm text-ink-3" aria-hidden="true">
               …
             </li>
           ) : (

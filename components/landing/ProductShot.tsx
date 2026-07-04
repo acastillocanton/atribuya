@@ -34,7 +34,10 @@ export function BrowserFrame({
           <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
           <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
         </span>
-        <span className="ml-2 truncate rounded-md bg-white px-2.5 py-1 text-[11.5px] text-ink-4">
+        <span
+          aria-hidden="true"
+          className="ml-2 truncate rounded-md bg-white px-2.5 py-1 text-[11.5px] text-ink-3"
+        >
           {url}
         </span>
       </div>
@@ -105,7 +108,7 @@ export function ProductShot({
           "repeating-linear-gradient(45deg, var(--surface-2, #f4f4f5), var(--surface-2, #f4f4f5) 8px, var(--bg, #fafafa) 8px, var(--bg, #fafafa) 16px)",
       }}
     >
-      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-4">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
         {t.pending}
       </span>
       <code className="rounded-md border border-line bg-white px-2 py-1 text-[12px] text-ink-2">

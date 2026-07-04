@@ -8,14 +8,14 @@ const STRINGS = {
   es: {
     title: "Cookies analíticas",
     body: "Usamos Google Analytics para entender cómo se usa esta web y mejorarla. No se carga nada hasta que lo aceptes. Puedes cambiar de opinión cuando quieras desde el enlace «Cookies» del pie de página.",
-    privacy: "Más información",
+    privacy: "Política de privacidad",
     accept: "Aceptar",
     reject: "Rechazar",
   },
   en: {
     title: "Analytics cookies",
     body: "We use Google Analytics to understand how this site is used and improve it. Nothing loads until you accept. You can change your mind anytime from the “Cookies” link in the footer.",
-    privacy: "Learn more",
+    privacy: "Privacy policy",
     accept: "Accept",
     reject: "Decline",
   },

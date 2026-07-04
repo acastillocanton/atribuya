@@ -36,7 +36,7 @@ export function Avatar({ name, size = 36, color, src }: AvatarProps) {
         height: size,
         borderRadius: 999,
         background: color || avatarColor(name),
-        color: "#3C3C43",
+        color: "#1D1D1F",
         display: "grid",
         placeItems: "center",
         fontWeight: 600,

@@ -16,13 +16,13 @@ export function Breadcrumbs({
   if (items.length < 2) return null;
   return (
     <nav aria-label="Breadcrumb" className={className}>
-      <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-ink-4">
+      <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-ink-3">
         {items.map((item, i) => {
           const isLast = i === items.length - 1;
           return (
             <li key={item.href} className="flex items-center gap-x-1.5">
               {i > 0 ? (
-                <span aria-hidden className="select-none text-ink-4">
+                <span aria-hidden className="select-none text-ink-3">
                   ›
                 </span>
               ) : null}

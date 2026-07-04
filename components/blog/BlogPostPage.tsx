@@ -96,7 +96,7 @@ export async function BlogPostPage({
       <div className="mx-auto max-w-6xl px-5 pb-14 pt-8 sm:pb-20">
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12 xl:gap-16">
           <article className="min-w-0 max-w-3xl">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-ink-4">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
         <time dateTime={post.publishedAt}>
           {formatPostDate(post.publishedAt, locale)}
         </time>
@@ -131,7 +131,7 @@ export async function BlogPostPage({
               <span className="text-sm text-ink-3">
                 {post.author.name}
                 {post.author.role ? (
-                  <span className="text-ink-4"> · {post.author.role}</span>
+                  <span className="text-ink-3"> · {post.author.role}</span>
                 ) : null}
               </span>
             </>

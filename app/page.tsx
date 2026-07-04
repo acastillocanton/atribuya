@@ -291,7 +291,7 @@ export default function HomePage() {
               </dd>
             </div>
           </dl>
-          <p className="mt-6 text-[12px] leading-relaxed text-ink-4">
+          <p className="mt-6 text-[12px] leading-relaxed text-ink-3">
             Datos del despliegue piloto de Atribuya en una promotora
             inmobiliaria real: 4 comerciales, 1 ficha de Google Business
             Profile, primer mes. Sector, tamaño y métricas reales; nombre del

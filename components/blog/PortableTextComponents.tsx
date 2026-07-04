@@ -29,7 +29,7 @@ export function makePtComponents(
             />
           </div>
           {alt ? (
-            <figcaption className="mt-2 text-center text-xs text-ink-4">
+            <figcaption className="mt-2 text-center text-xs text-ink-3">
               {alt}
             </figcaption>
           ) : null}

@@ -73,7 +73,7 @@ export async function BlogIndexPage({
         className="mx-auto w-full max-w-6xl px-5 pt-6"
       />
       <div className="mx-auto max-w-6xl px-5 pb-14 pt-8 sm:pb-20">
-      <p className="text-sm font-medium uppercase tracking-wide text-ink-4">
+      <p className="text-sm font-medium uppercase tracking-wide text-ink-3">
         {t.kicker}
       </p>
       <h1

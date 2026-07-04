@@ -137,7 +137,7 @@ export function CaseSection({
             <p>{t.p2}</p>
             <p className="text-ink-3">{t.p3}</p>
           </div>
-          <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
+          <p className="mt-10 text-[12px] leading-relaxed text-ink-3">
             {t.note}
           </p>
         </div>
@@ -145,7 +145,7 @@ export function CaseSection({
         {/* Panel de resultados */}
         <aside className="md:pt-1">
           <div className="rounded-2xl border border-line bg-surface p-6 shadow-card md:sticky md:top-28">
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-3">
               {t.resultsLabel}
             </p>
             <ul className="mt-5 space-y-6">

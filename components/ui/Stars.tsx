@@ -13,6 +13,7 @@ export function Stars({
 }: StarsProps) {
   return (
     <span
+      role="img"
       aria-label={`${value} de 5 estrellas`}
       style={{ display: "inline-flex", gap: 1 }}
     >

@@ -69,12 +69,12 @@ export function ReviewProof({ locale }: { locale: Locale }) {
             </p>
             <div className="mt-1 flex items-center gap-2">
               <Stars value={5} size={14} />
-              <span className="text-[12px] text-ink-4">{t.date}</span>
+              <span className="text-[12px] text-ink-3">{t.date}</span>
             </div>
           </div>
         </div>
         <div
-          className="flex items-center gap-1.5 text-[11px] font-medium text-ink-4"
+          className="flex items-center gap-1.5 text-[11px] font-medium text-ink-3"
           title={t.onGoogle}
         >
           <GoogleG size={16} />
@@ -88,7 +88,7 @@ export function ReviewProof({ locale }: { locale: Locale }) {
       {/* Fila de atribución — el "money shot": el producto trabajando */}
       <div className="mt-5 flex items-center justify-between gap-3 border-t border-line pt-4">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="shrink-0 text-[13px] text-ink-4">
+          <span className="shrink-0 text-[13px] text-ink-3">
             ↳ {t.attributedTo}
           </span>
           <span className="flex min-w-0 items-center gap-1.5">

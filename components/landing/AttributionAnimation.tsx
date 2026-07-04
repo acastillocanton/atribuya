@@ -67,11 +67,11 @@ export function AttributionAnimation({ locale }: { locale: Locale }) {
                 <p className="text-[15px] font-semibold leading-tight text-ink">{t.author}</p>
                 <div className="mt-1 flex items-center gap-2">
                   <Stars value={5} size={14} />
-                  <span className="text-[12px] text-ink-4">{t.date}</span>
+                  <span className="text-[12px] text-ink-3">{t.date}</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-ink-4">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-ink-3">
               <GoogleG size={16} />
               <span className="hidden sm:inline">Google</span>
             </div>
@@ -91,7 +91,7 @@ export function AttributionAnimation({ locale }: { locale: Locale }) {
             {/* Capa 2: atribuida */}
             <div className="atr-show col-start-1 row-start-1 flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-2">
-                <span className="shrink-0 text-[13px] text-ink-4">↳ {t.attributedTo}</span>
+                <span className="shrink-0 text-[13px] text-ink-3">↳ {t.attributedTo}</span>
                 <span className="flex min-w-0 items-center gap-1.5">
                   <Avatar name={t.rep} size={22} />
                   <span className="truncate text-[13.5px] font-semibold text-ink">{t.rep}</span>

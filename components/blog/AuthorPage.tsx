@@ -115,7 +115,7 @@ export async function AuthorPage({
 
       {sameAs.length ? (
         <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-ink-4">
+          <span className="text-xs font-medium uppercase tracking-wide text-ink-3">
             {t.profiles}
           </span>
           {sameAs.map((href) => (

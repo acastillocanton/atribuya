@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { LoginForm } from "./LoginForm";
+
+// Página interna: se queda fuera del índice (hereda el noindex global). La
+// descripción evita el warning de meta-description sin exponerla en buscadores.
+export const metadata: Metadata = {
+  title: "Acceso · Atribuya",
+  description:
+    "Acceso a la gestión interna de Atribuya. Solo para usuarios invitados por su administrador.",
+  robots: { index: false, follow: false },
+};
 
 type SearchParams = Promise<{ next?: string; error?: string; sent?: string }>;
 
@@ -52,7 +62,7 @@ export default async function LoginPage({
           style={{
             marginTop: 14,
             textAlign: "center",
-            color: "var(--ink-4)",
+            color: "var(--ink-3)",
             fontSize: 12,
           }}
         >
@@ -65,19 +75,19 @@ export default async function LoginPage({
             justifyContent: "center",
             gap: 14,
             fontSize: 11.5,
-            color: "var(--ink-4)",
+            color: "var(--ink-3)",
           }}
         >
           <Link
             href="/privacidad"
-            style={{ color: "var(--ink-4)", textDecoration: "none" }}
+            style={{ color: "var(--ink-3)", textDecoration: "none" }}
           >
             Privacidad
           </Link>
           <span aria-hidden="true">·</span>
           <Link
             href="/terminos"
-            style={{ color: "var(--ink-4)", textDecoration: "none" }}
+            style={{ color: "var(--ink-3)", textDecoration: "none" }}
           >
             Términos
           </Link>

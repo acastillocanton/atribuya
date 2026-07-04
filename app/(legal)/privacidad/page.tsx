@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: "Política de Privacidad · Atribuya",
   description:
     "Política de Privacidad de Atribuya, SaaS multi-tenant para atribución de reseñas de Google Business Profile a comerciales.",
+  robots: { index: true, follow: true },
+  alternates: {
+    canonical: "https://atribuya.com/privacidad",
+    languages: {
+      "es-ES": "https://atribuya.com/privacidad",
+      "en-US": "https://atribuya.com/en/privacy",
+    },
+  },
 };
 
 const bc = makeBreadcrumb({
@@ -352,7 +360,7 @@ const h1: React.CSSProperties = {
 const lede: React.CSSProperties = {
   margin: "0 0 28px",
   fontSize: 13.5,
-  color: "var(--ink-4)",
+  color: "var(--ink-3)",
 };
 const h2: React.CSSProperties = {
   fontFamily: "var(--font-display)",
