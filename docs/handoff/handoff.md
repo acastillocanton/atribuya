@@ -792,9 +792,40 @@ metía a todos en el tier barato para siempre. El valor del producto crece con e
 - **Infra tocada**: `lib/supabase/middleware.ts` (`/blog` y `/studio` en `PUBLIC_SEGMENT_PREFIXES`; bot-gate con `isPublicSeoPath()` por prefijos), `next.config.ts` (CSP connect-src +sanity, `images.remotePatterns` cdn.sanity.io, lookahead X-Robots-Tag +blog), `app/robots.ts`, `app/sitemap.ts` (async con posts), `components/analytics/Analytics.tsx` (+/blog con GA4 y banner).
 - **Bugfix de paso**: `/en/terms` y `/en/privacy` recibían `X-Robots-Tag: noindex` y 403 a bots pese a estar en el sitemap (lookahead y `PUBLIC_SEO_PATHS` no las incluían). Verificado corregido en prod.
 
-**Activación pendiente (usuario)**:
-1. Crear proyecto en sanity.io/manage (plan Free), dataset `production` público.
-2. `NEXT_PUBLIC_SANITY_PROJECT_ID` + `NEXT_PUBLIC_SANITY_DATASET=production` en `.env.local` y Vercel (Production + Preview) + redeploy.
-3. En sanity.io/manage → API → CORS origins: `http://localhost:3000` y `https://atribuya.com`, ambos con Allow credentials (login del Studio embebido).
-4. Entrar en `atribuya.com/studio`, crear autor + categorías + primer post por idioma (respetar estilo de copy: sin guiones largos, sin oraciones que empiecen por «Y»).
-5. Invitar editores en sanity.io/manage → Members (auth independiente de Supabase).
+**Activación (COMPLETADA por API el 2026-07-04)**:
+1. ✅ Proyecto Sanity `afup27st` creado vía Management API con el token del CLI (cuenta del usuario, org «Alejandro Castillo» `oUXuFKdTZ`). Dataset `production` público.
+2. ✅ `NEXT_PUBLIC_SANITY_PROJECT_ID=afup27st` + `NEXT_PUBLIC_SANITY_DATASET=production` en `.env.local` y en Vercel (Production + Preview + Development) vía `npx vercel env add`. Redeploy hecho.
+3. ✅ CORS origins `http://localhost:3000` y `https://atribuya.com` con Allow credentials.
+4. ✅ CSP ampliada tras probar el Studio con navegador real: `script-src` +`core.sanity-cdn.com`; `connect-src` +`api.sanity.io`/`*.api.sanity.io`/`wss`/`*.apicdn.sanity.io`/`cdn.sanity.io`/`sanity-cdn.com`. Studio carga sin errores de consola.
+5. ✅ Acceso del admin: el proyecto quedó a nombre de la identidad del token del CLI; el login del navegador (Google `a.castillo.esv@gmail.com`) era otra identidad y daba «Not authorized». Resuelto invitando ese email como `administrator` (el usuario aceptó). **Gotcha**: Sanity distingue identidades por proveedor de login; usar siempre «Continuar con Google».
+
+**Gestión**: sanity.io/manage/project/afup27st. Para crear/borrar contenido por API: subir asset a `https://afup27st.api.sanity.io/v2021-06-07/assets/images/production` y mutaciones en `/data/mutate/production` con el token del CLI (`~/.config/sanity/config.json` o `~/Library/Application Support/sanity/config.json`).
+
+## 22. Reestructuración de la landing + revisión por buyer persona (2026-07-04)
+
+**A. Landing → URLs por sección + navegación unificada** (commit `1e91618`). La home de una sola página con anclas (`#precios`, `#faq`...) no era enlazable desde el blog y concentraba todo el SEO en una URL. Ahora:
+- **Páginas propias indexables (ES+EN)**: `/producto`·`/en/product`, `/precios`·`/en/pricing`, `/casos`·`/en/case-studies`, `/demo`·`/en/demo`. Cada una: `SiteHeader`+`Footer`, metadata con canonical + hreflang ES↔EN + robots index, H1 y JSON-LD `BreadcrumbList`. `SoftwareApplication` (ofertas desde `plans`) movido a `/precios`; `FAQPage` sigue en la home.
+- **Home = hub**: hero, problema, cómo funciona, características, FAQ + bloque de teasers (`HubTeasers`) que enlaza a las páginas. Todos los CTA → `/demo`.
+- **Cabecera única**: `components/site/SiteHeader.tsx` (generaliza el antiguo `landing/Header`, con nav por rutas reales). Se borran `components/landing/Header.tsx` y `components/blog/BlogHeader.tsx`. Usada en home, secciones, blog (layouts), legales y gracias/thanks. Rutas centralizadas en `lib/marketing/nav.ts`; helper SEO (`sectionMetadata`, `breadcrumbJsonLd`) en `lib/marketing/seo.ts`.
+- **Secciones como componentes por locale** (fuente única ES/EN, antes duplicadas): `components/sections/{ProductSection,PricingSection,CaseSection,DemoSection,HubTeasers,SectionCta}.tsx`. `PricingSection` exporta `plans` para el JSON-LD.
+- **SEO en los 3 puntos**: `next.config.ts` (`INDEXABLE_PATHS_NEGATIVE_LOOKAHEAD` +8 rutas), `lib/supabase/middleware.ts` (`PUBLIC_SEGMENT_PREFIXES` ES + `PUBLIC_SEO_PATHS` las 8), `app/sitemap.ts` (+8 URLs). `Analytics.tsx` mide las nuevas. `components/landing/Footer.tsx` enlaza Producto/Precios/Casos/Demo.
+
+**B. Revisión por buyer persona + mejoras de copy** (commit `2a062d6`). Se auditó el sitio con los 4 buyer personas del Excel `Buyer Persona/Buyer persona Atribuya.xlsx` (Javier/Dir. Comercial, Marta/Operaciones, Carlos/CEO, Laura/Reputación-CX) lanzando 4 agentes, uno por persona. Diagnóstico: el sitio hablaba muy bien al comprador de ventas (Javier/Carlos), flojo a la operativa (Marta) y casi nada a reputación/CX (Laura, potencial detractora). Cambios aplicados (copy y estructura, sin tocar producto):
+- Nueva sección `components/sections/WhyAtribuya.tsx` en la home (ES+EN), 4 tarjetas: *De reseñas a negocio* (CEO), *Reconocimiento no rivalidad* (Dir. Comercial), *Tú tienes la última palabra* (Operaciones), *Reputación con contexto* + alerta 1-2★ + APIs oficiales de Google (Reputación/CX).
+- **Coherencia del dato de precisión**: se reconcilia «100% de las verificadas» con «la mayoría solas, el resto a un clic» en hero y `CaseSection` (los revisores lo leían como maquillaje).
+- Hero: sello «APIs oficiales de Google, RGPD y DPA firmado» + 2º CTA «Ver precios» (antes CTA único).
+- Footer: «Un producto de Castillo Cantón» (enlace a castillocanton.com).
+- FAQ: la de Birdeye reencuadrada como complemento no sustituto (cerraba el autogol para reputación); nuevas FAQ de migración («no migras nada») y de respuesta a reseñas (avisos hoy, respuesta directa en camino). Feature nueva: aviso inmediato de reseñas 1-2★.
+
+**Nota de seguridad**: el Excel de buyer personas se coló en el commit `2a062d6` (repo público) y se sacó en `938ab66` + `.gitignore` (`Buyer Persona/`, `Venta/`). Sigue en el historial de ese commit; el usuario decidió no purgar el historial (el Excel válido es el de hoy). El fichero local se conserva.
+
+**Pendientes de la revisión (impacto medio, no bloqueantes)** — también en CLAUDE.md §8.2:
+1. Captura real de la **cola de reseñas dudosas** en `/producto` (pantalla diaria de Operaciones).
+2. **Tabla de roles** en `/precios` (admin/comercial/manager).
+3. **DPA descargable** desde `/precios`.
+4. Mini **comparativa «Atribuya vs Birdeye vs Excel»**.
+5. **Testimonio nominal** en `/casos` al firmar permiso comercial (hoy anónimo).
+6. Primer **artículo real del blog**.
+Descartado a propósito: garantía de devolución (el usuario retiró el programa de garantía; ver §8.2 open questions).
+
+Verificación de ambos: typecheck + 228 tests + build verdes; headers/bot-gate/sitemap y contenido comprobados en prod (ES y EN).
