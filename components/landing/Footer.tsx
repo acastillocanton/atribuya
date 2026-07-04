@@ -10,6 +10,7 @@ const STRINGS = {
       "Sabes qué comercial te trae cada reseña de Google.",
     altLangHref: "/en",
     altLangLabel: "English",
+    blog: { href: "/blog", label: "Blog" },
     terms: { href: "/terminos", label: "Términos" },
     privacy: { href: "/privacidad", label: "Privacidad" },
     cookies: "Cookies",
@@ -20,6 +21,7 @@ const STRINGS = {
       "You know which rep brings in every Google review.",
     altLangHref: "/",
     altLangLabel: "Español",
+    blog: { href: "/en/blog", label: "Blog" },
     terms: { href: "/en/terms", label: "Terms" },
     privacy: { href: "/en/privacy", label: "Privacy" },
     cookies: "Cookies",
@@ -62,6 +64,9 @@ export function Footer({ locale }: { locale: Locale }) {
               className="transition hover:text-ink"
             >
               {t.altLangLabel}
+            </Link>
+            <Link href={t.blog.href} className="transition hover:text-ink">
+              {t.blog.label}
             </Link>
             <Link href={t.terms.href} className="transition hover:text-ink">
               {t.terms.label}
