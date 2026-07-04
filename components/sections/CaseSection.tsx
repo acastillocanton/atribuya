@@ -24,8 +24,9 @@ const T = {
         <strong className="font-semibold text-ink">
           el 100% de las reseñas verificadas
         </strong>{" "}
-        a su comercial responsable, sin intervención manual. La hoja de Excel
-        desapareció. Las discusiones también.
+        a su comercial responsable. La mayoría de forma automática; las dudosas,
+        con un clic de validación. La hoja de Excel desapareció. Las discusiones
+        también.
       </>
     ),
     p3: (
@@ -62,8 +63,9 @@ const T = {
         <strong className="font-semibold text-ink">
           100% of verified reviews
         </strong>{" "}
-        to their responsible sales rep, with no manual intervention. The
-        spreadsheet disappeared. So did the arguments.
+        to their responsible sales rep. Most of them automatically; the doubtful
+        ones with a one-click check. The spreadsheet disappeared. So did the
+        arguments.
       </>
     ),
     p3: (

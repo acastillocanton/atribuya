@@ -4,6 +4,7 @@ import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
 import { AttributionAnimation } from "@/components/landing/AttributionAnimation";
 import { HubTeasers } from "@/components/sections/HubTeasers";
+import { WhyAtribuya } from "@/components/sections/WhyAtribuya";
 import { SectionCta } from "@/components/sections/SectionCta";
 
 // La home es indexable: sobrescribe el noindex global de app/layout.tsx.
@@ -75,6 +76,7 @@ const FEATURES = [
   "Te lo llevas todo a Excel cuando quieras: filtrado por comercial, ficha y fechas.",
   "Cuenta las reseñas con texto y las de solo estrellas. No se te escapa ninguna.",
   "Te avisa si una reseña desaparece, la borre el cliente o la borre Google.",
+  "Aviso inmediato cuando entra una reseña de 1 o 2 estrellas, para responder a tiempo.",
   "¿Varias oficinas o fichas? Las gestionas todas desde la misma cuenta.",
 ];
 
@@ -131,7 +133,21 @@ const FAQS: FaqItem[] = [
     q: "¿Por qué Atribuya y no una herramienta consolidada como Birdeye o Trustpilot?",
     a: [
       "Las herramientas grandes gestionan reseñas, pero ninguna atribuye reseñas a comerciales individuales. Esa es la categoría que abre Atribuya.",
+      "Atribuya no sustituye a tu gestor de reseñas: aporta la capa que ninguna de las grandes tiene, saber qué persona generó cada experiencia. Puedes usarlo junto a lo que ya tengas.",
       "Si lo que necesitas es saber quién de tu equipo te trae los 5★ y quién no, hoy en el mercado solo hay dos opciones: Excel a mano o Atribuya.",
+    ],
+  },
+  {
+    q: "¿Tengo que migrar mi Excel o mi histórico?",
+    a: [
+      "No. Empiezas de cero con las reseñas nuevas desde el día 1. No hay nada que importar ni nada que puedas perder por el camino.",
+    ],
+  },
+  {
+    q: "¿Atribuya responde las reseñas por mí?",
+    a: [
+      "Hoy Atribuya te avisa de cada reseña nueva, incluidas las de 1 o 2 estrellas, para que respondas a tiempo en Google sin que se te escape ninguna.",
+      "La respuesta directa desde Atribuya, con el contexto de qué comercial generó la experiencia, está en camino.",
     ],
   },
   {
@@ -202,8 +218,8 @@ export default function HomePage() {
                 100<span className="not-italic font-normal">%</span>
               </p>
               <p className="mt-4 max-w-md text-[15px] leading-snug text-ink-2 sm:text-[16px]">
-                de las reseñas verificadas, atribuidas solas el primer
-                mes del piloto. Sin tocar nada.
+                de las reseñas verificadas del piloto, atribuidas a su
+                comercial. La mayoría solas; alguna, con un clic.
               </p>
             </div>
 
@@ -255,25 +271,33 @@ export default function HomePage() {
                 vendedor al cliente. Atribuya lo hace solo.
               </p>
               <div className="mt-8">
-                <a
-                  href="/demo"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
-                >
-                  Quiero saber quién me genera negocio
-                  <svg
-                    className="h-3.5 w-3.5 shrink-0"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                    strokeLinecap="round"
-                    aria-hidden="true"
+                <div className="flex flex-wrap items-center gap-3">
+                  <a
+                    href="/demo"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
                   >
-                    <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
-                  </svg>
-                </a>
+                    Quiero saber quién me genera negocio
+                    <svg
+                      className="h-3.5 w-3.5 shrink-0"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
+                    </svg>
+                  </a>
+                  <a
+                    href="/precios"
+                    className="inline-flex items-center justify-center rounded-full border border-ink/20 px-6 py-3.5 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
+                  >
+                    Ver precios
+                  </a>
+                </div>
                 <p className="mt-3 text-[13px] text-ink-3">
-                  Sin compromiso. Te enseñamos quién te genera negocio.
+                  Sin compromiso. APIs oficiales de Google, RGPD y DPA firmado.
                 </p>
               </div>
             </div>
@@ -394,6 +418,9 @@ export default function HomePage() {
             <AttributionAnimation locale="es" />
           </div>
         </section>
+
+        {/* ===================== Por qué Atribuya (4 voces) ===================== */}
+        <WhyAtribuya locale="es" />
 
         {/* =========================== Características =========================== */}
         <section

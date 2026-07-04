@@ -19,6 +19,7 @@ const STRINGS = {
     privacy: { href: "/privacidad", label: "Privacidad" },
     cookies: "Cookies",
     login: "Iniciar sesión",
+    by: "Un producto de Castillo Cantón",
   },
   en: {
     statement:
@@ -34,6 +35,7 @@ const STRINGS = {
     privacy: { href: "/en/privacy", label: "Privacy" },
     cookies: "Cookies",
     login: "Sign in",
+    by: "A Castillo Cantón product",
   },
 } as const;
 
@@ -61,6 +63,15 @@ export function Footer({ locale }: { locale: Locale }) {
               className="h-6 w-6 rounded-md"
             />
             <span>© {new Date().getFullYear()} Atribuya</span>
+            <span aria-hidden="true" className="text-ink-5">·</span>
+            <a
+              href="https://castillocanton.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition hover:text-ink"
+            >
+              {t.by}
+            </a>
           </div>
           <nav
             aria-label={locale === "es" ? "Legal y secundario" : "Legal and secondary"}

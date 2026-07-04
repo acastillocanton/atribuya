@@ -4,6 +4,7 @@ import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
 import { AttributionAnimation } from "@/components/landing/AttributionAnimation";
 import { HubTeasers } from "@/components/sections/HubTeasers";
+import { WhyAtribuya } from "@/components/sections/WhyAtribuya";
 import { SectionCta } from "@/components/sections/SectionCta";
 
 export const metadata: Metadata = {
@@ -74,6 +75,7 @@ const FEATURES = [
   "Take it all to Excel whenever you want: filtered by rep, listing and dates.",
   "Counts both text reviews and star-only ratings. None slip through.",
   "Warns you if a review disappears, whether the customer or Google removes it.",
+  "Instant alert when a 1 or 2 star review comes in, so you can reply in time.",
   "Several offices or listings? Manage them all from the same account.",
 ];
 
@@ -130,7 +132,21 @@ const FAQS: FaqItem[] = [
     q: "Why Atribuya instead of an established tool like Birdeye or Trustpilot?",
     a: [
       "The big tools manage reviews, but none of them attribute reviews to individual sales reps. That's the category Atribuya opens up.",
+      "Atribuya doesn't replace your review manager: it adds the layer none of the big tools have, knowing which person generated each experience. You can use it alongside whatever you already have.",
       "If what you need is to know who on your team brings you the 5★ reviews and who doesn't, today the market gives you only two options: a manual spreadsheet, or Atribuya.",
+    ],
+  },
+  {
+    q: "Do I have to migrate my spreadsheet or history?",
+    a: [
+      "No. You start fresh with new reviews from day 1. There's nothing to import and nothing you can lose along the way.",
+    ],
+  },
+  {
+    q: "Does Atribuya reply to reviews for me?",
+    a: [
+      "Today Atribuya alerts you to every new review, including 1 and 2 star ones, so you reply in time on Google without missing any.",
+      "Replying directly from Atribuya, with the context of which rep generated the experience, is on the way.",
     ],
   },
   {
@@ -198,8 +214,8 @@ export default function HomePageEn() {
                 100<span className="not-italic font-normal">%</span>
               </p>
               <p className="mt-4 max-w-md text-[15px] leading-snug text-ink-2 sm:text-[16px]">
-                of verified reviews, attributed on their own in the pilot's
-                first month. Without lifting a finger.
+                of the pilot's verified reviews, attributed to their rep. Most
+                on their own; a few with one click.
               </p>
             </div>
 
@@ -249,25 +265,33 @@ export default function HomePageEn() {
                 rep's name. Atribuya does it on its own.
               </p>
               <div className="mt-8">
-                <a
-                  href="/en/demo"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
-                >
-                  Show me who drives my business
-                  <svg
-                    className="h-3.5 w-3.5 shrink-0"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                    strokeLinecap="round"
-                    aria-hidden="true"
+                <div className="flex flex-wrap items-center gap-3">
+                  <a
+                    href="/en/demo"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-ink-2"
                   >
-                    <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
-                  </svg>
-                </a>
+                    Show me who drives my business
+                    <svg
+                      className="h-3.5 w-3.5 shrink-0"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
+                    </svg>
+                  </a>
+                  <a
+                    href="/en/pricing"
+                    className="inline-flex items-center justify-center rounded-full border border-ink/20 px-6 py-3.5 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
+                  >
+                    See pricing
+                  </a>
+                </div>
                 <p className="mt-3 text-[13px] text-ink-3">
-                  No commitment. We show you who drives your business.
+                  No commitment. Google's official APIs, GDPR and a signed DPA.
                 </p>
               </div>
             </div>
@@ -388,6 +412,9 @@ export default function HomePageEn() {
             <AttributionAnimation locale="en" />
           </div>
         </section>
+
+        {/* ===================== Why Atribuya (4 voices) ===================== */}
+        <WhyAtribuya locale="en" />
 
         {/* ============================= Features ============================= */}
         <section
