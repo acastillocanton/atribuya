@@ -48,6 +48,7 @@ export function Analytics() {
     siteId: Number(IUB_SITE_ID),
     cookiePolicyId: Number(IUB_POLICY_ID),
     lang: localeFor(pathname),
+    perPurposeConsent: true,
     banner: {
       position: "float-bottom-center",
       acceptButtonDisplay: true,
@@ -62,19 +63,15 @@ export function Analytics() {
 
   return (
     <>
-      {/* 1. Config de Iubenda en el global, ANTES de los loaders. */}
-      <Script id="iub-config" strategy="afterInteractive">
-        {`window._iub=window._iub||[];window._iub.csConfiguration=${JSON.stringify(iubConfig)};`}
+      {/* Fija la config y LUEGO inyecta los loaders en el mismo hilo. El orden
+          importa: con scripts async separados, iubenda_cs.js podía ejecutarse
+          antes de que csConfiguration estuviese fijado → salía solo el botón
+          flotante, sin el banner. Un único inline lo hace determinista. */}
+      <Script id="iubenda-cs" strategy="afterInteractive">
+        {`window._iub=window._iub||[];window._iub.csConfiguration=${JSON.stringify(iubConfig)};(function(d){function a(s){var e=d.createElement("script");e.src=s;e.async=true;(d.body||d.head).appendChild(e);}a("https://cs.iubenda.com/autoblocking/${IUB_SITE_ID}.js");a("https://cdn.iubenda.com/cs/iubenda_cs.js");})(document);`}
       </Script>
 
-      {/* 2. Autobloqueo + loader del CMP (Cookie Solution). */}
-      <Script
-        src={`https://cs.iubenda.com/autoblocking/${IUB_SITE_ID}.js`}
-        strategy="afterInteractive"
-      />
-      <Script src="https://cdn.iubenda.com/cs/iubenda_cs.js" strategy="afterInteractive" />
-
-      {/* 3. GA4: el autobloqueo de Iubenda lo bloquea hasta el consentimiento. */}
+      {/* GA4: el autobloqueo de Iubenda lo bloquea hasta el consentimiento. */}
       {isProd && GA_ID && (
         <>
           <Script
