@@ -33,6 +33,8 @@ export async function BlogPostPage({
   const authorAvatarUrl = post.author?.image
     ? urlFor(post.author.image)?.width(80).height(80).fit("crop").url()
     : null;
+  const authorBase = locale === "es" ? "/blog/autor" : "/en/blog/author";
+  const authorHref = post.author?.slug ? `${authorBase}/${post.author.slug}` : null;
 
   const postJsonLd = {
     "@context": "https://schema.org",
@@ -76,23 +78,37 @@ export async function BlogPostPage({
         {post.title}
       </h1>
       {post.author ? (
-        <div className="mt-4 flex items-center gap-3">
-          {authorAvatarUrl ? (
-            <Image
-              src={authorAvatarUrl}
-              alt={post.author.name}
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-full object-cover"
-            />
-          ) : null}
-          <p className="text-sm text-ink-3">
-            {post.author.name}
-            {post.author.role ? (
-              <span className="text-ink-4"> · {post.author.role}</span>
-            ) : null}
-          </p>
-        </div>
+        (() => {
+          const byline = (
+            <>
+              {authorAvatarUrl ? (
+                <Image
+                  src={authorAvatarUrl}
+                  alt={post.author.name}
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              ) : null}
+              <span className="text-sm text-ink-3">
+                {post.author.name}
+                {post.author.role ? (
+                  <span className="text-ink-4"> · {post.author.role}</span>
+                ) : null}
+              </span>
+            </>
+          );
+          return authorHref ? (
+            <Link
+              href={authorHref}
+              className="mt-4 inline-flex items-center gap-3 transition-opacity hover:opacity-80"
+            >
+              {byline}
+            </Link>
+          ) : (
+            <div className="mt-4 flex items-center gap-3">{byline}</div>
+          );
+        })()
       ) : null}
 
       {heroUrl ? (

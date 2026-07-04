@@ -155,11 +155,30 @@ async function uploadAuthorPhoto() {
   return { _type: "image", asset: { _type: "reference", _ref: asset._id } };
 }
 
+// Perfiles verificables del autor (sameAs). El primero, LinkedIn, refuerza el
+// E-E-A-T; añade aquí la URL personal cuando la tengas.
+const AUTHOR_SAME_AS = [
+  "https://www.linkedin.com/in/alejandro-castillo-canton/",
+  "https://x.com/castillo_canton",
+  "https://castillocanton.com",
+];
+
+const AUTHOR_BIO =
+  "Alejandro Castillo es el fundador de Castillo Cantón y creador de Atribuya. " +
+  "Con más de 15 años de experiencia en marketing digital, desarrollo web y SEO, " +
+  "ayuda a empresas con red comercial a convertir las reseñas de Google en un " +
+  "activo medible: saber qué comercial ha conseguido cada valoración, sin " +
+  "fricción para el cliente. En este blog escribe sobre reputación online, " +
+  "atribución de reseñas y productividad de los equipos de ventas.";
+
 const buildAuthor = (image) => ({
   _id: authorId,
   _type: "author",
   name: "Alejandro Castillo",
   role: "Fundador de Castillo Cantón",
+  slug: { _type: "slug", current: "alejandro-castillo" },
+  bio: AUTHOR_BIO,
+  sameAs: AUTHOR_SAME_AS,
   image,
 });
 

@@ -12,8 +12,23 @@ export type PostListItem = {
   excerpt: string;
   mainImage: (SanityImageSource & { alt?: string }) | null;
   publishedAt: string;
-  author: { name: string; role?: string; image?: SanityImageSource | null } | null;
+  author: {
+    name: string;
+    role?: string;
+    image?: SanityImageSource | null;
+    slug?: string | null;
+  } | null;
   categories: string[] | null;
+};
+
+export type Author = {
+  name: string;
+  role?: string;
+  slug: string;
+  bio?: string;
+  image?: SanityImageSource | null;
+  sameAs?: string[] | null;
+  posts: PostListItem[];
 };
 
 export type Post = PostListItem & {
@@ -36,7 +51,7 @@ const POST_FIELDS = groq`
   excerpt,
   mainImage,
   publishedAt,
-  "author": author->{ name, role, image },
+  "author": author->{ name, role, image, "slug": slug.current },
   "categories": categories[]->title
 `;
 
@@ -61,6 +76,26 @@ const SLUGS_QUERY = groq`
     language,
     _updatedAt
   }
+`;
+
+// Autor + sus artículos publicados (en el idioma dado). `references(^._id)`
+// trae los posts que apuntan a este autor.
+const AUTHOR_QUERY = groq`
+  *[_type == "author" && slug.current == $slug][0] {
+    name,
+    role,
+    bio,
+    image,
+    "slug": slug.current,
+    "sameAs": sameAs,
+    "posts": *[_type == "post" && references(^._id) && language == $language
+      && defined(slug.current) && publishedAt <= now()]
+      | order(publishedAt desc) { ${POST_FIELDS} }
+  }
+`;
+
+const AUTHOR_SLUGS_QUERY = groq`
+  *[_type == "author" && defined(slug.current)] { "slug": slug.current }
 `;
 
 // Los fetchers absorben el modo degradado (sin env vars) y los fallos de red:
@@ -98,6 +133,32 @@ export async function getAllPostSlugs(): Promise<PostSlug[]> {
     return await client.fetch<PostSlug[]>(SLUGS_QUERY);
   } catch (err) {
     console.error("[sanity] getAllPostSlugs falló:", err);
+    return [];
+  }
+}
+
+export async function getAuthor(
+  slug: string,
+  language: BlogLocale,
+): Promise<Author | null> {
+  const client = getClient();
+  if (!client) return null;
+  try {
+    return await client.fetch<Author | null>(AUTHOR_QUERY, { slug, language });
+  } catch (err) {
+    console.error("[sanity] getAuthor falló:", err);
+    return null;
+  }
+}
+
+export async function getAllAuthorSlugs(): Promise<string[]> {
+  const client = getClient();
+  if (!client) return [];
+  try {
+    const rows = await client.fetch<{ slug: string }[]>(AUTHOR_SLUGS_QUERY);
+    return rows.map((r) => r.slug);
+  } catch (err) {
+    console.error("[sanity] getAllAuthorSlugs falló:", err);
     return [];
   }
 }

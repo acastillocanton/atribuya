@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllPostSlugs } from "@/sanity/lib/queries";
+import { getAllAuthorSlugs, getAllPostSlugs } from "@/sanity/lib/queries";
 
 const BASE = "https://atribuya.com";
 
@@ -100,5 +100,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticEntries, ...postEntries];
+  // Páginas de autor (ES). Refuerzan el E-E-A-T; [] sin env vars o si Sanity falla.
+  const authorSlugs = await getAllAuthorSlugs();
+  const authorEntries: MetadataRoute.Sitemap = authorSlugs.map((slug) => ({
+    url: `${BASE}/blog/autor/${slug}`,
+    changeFrequency: "monthly",
+    priority: 0.5,
+  }));
+
+  return [...staticEntries, ...postEntries, ...authorEntries];
 }
