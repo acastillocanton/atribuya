@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MobileMenu } from "@/components/landing/MobileMenu";
 import { MainNav } from "@/components/site/MainNav";
 import { LangSwitcher } from "@/components/site/LangSwitcher";
+import { HeaderShell } from "@/components/site/HeaderShell";
 import {
   ctaLabel,
   loginLabel,
@@ -43,7 +44,7 @@ export function SiteHeader({
   const altHref = altLangHref ?? routes[locale].altHome;
 
   return (
-    <header className="sticky top-0 z-50">
+    <HeaderShell>
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-5">
         {/* Logo */}
         <Link
@@ -98,6 +99,6 @@ export function SiteHeader({
           />
         </div>
       </div>
-    </header>
+    </HeaderShell>
   );
 }
