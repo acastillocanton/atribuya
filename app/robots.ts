@@ -10,8 +10,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/en", "/terminos", "/privacidad"],
+        allow: ["/", "/en", "/terminos", "/privacidad", "/blog"],
         disallow: [
+          "/studio",
           "/login",
           "/accept-invite",
           "/auth/",

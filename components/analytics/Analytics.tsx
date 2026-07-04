@@ -15,9 +15,9 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 // Solo medimos las páginas públicas de marketing y legales. La app interna
 // autenticada (/dashboard, /panel, etc.) NO se rastrea: ni banner ni GA.
 function isPublicPath(p: string): boolean {
-  if (p === "/" || p === "/en") return true;
-  return ["/en/", "/gracias", "/terminos", "/privacidad"].some((prefix) =>
-    p.startsWith(prefix),
+  if (p === "/" || p === "/en" || p === "/blog") return true;
+  return ["/en/", "/blog/", "/gracias", "/terminos", "/privacidad"].some(
+    (prefix) => p.startsWith(prefix),
   );
 }
 

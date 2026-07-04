@@ -71,6 +71,9 @@ const PUBLIC_SEGMENT_PREFIXES = [
   "/terminos",
   "/gracias",
   "/en",
+  "/blog",
+  // El Studio de Sanity gestiona su propio login (cuenta Sanity, no Supabase).
+  "/studio",
 ];
 
 // Assets y ficheros de crawl: match por prefijo crudo (p. ej. `/favicon.ico`,
@@ -87,9 +90,22 @@ const PUBLIC_SEO_PATHS = new Set<string>([
   "/en",
   "/terminos",
   "/privacidad",
+  "/en/terms",
+  "/en/privacy",
   "/robots.txt",
   "/sitemap.xml",
 ]);
+
+// Rutas SEO con subrutas dinámicas (posts del blog): match por límite de
+// segmento. `/studio` queda fuera a propósito: los bots reciben 403 ahí.
+const PUBLIC_SEO_PREFIXES = ["/blog", "/en/blog"];
+
+function isPublicSeoPath(pathname: string): boolean {
+  if (PUBLIC_SEO_PATHS.has(pathname)) return true;
+  return PUBLIC_SEO_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
 
 /**
  * The public landing for the customer flow lives at
@@ -185,13 +201,13 @@ function pathAllowedForRole(
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Block bots/crawlers en toda la app EXCEPTO la landing comercial y las
-  // páginas legales — esas sí deben poder ser indexadas y previsualizadas
-  // por Google, Slack, LinkedIn, etc. Las rutas de producto (dashboard,
-  // panel, /o/.../c/...) siguen prohibidas a bots.
+  // Block bots/crawlers en toda la app EXCEPTO la landing comercial, las
+  // páginas legales y el blog. Esas sí deben poder ser indexadas y
+  // previsualizadas por Google, Slack, LinkedIn, etc. Las rutas de producto
+  // (dashboard, panel, /o/.../c/..., /studio) siguen prohibidas a bots.
   if (
     isBlockedBot(request.headers.get("user-agent")) &&
-    !PUBLIC_SEO_PATHS.has(pathname)
+    !isPublicSeoPath(pathname)
   ) {
     return new NextResponse("Forbidden", {
       status: 403,

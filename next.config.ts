@@ -25,7 +25,9 @@ const CSP = [
   "font-src 'self' data: https://fonts.gstatic.com",
   // Google APIs (mybusiness*) + endpoints de recogida de GA4 (g/collect, que
   // usa subdominios regionales como region1.google-analytics.com).
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com",
+  // Sanity: el Studio embebido en /studio habla con <projectId>.api.sanity.io
+  // (REST + login + listeners WebSocket) y apicdn.sanity.io (CDN de datos).
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://api.sanity.io https://*.api.sanity.io wss://*.api.sanity.io https://*.apicdn.sanity.io",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -52,17 +54,18 @@ const SECURITY_HEADERS = [
 // JSON de las API routes y cualquier respuesta no-HTML.
 //
 // IMPORTANTE: NO puede aplicarse a `/:path*`. Las páginas públicas indexables
-// (landing ES `/`, EN `/en`, legales `/terminos` y `/privacidad`) llevan el
-// meta `robots: { index: true }`, pero el header HTTP X-Robots-Tag gana sobre
-// el meta tag (Google aplica la directiva más restrictiva), así que ponerlo
-// global marcaba esas 4 como noindex → "Excluida por noindex" en Search
-// Console. Lo aplicamos a todo MENOS esas páginas + los ficheros de crawl,
-// con el mismo negative-lookahead que usa el matcher del middleware.
+// (landing ES `/` y EN `/en`, legales ES `/terminos`+`/privacidad` y EN
+// `/en/terms`+`/en/privacy`, y el blog `/blog`+`/en/blog` con sus posts)
+// llevan el meta `robots: { index: true }`, pero el header HTTP X-Robots-Tag
+// gana sobre el meta tag (Google aplica la directiva más restrictiva), así
+// que ponerlo global las marcaba como noindex → "Excluida por noindex" en
+// Search Console. Lo aplicamos a todo MENOS esas páginas + los ficheros de
+// crawl, con el mismo negative-lookahead que usa el matcher del middleware.
 const NOINDEX_HEADERS = [
   { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet" },
 ];
 const INDEXABLE_PATHS_NEGATIVE_LOOKAHEAD =
-  "/((?!$|en$|terminos$|privacidad$|sitemap\\.xml$|robots\\.txt$).*)";
+  "/((?!$|en$|en/terms$|en/privacy$|terminos$|privacidad$|blog$|blog/.*|en/blog$|en/blog/.*|sitemap\\.xml$|robots\\.txt$).*)";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -76,6 +79,10 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   outputFileTracingRoot: __dirname,
+  // Imágenes del blog: Sanity las sirve desde su CDN.
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],
+  },
   async headers() {
     return [
       {
