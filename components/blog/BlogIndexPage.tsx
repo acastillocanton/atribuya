@@ -1,4 +1,6 @@
 import { getAllPosts, type BlogLocale } from "@/sanity/lib/queries";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb } from "@/lib/marketing/seo";
 import { PostCard } from "./PostCard";
 
 const STRINGS = {
@@ -37,28 +39,20 @@ export async function BlogIndexPage({ locale }: { locale: BlogLocale }) {
     publisher: { "@id": "https://atribuya.com/#organization" },
   };
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: locale === "es" ? "Inicio" : "Home",
-        item: locale === "es" ? "https://atribuya.com/" : "https://atribuya.com/en",
-      },
-      { "@type": "ListItem", position: 2, name: "Blog", item: t.url },
-    ],
-  };
+  const bc = makeBreadcrumb({
+    locale,
+    crumbs: [{ name: "Blog", path: locale === "es" ? "/blog" : "/en/blog" }],
+  });
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-14 sm:py-20">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([blogJsonLd, breadcrumbJsonLd]),
+          __html: JSON.stringify([blogJsonLd, bc.jsonLd]),
         }}
       />
+      <Breadcrumbs items={bc.items} className="mb-8" />
       <p className="text-sm font-medium uppercase tracking-wide text-ink-4">
         {t.kicker}
       </p>

@@ -3,7 +3,8 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 import { CaseSection } from "@/components/sections/CaseSection";
 import { SectionCta } from "@/components/sections/SectionCta";
-import { breadcrumbJsonLd, sectionMetadata } from "@/lib/marketing/seo";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb, sectionMetadata } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = sectionMetadata({
   locale: "en",
@@ -14,23 +15,21 @@ export const metadata: Metadata = sectionMetadata({
   enPath: "/en/case-studies",
 });
 
+const bc = makeBreadcrumb({
+  locale: "en",
+  crumbs: [{ name: "Case studies", path: "/en/case-studies" }],
+});
+
 export default function CaseStudiesPage() {
   return (
     <div className="min-h-screen bg-bg font-text text-ink">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd({
-              locale: "en",
-              name: "Case studies",
-              path: "/en/case-studies",
-            }),
-          ),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bc.jsonLd) }}
       />
       <SiteHeader locale="en" altLangHref="/casos" />
       <main>
+        <Breadcrumbs items={bc.items} className="mx-auto w-full max-w-6xl px-5 pt-6" />
         <CaseSection locale="en" headingLevel="h1" />
         <SectionCta locale="en" />
       </main>

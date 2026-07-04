@@ -3,7 +3,8 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 import { PricingSection, plans } from "@/components/sections/PricingSection";
 import { SectionCta } from "@/components/sections/SectionCta";
-import { breadcrumbJsonLd, sectionMetadata } from "@/lib/marketing/seo";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb, sectionMetadata } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = sectionMetadata({
   locale: "es",
@@ -35,20 +36,23 @@ const softwareJsonLd = {
   })),
 };
 
+const bc = makeBreadcrumb({
+  locale: "es",
+  crumbs: [{ name: "Precios", path: "/precios" }],
+});
+
 export default function PreciosPage() {
   return (
     <div className="min-h-screen bg-bg font-text text-ink">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([
-            breadcrumbJsonLd({ locale: "es", name: "Precios", path: "/precios" }),
-            softwareJsonLd,
-          ]),
+          __html: JSON.stringify([bc.jsonLd, softwareJsonLd]),
         }}
       />
       <SiteHeader locale="es" altLangHref="/en/pricing" />
       <main>
+        <Breadcrumbs items={bc.items} className="mx-auto w-full max-w-6xl px-5 pt-6" />
         <PricingSection locale="es" headingLevel="h1" />
         <SectionCta locale="es" />
       </main>

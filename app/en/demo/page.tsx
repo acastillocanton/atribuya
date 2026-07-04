@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 import { DemoSection } from "@/components/sections/DemoSection";
-import { breadcrumbJsonLd, sectionMetadata } from "@/lib/marketing/seo";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb, sectionMetadata } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = sectionMetadata({
   locale: "en",
@@ -13,19 +14,21 @@ export const metadata: Metadata = sectionMetadata({
   enPath: "/en/demo",
 });
 
+const bc = makeBreadcrumb({
+  locale: "en",
+  crumbs: [{ name: "Demo", path: "/en/demo" }],
+});
+
 export default function DemoPageEn() {
   return (
     <div className="min-h-screen bg-bg font-text text-ink">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd({ locale: "en", name: "Demo", path: "/en/demo" }),
-          ),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bc.jsonLd) }}
       />
       <SiteHeader locale="en" altLangHref="/demo" />
       <main>
+        <Breadcrumbs items={bc.items} className="mx-auto w-full max-w-6xl px-5 pt-6" />
         <DemoSection locale="en" />
       </main>
       <Footer locale="en" />

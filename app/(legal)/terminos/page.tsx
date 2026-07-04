@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { breadcrumbJsonLd } from "@/lib/marketing/seo";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = {
   title: "Términos del Servicio · Atribuya",
@@ -7,21 +8,19 @@ export const metadata: Metadata = {
     "Términos y condiciones del servicio Atribuya: SaaS multi-tenant para atribución automática de reseñas de Google Business Profile a comerciales individuales.",
 };
 
+const bc = makeBreadcrumb({
+  locale: "es",
+  crumbs: [{ name: "Términos del Servicio", path: "/terminos" }],
+});
+
 export default function TerminosPage() {
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd({
-              locale: "es",
-              name: "Términos del Servicio",
-              path: "/terminos",
-            }),
-          ),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bc.jsonLd) }}
       />
+      <Breadcrumbs items={bc.items} className="mb-6" />
       <h1 style={h1}>Términos del Servicio</h1>
       <p style={lede}>
         Última actualización: 24 de mayo de 2026.

@@ -46,33 +46,36 @@ export function sectionMetadata({
   };
 }
 
-// Breadcrumb JSON-LD (Inicio → sección) para las páginas de sección.
-export function breadcrumbJsonLd({
+export type Crumb = { name: string; path: string };
+
+// Fuente ÚNICA del breadcrumb: devuelve a la vez los `items` para el
+// componente visible (hrefs relativos, para navegación con next/link) y el
+// `jsonLd` BreadcrumbList (URLs absolutas, para Google). Así el dato
+// estructurado y la miga de pan visible nunca se desincronizan. `crumbs` son
+// los niveles DESPUÉS de Inicio (que se antepone automáticamente).
+export function makeBreadcrumb({
   locale,
-  name,
-  path,
+  crumbs,
 }: {
   locale: Locale;
-  name: string;
-  path: string;
+  crumbs: Crumb[];
 }) {
-  const home = locale === "es" ? `${ORIGIN}/` : `${ORIGIN}/en`;
+  const home: Crumb = {
+    name: locale === "es" ? "Inicio" : "Home",
+    path: locale === "es" ? "/" : "/en",
+  };
+  const all = [home, ...crumbs];
   return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
+    items: all.map((c) => ({ name: c.name, href: c.path })),
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: all.map((c, i) => ({
         "@type": "ListItem",
-        position: 1,
-        name: locale === "es" ? "Inicio" : "Home",
-        item: home,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name,
-        item: `${ORIGIN}${path}`,
-      },
-    ],
+        position: i + 1,
+        name: c.name,
+        item: `${ORIGIN}${c.path}`,
+      })),
+    },
   };
 }

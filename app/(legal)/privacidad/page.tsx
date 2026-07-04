@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { breadcrumbJsonLd } from "@/lib/marketing/seo";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = {
   title: "Política de Privacidad · Atribuya",
@@ -7,21 +8,19 @@ export const metadata: Metadata = {
     "Política de Privacidad de Atribuya, SaaS multi-tenant para atribución de reseñas de Google Business Profile a comerciales.",
 };
 
+const bc = makeBreadcrumb({
+  locale: "es",
+  crumbs: [{ name: "Política de Privacidad", path: "/privacidad" }],
+});
+
 export default function PrivacidadPage() {
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd({
-              locale: "es",
-              name: "Política de Privacidad",
-              path: "/privacidad",
-            }),
-          ),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bc.jsonLd) }}
       />
+      <Breadcrumbs items={bc.items} className="mb-6" />
       <h1 style={h1}>Política de Privacidad</h1>
       <p style={lede}>
         Última actualización: 7 de junio de 2026.

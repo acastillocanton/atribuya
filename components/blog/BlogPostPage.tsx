@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { PortableText } from "@portabletext/react";
 import { urlFor } from "@/sanity/lib/image";
 import { getPost, type BlogLocale } from "@/sanity/lib/queries";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb } from "@/lib/marketing/seo";
 import { formatPostDate } from "./PostCard";
 import { ptComponents } from "./PortableTextComponents";
 
@@ -65,29 +67,24 @@ export async function BlogPostPage({
     inLanguage: t.inLanguage,
   };
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: locale === "es" ? "Inicio" : "Home",
-        item: locale === "es" ? "https://atribuya.com/" : "https://atribuya.com/en",
-      },
-      { "@type": "ListItem", position: 2, name: "Blog", item: t.base },
-      { "@type": "ListItem", position: 3, name: post.title, item: url },
+  const blogPath = locale === "es" ? "/blog" : "/en/blog";
+  const bc = makeBreadcrumb({
+    locale,
+    crumbs: [
+      { name: "Blog", path: blogPath },
+      { name: post.title, path: `${blogPath}/${post.slug}` },
     ],
-  };
+  });
 
   return (
     <article className="mx-auto max-w-3xl px-5 py-14 sm:py-20">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([postJsonLd, breadcrumbJsonLd]),
+          __html: JSON.stringify([postJsonLd, bc.jsonLd]),
         }}
       />
+      <Breadcrumbs items={bc.items} className="mb-6" />
       <div className="flex flex-wrap items-center gap-2 text-xs text-ink-4">
         <time dateTime={post.publishedAt}>
           {formatPostDate(post.publishedAt, locale)}

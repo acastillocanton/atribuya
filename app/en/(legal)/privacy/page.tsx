@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { breadcrumbJsonLd } from "@/lib/marketing/seo";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy · Atribuya",
@@ -9,21 +10,19 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://atribuya.com/en/privacy" },
 };
 
+const bc = makeBreadcrumb({
+  locale: "en",
+  crumbs: [{ name: "Privacy Policy", path: "/en/privacy" }],
+});
+
 export default function PrivacyPage() {
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd({
-              locale: "en",
-              name: "Privacy Policy",
-              path: "/en/privacy",
-            }),
-          ),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bc.jsonLd) }}
       />
+      <Breadcrumbs items={bc.items} className="mb-6" />
       <h1 style={h1}>Privacy Policy</h1>
       <p style={lede}>Last updated: June 7, 2026.</p>
 

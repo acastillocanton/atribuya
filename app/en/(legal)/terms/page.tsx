@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { breadcrumbJsonLd } from "@/lib/marketing/seo";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = {
   title: "Terms of Service · Atribuya",
@@ -9,21 +10,19 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://atribuya.com/en/terms" },
 };
 
+const bc = makeBreadcrumb({
+  locale: "en",
+  crumbs: [{ name: "Terms of Service", path: "/en/terms" }],
+});
+
 export default function TermsPage() {
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd({
-              locale: "en",
-              name: "Terms of Service",
-              path: "/en/terms",
-            }),
-          ),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bc.jsonLd) }}
       />
+      <Breadcrumbs items={bc.items} className="mb-6" />
       <h1 style={h1}>Terms of Service</h1>
       <p style={lede}>Last updated: May 24, 2026.</p>
 

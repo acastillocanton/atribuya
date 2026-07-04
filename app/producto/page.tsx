@@ -3,7 +3,8 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 import { ProductSection } from "@/components/sections/ProductSection";
 import { SectionCta } from "@/components/sections/SectionCta";
-import { breadcrumbJsonLd, sectionMetadata } from "@/lib/marketing/seo";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb, sectionMetadata } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = sectionMetadata({
   locale: "es",
@@ -14,19 +15,21 @@ export const metadata: Metadata = sectionMetadata({
   enPath: "/en/product",
 });
 
+const bc = makeBreadcrumb({
+  locale: "es",
+  crumbs: [{ name: "Producto", path: "/producto" }],
+});
+
 export default function ProductoPage() {
   return (
     <div className="min-h-screen bg-bg font-text text-ink">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd({ locale: "es", name: "Producto", path: "/producto" }),
-          ),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bc.jsonLd) }}
       />
       <SiteHeader locale="es" altLangHref="/en/product" />
       <main>
+        <Breadcrumbs items={bc.items} className="mx-auto w-full max-w-6xl px-5 pt-6" />
         <ProductSection locale="es" headingLevel="h1" />
         <SectionCta locale="es" />
       </main>

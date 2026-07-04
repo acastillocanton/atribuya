@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { urlFor } from "@/sanity/lib/image";
 import { getAuthor, type BlogLocale } from "@/sanity/lib/queries";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
+import { makeBreadcrumb } from "@/lib/marketing/seo";
 import { PostCard } from "./PostCard";
 
 const STRINGS = {
@@ -60,29 +62,25 @@ export async function AuthorPage({
     mainEntity: personJsonLd,
   };
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: locale === "es" ? "Inicio" : "Home",
-        item: locale === "es" ? "https://atribuya.com/" : "https://atribuya.com/en",
-      },
-      { "@type": "ListItem", position: 2, name: "Blog", item: t.base },
-      { "@type": "ListItem", position: 3, name: author.name, item: url },
+  const blogPath = locale === "es" ? "/blog" : "/en/blog";
+  const authorPath = `${locale === "es" ? "/blog/autor" : "/en/blog/author"}/${author.slug}`;
+  const bc = makeBreadcrumb({
+    locale,
+    crumbs: [
+      { name: "Blog", path: blogPath },
+      { name: author.name, path: authorPath },
     ],
-  };
+  });
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-14 sm:py-20">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([jsonLd, breadcrumbJsonLd]),
+          __html: JSON.stringify([jsonLd, bc.jsonLd]),
         }}
       />
+      <Breadcrumbs items={bc.items} className="mb-8" />
 
       <header className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-6">
         {avatarUrl ? (
