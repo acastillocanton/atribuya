@@ -85,7 +85,7 @@ const PUBLIC_SEGMENT_PREFIXES = [
 // Assets y ficheros de crawl: match por prefijo crudo (p. ej. `/favicon.ico`,
 // `/_next/static/...`). No son superficie sensible.
 const PUBLIC_ASSET_PREFIXES = ["/_next", "/favicon"];
-const PUBLIC_EXACT_PATHS = new Set<string>(["/robots.txt", "/sitemap.xml"]);
+const PUBLIC_EXACT_PATHS = new Set<string>(["/robots.txt", "/sitemap.xml", "/llms.txt"]);
 
 // Public pages que SÍ queremos que Google / Slack / LinkedIn / etc. puedan
 // indexar y previsualizar. La landing comercial, las páginas legales y los

@@ -3,6 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "description": "SaaS multi-tenant for attributing Google Business Profile reviews to individual sales reps.",
+  "browserslist": [
+    "chrome >= 111",
+    "edge >= 111",
+    "firefox >= 111",
+    "safari >= 16",
+    "ios_saf >= 16",
+    "not dead"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/acastillocanton/atribuya.git"

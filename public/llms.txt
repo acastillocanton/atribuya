@@ -1,0 +1,34 @@
+# Atribuya
+
+> Atribuya es un software B2B (SaaS) que atribuye cada reseña de Google Business Profile al comercial que la consiguió, de forma automática y sin pedirle el nombre al cliente. Está dirigido a empresas con red comercial: promotoras inmobiliarias, apartamentos turísticos vacacionales, clínicas y servicios B2B con visita comercial. Es un producto de Castillo Cantón.
+
+## Cómo funciona
+
+Cada comercial comparte con su cliente un enlace personalizado que lleva directo a la pantalla de escribir reseña en Google. Cuando la reseña entra, Atribuya la cruza con quién compartió el enlace, la ventana temporal y el nombre del cliente, y la asigna sola. Las reseñas dudosas quedan en una cola para revisar con un clic. Todo mediante las APIs oficiales de Google, con cumplimiento RGPD y DPA firmado.
+
+## Páginas principales
+
+- [Inicio](https://atribuya.com/): qué es Atribuya y para quién.
+- [Producto](https://atribuya.com/producto): capturas reales del panel del administrador y del comercial.
+- [Cómo funciona](https://atribuya.com/como-funciona): los tres pasos de la atribución.
+- [Precios](https://atribuya.com/precios): planes por número de comerciales desde 45 €/mes, con implantación llave en mano.
+- [Casos](https://atribuya.com/casos): resultados reales de un despliegue piloto.
+- [Pedir demo](https://atribuya.com/demo): formulario para reservar una demostración de 20 minutos.
+
+## Blog
+
+- [Blog](https://atribuya.com/blog): artículos sobre reseñas de Google, atribución por comercial y reputación local.
+- [Cómo saber qué comercial ha conseguido cada reseña de Google](https://atribuya.com/blog/atribuir-resenas-google-comerciales)
+
+## Legal
+
+- [Términos del servicio](https://atribuya.com/terminos)
+- [Política de privacidad](https://atribuya.com/privacidad)
+
+## English
+
+- [Home](https://atribuya.com/en)
+- [Product](https://atribuya.com/en/product)
+- [Pricing](https://atribuya.com/en/pricing)
+- [How it works](https://atribuya.com/en/how-it-works)
+- [Blog](https://atribuya.com/en/blog)
