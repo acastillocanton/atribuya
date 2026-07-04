@@ -257,7 +257,7 @@ export default function HomePage() {
           <dl className="mt-12 grid gap-x-10 gap-y-8 border-t border-line pt-10 sm:mt-14 sm:grid-cols-3">
             <div>
               <dt
-                className="font-display font-light italic leading-none tracking-tight text-ink"
+                className="font-display font-light italic leading-none tracking-tight text-accent"
                 style={{ fontSize: "var(--text-stat-sm)" }}
               >
                 100<span className="not-italic">%</span>
@@ -269,7 +269,7 @@ export default function HomePage() {
             </div>
             <div>
               <dt
-                className="font-display font-light italic leading-none tracking-tight text-ink"
+                className="font-display font-light italic leading-none tracking-tight text-accent"
                 style={{ fontSize: "var(--text-stat-sm)" }}
               >
                 0
@@ -280,7 +280,7 @@ export default function HomePage() {
             </div>
             <div>
               <dt
-                className="font-display font-light italic leading-none tracking-tight text-ink"
+                className="font-display font-light italic leading-none tracking-tight text-accent"
                 style={{ fontSize: "var(--text-stat-sm)" }}
               >
                 Día 1
@@ -380,7 +380,7 @@ export default function HomePage() {
                 </p>
                 <a
                   href="/producto"
-                  className="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-ink underline decoration-line-strong underline-offset-4 transition hover:decoration-ink"
+                  className="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold text-accent underline decoration-line-strong underline-offset-4 transition hover:decoration-accent"
                 >
                   Ver el producto por dentro
                   <svg
@@ -440,6 +440,40 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        {/* === CTA intermedio — punto de conversión a mitad de página === */}
+        <section aria-label="Reserva una demo" className="border-t border-line bg-bg">
+          <div className="mx-auto max-w-6xl px-5 py-12 sm:py-14">
+            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <p
+                className="max-w-xl font-display font-medium leading-tight tracking-tight text-ink"
+                style={{ fontSize: "var(--text-h3)" }}
+              >
+                ¿Ves quién te genera negocio?{" "}
+                <em className="font-light text-ink-2">
+                  Compruébalo con tu equipo.
+                </em>
+              </p>
+              <a
+                href="/demo"
+                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-ink-2"
+              >
+                Pedir demo
+                <svg
+                  className="h-3.5 w-3.5 shrink-0"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
+                </svg>
+              </a>
+            </div>
           </div>
         </section>
 

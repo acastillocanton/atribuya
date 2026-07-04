@@ -24,6 +24,9 @@ const config: Config = {
         warn: "var(--warn)",
         "warn-bg": "var(--warn-bg)",
         gold: "var(--gold)",
+        accent: "var(--accent)",
+        "accent-strong": "var(--accent-strong)",
+        "accent-bg": "var(--accent-bg)",
       },
       fontFamily: {
         display: "var(--font-display)",

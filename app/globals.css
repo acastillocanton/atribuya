@@ -1,5 +1,5 @@
 /* Hallmark · macrostructure: Stat-Led · genre: editorial · theme: custom
- * paper-band: light · display-style: italic-serif (Fraunces) · accent-hue: ink-only
+ * paper-band: light · display-style: italic-serif (Fraunces) · accent-hue: warm (terracota, restrained)
  * nav: N5 floating-pill · footer: Ft5 statement
  * studied: no · run: 2026-05-24
  */
@@ -23,6 +23,11 @@
   --warn-bg: #F4ECDB;
   --warn: #8A6A1E;
   --gold: #B58A2C;
+  /* Acento de marca (terracota) — uso restrained: datos clave, enlaces,
+     detalles. Nunca en fondos amplios ni titulares. */
+  --accent: #A84A2A;
+  --accent-strong: #8A3C22;
+  --accent-bg: #F6EAE3;
   --ios-bg: #F2F2F7;
   --radius: 14px;
   --radius-sm: 10px;
