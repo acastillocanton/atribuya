@@ -32,6 +32,12 @@ export const metadata: Metadata = {
 
 export const revalidate = 600;
 
-export default function BlogPageEn() {
-  return <BlogIndexPage locale="en" />;
+export default async function BlogPageEn({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page } = await searchParams;
+  const n = Number.parseInt(page ?? "1", 10);
+  return <BlogIndexPage locale="en" page={Number.isFinite(n) && n > 0 ? n : 1} />;
 }

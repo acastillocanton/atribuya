@@ -2,6 +2,10 @@ import { getAllPosts, type BlogLocale } from "@/sanity/lib/queries";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { makeBreadcrumb } from "@/lib/marketing/seo";
 import { PostCard } from "./PostCard";
+import { BlogPagination } from "./BlogPagination";
+
+// Artículos por página del índice del blog.
+const PAGE_SIZE = 9;
 
 const STRINGS = {
   es: {
@@ -26,9 +30,21 @@ const STRINGS = {
   },
 } as const;
 
-export async function BlogIndexPage({ locale }: { locale: BlogLocale }) {
+export async function BlogIndexPage({
+  locale,
+  page = 1,
+}: {
+  locale: BlogLocale;
+  page?: number;
+}) {
   const t = STRINGS[locale];
   const posts = await getAllPosts(locale);
+
+  const basePath = locale === "es" ? "/blog" : "/en/blog";
+  const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
+  const current = Math.min(Math.max(1, page), totalPages);
+  const start = (current - 1) * PAGE_SIZE;
+  const pagePosts = posts.slice(start, start + PAGE_SIZE);
 
   const blogJsonLd = {
     "@context": "https://schema.org",
@@ -80,11 +96,19 @@ export async function BlogIndexPage({ locale }: { locale: BlogLocale }) {
           </p>
         </div>
       ) : (
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <PostCard key={post._id} post={post} locale={locale} />
-          ))}
-        </div>
+        <>
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {pagePosts.map((post) => (
+              <PostCard key={post._id} post={post} locale={locale} />
+            ))}
+          </div>
+          <BlogPagination
+            current={current}
+            totalPages={totalPages}
+            basePath={basePath}
+            locale={locale}
+          />
+        </>
       )}
       </div>
     </>

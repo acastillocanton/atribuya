@@ -110,13 +110,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  // Páginas de autor (ES). Refuerzan el E-E-A-T; [] sin env vars o si Sanity falla.
+  // Páginas de autor (ES + EN). Refuerzan el E-E-A-T; [] sin env vars o si
+  // Sanity falla. El mismo autor se sirve en ambos idiomas (rutas /autor y
+  // /author); su listado de artículos se filtra por idioma en cada página.
   const authorSlugs = await getAllAuthorSlugs();
-  const authorEntries: MetadataRoute.Sitemap = authorSlugs.map((slug) => ({
-    url: `${BASE}/blog/autor/${slug}`,
-    changeFrequency: "monthly",
-    priority: 0.5,
-  }));
+  const authorEntries: MetadataRoute.Sitemap = authorSlugs.flatMap((slug) => [
+    {
+      url: `${BASE}/blog/autor/${slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    },
+    {
+      url: `${BASE}/en/blog/author/${slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    },
+  ]);
 
   return [...staticEntries, ...postEntries, ...authorEntries];
 }
