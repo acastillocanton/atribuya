@@ -496,6 +496,53 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ===== Confianza — señales reales, sin logos ni testimonios inventados ===== */}
+        <section
+          aria-label="Confianza y cumplimiento"
+          className="border-t border-line bg-white"
+        >
+          <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+            <dl className="grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <dt className="font-display text-lg font-medium tracking-tight text-ink">
+                  APIs oficiales de Google
+                </dt>
+                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
+                  Leemos las reseñas vía las APIs oficiales de Google Business
+                  Profile y Places. Nada de scraping.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-display text-lg font-medium tracking-tight text-ink">
+                  Cumplimiento RGPD
+                </dt>
+                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
+                  Datos en servidores europeos, cifrados en tránsito y en
+                  reposo.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-display text-lg font-medium tracking-tight text-ink">
+                  DPA firmado
+                </dt>
+                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
+                  Contrato de encargado de tratamiento con cada cliente, según
+                  el artículo 28 del RGPD.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-display text-lg font-medium tracking-tight text-ink">
+                  Aislado por cliente
+                </dt>
+                <dd className="mt-2 text-[14px] leading-snug text-ink-3">
+                  Cada organización queda aislada a nivel de base de datos
+                  (Row Level Security de Postgres).
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
         {/* ============================ CTA final ============================ */}
         <SectionCta locale="es" />
       </main>
