@@ -829,3 +829,46 @@ metía a todos en el tier barato para siempre. El valor del producto crece con e
 Descartado a propósito: garantía de devolución (el usuario retiró el programa de garantía; ver §8.2 open questions).
 
 Verificación de ambos: typecheck + 228 tests + build verdes; headers/bot-gate/sitemap y contenido comprobados en prod (ES y EN).
+
+## 23. Blog vivo + E-E-A-T + fixes de web + rediseño de la home (2026-07-04)
+
+Sesión larga sobre el blog, el SEO/datos estructurados, la navegación/i18n/layout y el rediseño de la home. Todo en `main`, verificado en prod (`atribuya.com`). Cadena de commits (orden): `c71fc58` → `3c9726a`.
+
+### 23.1 Primer artículo del blog + lectura de Sanity con token (`c71fc58`, `de3e0db`)
+Publicado el 1er post ES «Cómo saber qué comercial ha conseguido cada reseña de Google» (`/blog/atribuir-resenas-google-comerciales`), autor Alejandro Castillo con foto, enlaces internos a `/producto` y `/demo`.
+- **Gotcha resuelto (clave)**: el dataset Sanity `production`, aunque marcado `aclMode=public`, **NO sirve lecturas anónimas por la API** (probado exhaustivamente: tokenless=0 / `reason:"permission"` en todos los endpoints/versiones/perspectivas; toggle Private↔Public no lo arregla). Solución: `sanity/lib/client.ts` pasa a usar **`SANITY_API_READ_TOKEN`** (permiso Viewer, server-only; `useCdn=!token`; sin token degrada a anónimo sin romper build). Token en Vercel prod+preview (`sensitive`) + `.env.local`. El blog es Server Component → el token nunca llega al navegador.
+- **Escritura por API**: `SANITY_API_WRITE_TOKEN` (Editor, solo `.env.local`) + **`scripts/seed-post.mjs`** (seed idempotente de autor/categoría/post; sube fotos con `client.assets.upload`, ids content-addressed → no duplica). `sanity/lib/writeClient.ts` = cliente de escritura reusable.
+- **Gotcha Vercel**: `vercel env pull` muestra `""` para vars `sensitive` (incl. GA/Supabase que SÍ funcionan) → no fiarse del pull para verificar valor. Los `NEXT_PUBLIC_SANITY_*` de Vercel se dejaron como `plain` (`afup27st`/`production`) para poder verificarlos.
+
+### 23.2 Página de autor (E-E-A-T) (`7a82f59`, `de3e0db`)
+Nueva ruta `/blog/autor/[slug]` (`app/blog/autor/[slug]/page.tsx` + `components/blog/AuthorPage.tsx`): foto, bio, cargo, enlaces a perfiles y listado de artículos. Esquema `author` extendido con `slug`+`bio`+`sameAs`. JSON-LD `ProfilePage`→`Person` con `sameAs` (LinkedIn `linkedin.com/in/alejandro-castillo-canton`, X `@castillo_canton`, `castillocanton.com`), `jobTitle`, `worksFor`. La firma del post enlaza al autor. Sitemap incluye las páginas de autor. ES-only.
+
+### 23.3 Auditoría de datos estructurados + cierre del grafo (`f10aabc`, `d4990d7`)
+Revisado todo el JSON-LD del sitio (198 checks OK, 0 problemas). Correcciones: `BlogPosting.author` enlaza a la Person del autor (mismo `@id`); el post recibe **imagen principal** (`ranking.png` a Sanity) → resuelve el `image` de Article + og:image + miniatura; `BreadcrumbList` en post/índice/autor; `Organization` con `description` + `founder`→Person. El mismo `@id` de Person aparece en author-del-post + founder-de-org + ProfilePage → Google fusiona **una entidad**. **BreadcrumbList añadido también a las 4 páginas legales** (antes solo en secciones). Gotcha: la OG dinámica (`/opengraph-image`) no sirve para JSON-LD (redirige a `/login` sin hash + hash variable por deploy) → usar `cdn.sanity.io`.
+
+### 23.4 «Cómo funciona» página propia + 6 fixes nav/i18n/layout (`97230da`)
+1. **«Cómo funciona»** pasa de ancla (`/#como-funciona`) a **página indexable** `/como-funciona`·`/en/how-it-works`. Sección de pasos extraída a `components/sections/HowItWorks.tsx` (reutilizada en home + página). Plomería SEO en los 3 puntos (next.config lookahead + middleware `PUBLIC_SEGMENT_PREFIXES`/`PUBLIC_SEO_PATHS` + sitemap) + `nav.ts` (routes.how).
+2. **Selector de idioma desplegable** `components/site/LangSwitcher.tsx` (client): muestra ambos idiomas con bandera, marca el actual.
+3. **Estado activo del menú** `components/site/MainNav.tsx` (client, `usePathname`+`aria-current`), también en `MobileMenu`.
+4. **Breadcrumb alineado al logo** (`mx-auto w-full max-w-6xl px-5 pt-6`) en TODAS: sacado del contenedor estrecho en blog y legales (layout legal simplificado, el `<article>` 720 pasó a las páginas).
+5. **Casos**: layout 2 columnas + panel de métricas (100%/≈8h/mes/0).
+6. **Tabla de contenidos** en artículos: `lib/blog/toc.ts` (extractor con dedup por `_key`) + `components/blog/ArticleToc.tsx`; `ptComponents` → factory `makePtComponents(idByKey)` con `id`+`scroll-mt-28`.
+- **Nota build (recurrente)**: `app/(admin)/resenas` y `app/(admin)/ajustes` son WIP local **sin rastrear** que rompe `next build` local (conflicto de rutas paralelas con `(profile)/resenas/verificacion`). No están en git ni en Vercel. Para builds locales, apartarlas temporalmente.
+
+### 23.5 Pulido de UI global (`b27d49e`, `fb5bc91`, `517bc46`)
+- **Estado activo del menú sin caja**: el activo va en tinta + peso (sin pastilla de fondo, que no gustó); en móvil, acento fino a la izquierda.
+- **Sidebar en artículos**: el post pasa a 2 columnas dentro de `max-w-6xl` (contenido + `<aside>` sticky con tarjeta compacta «Pedir demo», `components/blog/SidebarDemoCta.tsx`). **TOC plegable** (`<details open>` con chevron) que se queda inline.
+- **Cabecera con fondo al hacer scroll**: `components/site/HeaderShell.tsx` (isla client): transparente arriba, fondo `bg-bg/85` + `backdrop-blur` + borde inferior al pasar 8px de scroll (antes era sticky transparente → el contenido se transparentaba sobre el logo).
+- **Footer reorganizado** (`components/landing/Footer.tsx`): identidad en 2 líneas (© + «Un producto de Castillo Cantón»); a la derecha, menú operativo / línea 1px / menú legal; **eliminado el selector de idioma** del footer.
+- Revisión móvil (Playwright, 14 páginas públicas, viewport 390px): **0 scroll horizontal**, menú/idioma/TOC/casos/footer OK.
+
+### 23.6 Rediseño de la home (audit de diseño «Hallmark») + acento (`3ed9b53`, `303f25e`, `c48e157`, `3c9726a`)
+El usuario la veía «coja». Diagnóstico (no era «slop», era lo contrario: hiper-editorial e infra-construida en credibilidad/producto, con jerarquía invertida). Fixes aplicados en `app/page.tsx`:
+- **Hero fusionado**: antes había dos heroes apilados (panel de stats `100%/Día 1/0` con copy roto ANTES del H1). Ahora el **H1 abre** la página; el `100%/0/Día 1` baja a una **franja de prueba del piloto** con copy completo y correcto.
+- **Banda de producto real**: «Todo tu equipo, en un panel» con captura del dashboard (`ProductShot`, `public/landing/dashboard.png`) tras «Cómo funciona». La home ya no solo cuenta el producto, lo enseña.
+- **Franja de confianza real** antes del CTA final: APIs oficiales de Google · RGPD · DPA firmado · aislamiento por cliente (RLS). Prueba honesta, **sin logos ni testimonios inventados** (se rechazó fabricarlos).
+- **Acento de marca terracota**: token **`--accent #A84A2A`** (+`--accent-strong`/`--accent-bg`) en `globals.css` + `tailwind.config.ts`. Uso *restrained*: números del piloto y enlaces clave; **los CTAs siguen en tinta**, sin color en fondos/títulos. (El logo es azul marino; el usuario eligió el cálido para contraste editorial.)
+- **CTA intermedio**: «¿Ves quién te genera negocio? Compruébalo con tu equipo» entre características y teasers.
+- **Pendiente (bloqueado por contenido)**: testimonio nominal + logos reales (el piloto es anónimo, aún no hay clientes) → se cablea cuando exista contenido real. Los cambios se hicieron **solo en la home ES**; falta replicarlos en `app/en/page.tsx` (EN).
+
+**Estado para la próxima sesión**: web comercial y blog en buen estado. Bloqueante técnico único del producto sigue siendo **Google OAuth Vía B** (esperando aprobación, ver §7.3). Pendientes menores de marketing: replicar el rediseño de home en EN, testimonio/logos reales, y los pendientes de la revisión buyer persona (§22).
