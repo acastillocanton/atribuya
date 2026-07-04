@@ -22,7 +22,7 @@ type RouteMap = {
 export const routes: Record<Locale, RouteMap> = {
   es: {
     home: "/",
-    how: "/#como-funciona",
+    how: "/como-funciona",
     product: "/producto",
     pricing: "/precios",
     cases: "/casos",
@@ -36,7 +36,7 @@ export const routes: Record<Locale, RouteMap> = {
   },
   en: {
     home: "/en",
-    how: "/en#how",
+    how: "/en/how-it-works",
     product: "/en/product",
     pricing: "/en/pricing",
     cases: "/en/case-studies",

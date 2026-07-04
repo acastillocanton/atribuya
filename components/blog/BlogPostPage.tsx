@@ -6,8 +6,10 @@ import { urlFor } from "@/sanity/lib/image";
 import { getPost, type BlogLocale } from "@/sanity/lib/queries";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { makeBreadcrumb } from "@/lib/marketing/seo";
+import { extractToc } from "@/lib/blog/toc";
 import { formatPostDate } from "./PostCard";
-import { ptComponents } from "./PortableTextComponents";
+import { ArticleToc } from "./ArticleToc";
+import { makePtComponents } from "./PortableTextComponents";
 
 const STRINGS = {
   es: { back: "Volver al blog", base: "https://atribuya.com/blog", inLanguage: "es-ES" },
@@ -24,6 +26,8 @@ export async function BlogPostPage({
   const t = STRINGS[locale];
   const post = await getPost(slug, locale);
   if (!post) notFound();
+
+  const { items: toc, idByKey } = extractToc(post.body);
 
   const url = `${t.base}/${post.slug}`;
   const heroUrl = post.mainImage
@@ -77,15 +81,19 @@ export async function BlogPostPage({
   });
 
   return (
-    <article className="mx-auto max-w-3xl px-5 py-14 sm:py-20">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify([postJsonLd, bc.jsonLd]),
         }}
       />
-      <Breadcrumbs items={bc.items} className="mb-6" />
-      <div className="flex flex-wrap items-center gap-2 text-xs text-ink-4">
+      <Breadcrumbs
+        items={bc.items}
+        className="mx-auto w-full max-w-6xl px-5 pt-6"
+      />
+      <article className="mx-auto max-w-3xl px-5 pb-14 pt-8 sm:pb-20">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-ink-4">
         <time dateTime={post.publishedAt}>
           {formatPostDate(post.publishedAt, locale)}
         </time>
@@ -151,8 +159,10 @@ export async function BlogPostPage({
         </div>
       ) : null}
 
+      <ArticleToc items={toc} locale={locale} />
+
       <div className="mt-10">
-        <PortableText value={post.body} components={ptComponents} />
+        <PortableText value={post.body} components={makePtComponents(idByKey)} />
       </div>
 
       <div className="mt-14 border-t border-line pt-8">
@@ -163,6 +173,7 @@ export async function BlogPostPage({
           {t.back}
         </Link>
       </div>
-    </article>
+      </article>
+    </>
   );
 }

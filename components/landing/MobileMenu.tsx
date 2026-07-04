@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ES, GB } from "country-flag-icons/react/3x2";
 
 type NavItem = { href: string; label: string };
 
@@ -9,20 +11,26 @@ type Props = {
   locale: "es" | "en";
   nav: ReadonlyArray<NavItem>;
   altLangHref: string;
-  altLangLabel: string;
   login: string;
   menuOpenLabel: string;
 };
+
+const LANGS = [
+  { code: "es" as const, label: "Español", Flag: ES },
+  { code: "en" as const, label: "English", Flag: GB },
+];
 
 export function MobileMenu({
   locale,
   nav,
   altLangHref,
-  altLangLabel,
   login,
   menuOpenLabel,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
 
   // Bloquea el scroll del body cuando el panel está abierto.
   useEffect(() => {
@@ -101,32 +109,54 @@ export function MobileMenu({
           className="px-2 py-2"
         >
           <ul>
-            {nav.map((item) => (
-              <li key={item.href}>
-                <a
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="block rounded-lg px-3 py-3 font-display text-[17px] font-semibold text-ink transition hover:bg-bg"
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
+            {nav.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setOpen(false)}
+                    className={`block rounded-lg px-3 py-3 font-display text-[17px] font-semibold transition ${
+                      active ? "bg-bg text-ink" : "text-ink hover:bg-bg"
+                    }`}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </nav>
         <div className="border-t border-line px-2 py-2">
-          <Link
-            href={altLangHref}
-            hrefLang={locale === "es" ? "en" : "es"}
-            onClick={() => setOpen(false)}
-            className="block rounded-lg px-3 py-2.5 text-[14px] text-ink-2 transition hover:bg-bg hover:text-ink"
-          >
-            {altLangLabel}
-          </Link>
+          <p className="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wide text-ink-4">
+            {locale === "es" ? "Idioma" : "Language"}
+          </p>
+          {LANGS.map(({ code, label, Flag }) => {
+            const isCurrent = code === locale;
+            const href = isCurrent ? pathname : altLangHref;
+            return (
+              <Link
+                key={code}
+                href={href}
+                hrefLang={code}
+                aria-current={isCurrent ? "true" : undefined}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-[14px] transition ${
+                  isCurrent
+                    ? "font-semibold text-ink"
+                    : "text-ink-2 hover:bg-bg hover:text-ink"
+                }`}
+              >
+                <Flag className="h-3.5 w-auto overflow-hidden rounded-[2px] ring-1 ring-line-strong/40" />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
           <Link
             href="/login"
             onClick={() => setOpen(false)}
-            className="block rounded-lg px-3 py-2.5 text-[14px] text-ink-2 transition hover:bg-bg hover:text-ink"
+            className="mt-1 block rounded-lg border-t border-line px-3 py-2.5 text-[14px] text-ink-2 transition hover:bg-bg hover:text-ink"
           >
             {login}
           </Link>

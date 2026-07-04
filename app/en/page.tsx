@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
-import { AttributionAnimation } from "@/components/landing/AttributionAnimation";
+import { HowItWorks } from "@/components/sections/HowItWorks";
 import { HubTeasers } from "@/components/sections/HubTeasers";
 import { WhyAtribuya } from "@/components/sections/WhyAtribuya";
 import { SectionCta } from "@/components/sections/SectionCta";
@@ -47,24 +47,6 @@ const SECTORS = [
   "Clinics and medical practices",
   "B2B services with field sales",
   "Any business with a sales team",
-];
-
-const STEPS = [
-  {
-    n: "01",
-    title: "Each rep gets a personal link",
-    body: "Atribuya generates a personalized link per sales rep, and optionally per customer. The rep adds it to their email signature, business card or sends it via WhatsApp.",
-  },
-  {
-    n: "02",
-    title: "The customer leaves the review",
-    body: "The link takes the customer straight to the Google review form for your listing. One click. They don't have to search for anything or mention the rep's name.",
-  },
-  {
-    n: "03",
-    title: "You instantly know who brought it in",
-    body: "Atribuya cross-references the review with whoever shared the link, the time window and the customer's name, and assigns it on its own. If something doesn't fit, it sits in manual review with suggestions: one click and done. No more guessing by eye.",
-  },
 ];
 
 const FEATURES = [
@@ -372,53 +354,8 @@ export default function HomePageEn() {
         </section>
 
         {/* ============================ How it works ============================ */}
-        <section
-          id="how"
-          aria-label="How it works"
-          className="mx-auto max-w-6xl px-5 py-16 sm:py-24"
-        >
-          <div className="max-w-2xl">
-            <h2
-              className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
-              style={{ fontSize: "var(--text-h2)" }}
-            >
-              Three steps.
-              <br />
-              <em className="font-light text-ink-2">
-                Zero friction for the customer.
-              </em>
-            </h2>
-            <p className="mt-5 leading-relaxed text-ink-2">
-              Customers don't install anything, don't fill out forms and don't
-              need to mention the rep's name. They just leave the Google review
-              as they always do.
-            </p>
-          </div>
-
-          <ol className="mt-14 grid gap-y-12 gap-x-10 md:grid-cols-3 md:gap-y-0">
-            {STEPS.map((s) => (
-              <li key={s.n} className="relative">
-                <span
-                  aria-hidden="true"
-                  className="font-display font-light italic leading-none tracking-[-0.04em] text-ink-4"
-                  style={{ fontSize: "clamp(3.5rem, 2rem + 6vw, 5.5rem)" }}
-                >
-                  {s.n}
-                </span>
-                <h3
-                  className="mt-4 font-display font-medium leading-tight tracking-tight text-ink"
-                  style={{ fontSize: "var(--text-h3)" }}
-                >
-                  {s.title}
-                </h3>
-                <p className="mt-3 leading-relaxed text-ink-2">{s.body}</p>
-              </li>
-            ))}
-          </ol>
-
-          <div className="mt-14">
-            <AttributionAnimation locale="en" />
-          </div>
+        <section id="how" aria-label="How it works">
+          <HowItWorks locale="en" />
         </section>
 
         {/* ===================== Why Atribuya (4 voices) ===================== */}

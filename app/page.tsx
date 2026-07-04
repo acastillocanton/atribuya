@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Footer } from "@/components/landing/Footer";
 import { ReviewProof } from "@/components/landing/ReviewProof";
-import { AttributionAnimation } from "@/components/landing/AttributionAnimation";
+import { HowItWorks } from "@/components/sections/HowItWorks";
 import { HubTeasers } from "@/components/sections/HubTeasers";
 import { WhyAtribuya } from "@/components/sections/WhyAtribuya";
 import { SectionCta } from "@/components/sections/SectionCta";
@@ -48,24 +48,6 @@ const SECTORS = [
   "Clínicas y centros médicos",
   "Servicios B2B con visita comercial",
   "Cualquier negocio con red comercial",
-];
-
-const STEPS = [
-  {
-    n: "01",
-    title: "Cada comercial tiene su enlace",
-    body: "Atribuya genera un enlace personalizado por comercial, y opcionalmente por cliente. El comercial lo guarda en su firma de email, lo pone en su tarjeta o lo manda por WhatsApp.",
-  },
-  {
-    n: "02",
-    title: "El cliente entra y deja la reseña",
-    body: "El enlace lleva al cliente directo al formulario de reseña de Google de tu ficha. Un solo clic. No tiene que buscar nada ni escribir el nombre del comercial.",
-  },
-  {
-    n: "03",
-    title: "Sabes al instante quién la trajo",
-    body: "Atribuya cruza la reseña con quién compartió el enlace, la ventana temporal y el nombre del cliente, y la asigna sola. Si algo no encaja, queda en revisión manual con sugerencias: un clic y resuelto. Nunca más adivinar a ojo.",
-  },
 ];
 
 const FEATURES = [
@@ -378,53 +360,8 @@ export default function HomePage() {
         </section>
 
         {/* =========================== Cómo funciona =========================== */}
-        <section
-          id="como-funciona"
-          aria-label="Cómo funciona"
-          className="mx-auto max-w-6xl px-5 py-16 sm:py-24"
-        >
-          <div className="max-w-2xl">
-            <h2
-              className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
-              style={{ fontSize: "var(--text-h2)" }}
-            >
-              Tres pasos.
-              <br />
-              <em className="font-light text-ink-2">
-                Cero fricción para el cliente.
-              </em>
-            </h2>
-            <p className="mt-5 leading-relaxed text-ink-2">
-              El cliente no instala nada, no rellena formularios y no escribe el
-              nombre del comercial. Solo deja la reseña en Google como siempre.
-            </p>
-          </div>
-
-          <ol className="mt-14 grid gap-y-12 gap-x-10 md:grid-cols-3 md:gap-y-0">
-            {STEPS.map((s) => (
-              <li key={s.n} className="relative">
-                <span
-                  aria-hidden="true"
-                  className="font-display font-light italic leading-none tracking-[-0.04em] text-ink-4"
-                  style={{ fontSize: "clamp(3.5rem, 2rem + 6vw, 5.5rem)" }}
-                >
-                  {s.n}
-                </span>
-                <h3
-                  className="mt-4 font-display font-medium leading-tight tracking-tight text-ink"
-                  style={{ fontSize: "var(--text-h3)" }}
-                >
-                  {s.title}
-                </h3>
-                <p className="mt-3 leading-relaxed text-ink-2">{s.body}</p>
-              </li>
-            ))}
-          </ol>
-
-          {/* El "money shot" del paso 03, en movimiento. */}
-          <div className="mt-14">
-            <AttributionAnimation locale="es" />
-          </div>
+        <section id="como-funciona" aria-label="Cómo funciona">
+          <HowItWorks locale="es" />
         </section>
 
         {/* ===================== Por qué Atribuya (4 voces) ===================== */}

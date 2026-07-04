@@ -73,15 +73,18 @@ export async function AuthorPage({
   });
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-14 sm:py-20">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify([jsonLd, bc.jsonLd]),
         }}
       />
-      <Breadcrumbs items={bc.items} className="mb-8" />
-
+      <Breadcrumbs
+        items={bc.items}
+        className="mx-auto w-full max-w-6xl px-5 pt-6"
+      />
+      <div className="mx-auto max-w-3xl px-5 pb-14 pt-8 sm:pb-20">
       <header className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-6">
         {avatarUrl ? (
           <Image
@@ -150,7 +153,8 @@ export async function AuthorPage({
           {t.back}
         </Link>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

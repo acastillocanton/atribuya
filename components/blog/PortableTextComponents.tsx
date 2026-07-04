@@ -4,7 +4,13 @@ import type { PortableTextComponents } from "@portabletext/react";
 import { urlFor } from "@/sanity/lib/image";
 
 // Render del Portable Text con la estética editorial de la landing.
-export const ptComponents: PortableTextComponents = {
+// Factory: recibe el mapa _key→id (de lib/blog/toc) para poner en los
+// encabezados el MISMO id que usa la tabla de contenidos. `scroll-mt-28`
+// compensa el header sticky (80px) al saltar por ancla.
+export function makePtComponents(
+  idByKey: Record<string, string> = {},
+): PortableTextComponents {
+  return {
   types: {
     image: ({ value }) => {
       const url = urlFor(value)?.width(1200).fit("max").url();
@@ -35,13 +41,19 @@ export const ptComponents: PortableTextComponents = {
     normal: ({ children }) => (
       <p className="my-5 leading-[1.75] text-ink-2">{children}</p>
     ),
-    h2: ({ children }) => (
-      <h2 className="mt-12 mb-4 font-display text-2xl font-medium tracking-tight text-ink">
+    h2: ({ children, value }) => (
+      <h2
+        id={idByKey[(value as { _key?: string })?._key ?? ""]}
+        className="mt-12 mb-4 scroll-mt-28 font-display text-2xl font-medium tracking-tight text-ink"
+      >
         {children}
       </h2>
     ),
-    h3: ({ children }) => (
-      <h3 className="mt-8 mb-3 font-display text-xl font-medium tracking-tight text-ink">
+    h3: ({ children, value }) => (
+      <h3
+        id={idByKey[(value as { _key?: string })?._key ?? ""]}
+        className="mt-8 mb-3 scroll-mt-28 font-display text-xl font-medium tracking-tight text-ink"
+      >
         {children}
       </h3>
     ),
@@ -82,4 +94,8 @@ export const ptComponents: PortableTextComponents = {
       );
     },
   },
-};
+  };
+}
+
+// Compat: componentes por defecto sin ids (para usos sin tabla de contenidos).
+export const ptComponents = makePtComponents();

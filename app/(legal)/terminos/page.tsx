@@ -20,7 +20,11 @@ export default function TerminosPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(bc.jsonLd) }}
       />
-      <Breadcrumbs items={bc.items} className="mb-6" />
+      <Breadcrumbs
+        items={bc.items}
+        className="mx-auto w-full max-w-6xl px-5 pt-6"
+      />
+      <article className="mx-auto w-full max-w-[720px] px-6 pt-8">
       <h1 style={h1}>Términos del Servicio</h1>
       <p style={lede}>
         Última actualización: 24 de mayo de 2026.
@@ -299,6 +303,7 @@ export default function TerminosPage() {
           alejandro@atribuya.com
         </a>
       </p>
+      </article>
     </>
   );
 }

@@ -77,6 +77,7 @@ const PUBLIC_SEGMENT_PREFIXES = [
   "/precios",
   "/casos",
   "/demo",
+  "/como-funciona",
   // El Studio de Sanity gestiona su propio login (cuenta Sanity, no Supabase).
   "/studio",
 ];
@@ -102,10 +103,12 @@ const PUBLIC_SEO_PATHS = new Set<string>([
   "/precios",
   "/casos",
   "/demo",
+  "/como-funciona",
   "/en/product",
   "/en/pricing",
   "/en/case-studies",
   "/en/demo",
+  "/en/how-it-works",
   "/robots.txt",
   "/sitemap.xml",
 ]);

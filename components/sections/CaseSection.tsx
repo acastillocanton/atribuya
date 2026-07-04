@@ -1,6 +1,21 @@
+import type { ReactNode } from "react";
 import type { Locale } from "@/lib/marketing/nav";
 
-const T = {
+type Stat = { value: string; label: string };
+
+const T: Record<
+  Locale,
+  {
+    eyebrow: string;
+    heading: ReactNode;
+    p1: ReactNode;
+    p2: ReactNode;
+    p3: ReactNode;
+    note: string;
+    resultsLabel: string;
+    stats: Stat[];
+  }
+> = {
   es: {
     eyebrow: "Caso real",
     heading: (
@@ -37,6 +52,12 @@ const T = {
       </>
     ),
     note: "Sector, tamaño y métricas reales; nombre del cliente reservado hasta firma de permiso comercial.",
+    resultsLabel: "Resultados",
+    stats: [
+      { value: "100%", label: "reseñas verificadas atribuidas" },
+      { value: "≈8 h/mes", label: "recuperadas frente al Excel" },
+      { value: "0", label: "disputas internas sobre reseñas" },
+    ],
   },
   en: {
     eyebrow: "Case study",
@@ -76,8 +97,14 @@ const T = {
       </>
     ),
     note: "Industry, size and metrics are real; customer name kept confidential pending commercial release.",
+    resultsLabel: "Results",
+    stats: [
+      { value: "100%", label: "verified reviews attributed" },
+      { value: "≈8 h/mo", label: "saved vs the spreadsheet" },
+      { value: "0", label: "internal disputes over reviews" },
+    ],
   },
-} as const;
+};
 
 export function CaseSection({
   locale,
@@ -89,25 +116,56 @@ export function CaseSection({
   const t = T[locale];
   const Heading = headingLevel;
   return (
-    <div className="mx-auto max-w-3xl px-5 py-16 sm:py-24">
-      <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-        {t.eyebrow}
-      </p>
-      <Heading
-        className="mt-3 font-display font-medium leading-[1.1] tracking-[-0.02em] text-ink"
-        style={{ fontSize: "var(--text-h2)" }}
-      >
-        {t.heading}
-      </Heading>
-      <div
-        className="mt-7 space-y-5 leading-relaxed text-ink-2"
-        style={{ fontSize: "var(--text-lead)" }}
-      >
-        <p>{t.p1}</p>
-        <p>{t.p2}</p>
-        <p className="text-ink-3">{t.p3}</p>
+    <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+      <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_320px] md:gap-14">
+        {/* Narrativa */}
+        <div>
+          <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+            {t.eyebrow}
+          </p>
+          <Heading
+            className="mt-3 font-display font-medium leading-[1.1] tracking-[-0.02em] text-ink"
+            style={{ fontSize: "var(--text-h2)" }}
+          >
+            {t.heading}
+          </Heading>
+          <div
+            className="mt-7 space-y-5 leading-relaxed text-ink-2"
+            style={{ fontSize: "var(--text-lead)" }}
+          >
+            <p>{t.p1}</p>
+            <p>{t.p2}</p>
+            <p className="text-ink-3">{t.p3}</p>
+          </div>
+          <p className="mt-10 text-[12px] leading-relaxed text-ink-4">
+            {t.note}
+          </p>
+        </div>
+
+        {/* Panel de resultados */}
+        <aside className="md:pt-1">
+          <div className="rounded-2xl border border-line bg-surface p-6 shadow-card md:sticky md:top-28">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-4">
+              {t.resultsLabel}
+            </p>
+            <ul className="mt-5 space-y-6">
+              {t.stats.map((s) => (
+                <li key={s.label}>
+                  <p
+                    className="font-display font-medium leading-none tracking-[-0.02em] text-ink tabular-nums"
+                    style={{ fontSize: "var(--text-h3)" }}
+                  >
+                    {s.value}
+                  </p>
+                  <p className="mt-1.5 text-sm leading-snug text-ink-3">
+                    {s.label}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
       </div>
-      <p className="mt-10 text-[12px] leading-relaxed text-ink-4">{t.note}</p>
     </div>
   );
 }

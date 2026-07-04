@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ES, GB } from "country-flag-icons/react/3x2";
 import { MobileMenu } from "@/components/landing/MobileMenu";
+import { MainNav } from "@/components/site/MainNav";
+import { LangSwitcher } from "@/components/site/LangSwitcher";
 import {
   ctaLabel,
   loginLabel,
@@ -40,7 +41,6 @@ export function SiteHeader({
   const nav = navItems[locale];
   const cta = { href: routes[locale].demo, label: ctaLabel[locale] };
   const altHref = altLangHref ?? routes[locale].altHome;
-  const CurrentFlag = locale === "es" ? ES : GB;
 
   return (
     <header className="sticky top-0 z-50">
@@ -62,38 +62,11 @@ export function SiteHeader({
         </Link>
 
         {/* Desktop floating pill — sólo md+ */}
-        <nav
-          aria-label={locale === "es" ? "Secciones" : "Sections"}
-          className="hidden md:block"
-        >
-          <ul className="flex items-center gap-1 rounded-full border border-line bg-white/85 px-2 py-1 text-[13.5px] font-medium text-ink-2 shadow-card backdrop-blur">
-            {nav.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="rounded-full px-3 py-1.5 transition hover:bg-bg hover:text-ink"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <MainNav items={nav} locale={locale} />
 
         {/* Desktop right cluster */}
         <div className="hidden items-center gap-2 md:flex">
-          <Link
-            href={altHref}
-            hrefLang={locale === "es" ? "en" : "es"}
-            aria-label={t.altLangLabel}
-            className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-ink-3 transition hover:text-ink"
-          >
-            <CurrentFlag
-              className="h-3.5 w-auto overflow-hidden rounded-[2px] ring-1 ring-line-strong/40"
-              title={t.currentLangLabel}
-            />
-            <span aria-hidden="true">{locale.toUpperCase()}</span>
-          </Link>
+          <LangSwitcher locale={locale} altLangHref={altHref} />
           <Link
             href={routes[locale].login}
             className="rounded-full px-3 py-1.5 text-[13.5px] font-medium text-ink-2 transition hover:text-ink"
@@ -120,7 +93,6 @@ export function SiteHeader({
             locale={locale}
             nav={nav}
             altLangHref={altHref}
-            altLangLabel={t.altLangLabel}
             login={loginLabel[locale]}
             menuOpenLabel={t.menuOpen}
           />

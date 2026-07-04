@@ -22,7 +22,11 @@ export default function PrivacyPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(bc.jsonLd) }}
       />
-      <Breadcrumbs items={bc.items} className="mb-6" />
+      <Breadcrumbs
+        items={bc.items}
+        className="mx-auto w-full max-w-6xl px-5 pt-6"
+      />
+      <article className="mx-auto w-full max-w-[720px] px-6 pt-8">
       <h1 style={h1}>Privacy Policy</h1>
       <p style={lede}>Last updated: June 7, 2026.</p>
 
@@ -325,6 +329,7 @@ export default function PrivacyPage() {
           alejandro@atribuya.com
         </a>
       </p>
+      </article>
     </>
   );
 }
