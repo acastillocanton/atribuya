@@ -79,7 +79,7 @@ export function makePtComponents(
     link: ({ children, value }) => {
       const href = typeof value?.href === "string" ? value.href : "#";
       const cls =
-        "underline decoration-line-strong underline-offset-4 hover:decoration-ink";
+        "font-medium text-accent underline decoration-accent/40 underline-offset-4 transition hover:decoration-accent";
       if (href.startsWith("/")) {
         return (
           <Link href={href} className={cls}>

@@ -66,9 +66,19 @@ const paraWithLink = (before, linkText, href, after) => {
     children: [span(before), span(linkText, [linkKey]), span(after)],
   };
 };
+// Imagen inline en el cuerpo. `alt` es obligatorio en el esquema y el renderer
+// lo usa además como pie de foto visible.
+const img = (ref, alt) => ({
+  _type: "image",
+  _key: key(),
+  asset: { _type: "reference", _ref: ref },
+  alt,
+});
 
 // --- Cuerpo del artículo -----------------------------------------------------
-const body = [
+// `policyImg` es el bloque de imagen (ya subida a Sanity) que se inserta en la
+// sección de políticas de Google. Se construye en run() tras subir el asset.
+const buildBody = (policyImg) => [
   block(
     "normal",
     "Si diriges una empresa con red comercial, la escena te suena. Un cliente deja cinco estrellas en Google, el equipo lo celebra en el grupo y, dos días después, nadie sabe con certeza qué comercial atendió a esa persona. La reseña suma a la reputación de la marca, pero se pierde como reconocimiento para quien de verdad la ganó.",
@@ -88,14 +98,19 @@ const body = [
   li([span("Se cuela el sesgo. ", ["strong"]), span("Sin un dato objetivo, las atribuciones dudosas tienden a repartirse por afinidad o por quien más reclama, no por quien atendió al cliente.")]),
   li([span("No se puede auditar. ", ["strong"]), span("Cuando una comisión depende de una reseña, cualquier comercial tiene derecho a preguntar por qué se le asignó a otro. Un Excel no responde esa pregunta.")]),
 
-  block("h2", "Por qué pedir el nombre del comercial en la reseña no funciona"),
+  block("h2", "Pedir el nombre del comercial en la reseña va contra las políticas de Google"),
   block(
     "normal",
     "La tentación es obvia: pedir al cliente que escriba el nombre del vendedor en el texto de la reseña. En la práctica casi nadie lo hace. El cliente quiere dejar su opinión rápido, no rellenar un formulario, y forzarlo resta reseñas justo donde más las necesitas.",
   ),
   block(
     "normal",
-    "Peor todavía, mete ruido de cara a Google. Una reseña que parece guiada o incentivada es una reseña de menor calidad. La solución no es pedirle nada extra al cliente. La solución es no depender de lo que escriba.",
+    "Hay un problema mayor que la comodidad del cliente. Las políticas de contenido generado por usuarios de Google Maps prohíben de forma expresa que un comercio pida a su personal que consiga reseñas con contenido concreto, y citan de manera literal el contenido que identifica a un empleado. Pedir al cliente que nombre al comercial no es solo poco práctico: es una práctica que Google señala como no permitida, y las reseñas que incumplen sus políticas se exponen a ser retiradas.",
+  ),
+  policyImg,
+  block(
+    "normal",
+    "Google sí permite invitar al cliente a dejar una reseña honesta sobre su experiencia real. Lo que no permite es dirigir lo que escribe. La salida no pasa por pedirle nada extra ni por arriesgar la ficha del negocio. La salida es no depender de lo que escriba: atribuir la reseña por detrás, sin tocar su contenido.",
   ),
 
   block("h2", "Cómo atribuir cada reseña sin pedírselo al cliente"),
@@ -168,6 +183,23 @@ async function uploadCover() {
   };
 }
 
+// Captura del centro de ayuda de políticas de Google Maps (contenido generado
+// por usuarios) que respalda la sección de políticas del artículo. Se sube en
+// caliente al dataset (no se versiona el binario en el repo público). Devuelve
+// el _id del asset. Content-addressed → relanzar no duplica.
+const POLICY_IMG_URL =
+  "https://images.seroundtable.com/google-review-policy-update-1776345477.png";
+async function uploadPolicyImage() {
+  const res = await fetch(POLICY_IMG_URL);
+  if (!res.ok)
+    throw new Error(`No se pudo descargar la imagen de la política (HTTP ${res.status}).`);
+  const buffer = Buffer.from(await res.arrayBuffer());
+  const asset = await client.assets.upload("image", buffer, {
+    filename: "google-review-policy.png",
+  });
+  return asset._id;
+}
+
 // Perfiles verificables del autor (sameAs). El primero, LinkedIn, refuerza el
 // E-E-A-T; añade aquí la URL personal cuando la tengas.
 const AUTHOR_SAME_AS = [
@@ -213,7 +245,6 @@ const post = {
   author: { _type: "reference", _ref: authorId },
   categories: [{ _type: "reference", _ref: categoryId, _key: key() }],
   publishedAt: "2026-07-04T09:00:00.000Z",
-  body,
   seoTitle: "Atribuir reseñas de Google a cada comercial",
   seoDescription:
     "Cómo saber qué comercial consiguió cada reseña de Google sin pedir el nombre al cliente: enlace personalizado, ventana temporal y similitud de nombres.",
@@ -233,12 +264,20 @@ async function run() {
   const cover = await uploadCover();
   console.log(`  ✓ portada subida (${cover.asset._ref})`);
 
+  const policyRef = await uploadPolicyImage();
+  console.log(`  ✓ imagen de la política de Google subida (${policyRef})`);
+  const policyImg = img(
+    policyRef,
+    "Políticas de contenido de Google Maps: entre lo que un comercio no puede hacer figura pedir a su personal que consiga reseñas con contenido que identifique a un empleado. Fuente: centro de ayuda de Google, vía Search Engine Roundtable.",
+  );
+  const body = buildBody(policyImg);
+
   const existing = await client.getDocument(postId).catch(() => null);
   if (existing && !force) {
     await client.patch(postId).set({ mainImage: cover }).commit();
     console.log(`  • post existente: actualizada la portada (usa --force para reescribir el cuerpo).`);
   } else {
-    await client.createOrReplace({ ...post, mainImage: cover });
+    await client.createOrReplace({ ...post, body, mainImage: cover });
     console.log(`  ✓ artículo "${post.title}"`);
   }
   console.log(`\nURL: https://atribuya.com/blog/${post.slug.current}`);
