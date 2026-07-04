@@ -279,14 +279,14 @@ export default function PrivacyPage() {
         EU-US Data Privacy Framework.
       </p>
       <p style={p}>
-        Cookie consent is managed with Iubenda's Cookie Solution together with
-        Google Consent Mode v2. Analytics start in a{" "}
-        <strong>denied-by-default</strong> state: until you give your explicit
-        consent in the banner, no analytics cookie is set and your activity is
-        not measured. You may decline without affecting your browsing
-        experience, and you can revoke or change your choice at any time from the
-        "Cookies" link in the page footer, which reopens the preferences panel,
-        as easily as you granted it.
+        Cookie consent is managed with Iubenda's Cookie Solution. Third-party
+        analytics stay{" "}
+        <strong>blocked until you give your explicit consent</strong> in the
+        banner: until then, no Google script runs and no analytics cookie is
+        set. You may decline without affecting your browsing experience, and you
+        can revoke or change your choice at any time from the "Cookies" link in
+        the page footer, which reopens the preferences panel, as easily as you
+        granted it.
       </p>
       <p style={p}>
         The up-to-date list of cookies used is available in our{" "}

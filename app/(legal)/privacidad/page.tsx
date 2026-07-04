@@ -293,13 +293,13 @@ export default function PrivacidadPage() {
       </p>
       <p style={p}>
         El consentimiento de cookies se gestiona con la Cookie Solution de
-        Iubenda junto con Google Consent Mode v2. La analítica arranca en estado{" "}
-        <strong>denegado por defecto</strong>: hasta que prestas tu
-        consentimiento explícito en el banner, no se instala ninguna cookie
-        analítica ni se mide tu actividad. Puedes rechazarla sin que ello afecte
-        a la navegación, y revocar o cambiar tu elección en cualquier momento
-        desde el enlace «Cookies» del pie de página, que reabre el panel de
-        preferencias, con el mismo grado de facilidad con el que la otorgaste.
+        Iubenda. La analítica de terceros permanece{" "}
+        <strong>bloqueada hasta que prestas tu consentimiento explícito</strong>{" "}
+        en el banner: hasta ese momento no se ejecuta ningún script de Google ni
+        se instala ninguna cookie analítica. Puedes rechazarla sin que ello
+        afecte a la navegación, y revocar o cambiar tu elección en cualquier
+        momento desde el enlace «Cookies» del pie de página, que reabre el panel
+        de preferencias, con el mismo grado de facilidad con el que la otorgaste.
       </p>
       <p style={p}>
         El detalle actualizado de las cookies utilizadas está en nuestra{" "}
