@@ -22,6 +22,12 @@ const bc = makeBreadcrumb({
 });
 
 export default function PrivacidadPage() {
+  // Política de cookies auto-generada por Iubenda. Si aún no está el ID (env),
+  // el §8 muestra el texto sin enlace externo (degradado).
+  const cookiePolicyId = process.env.NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID;
+  const cookiePolicyUrl = cookiePolicyId
+    ? `https://www.iubenda.com/privacy-policy/${cookiePolicyId}/cookie-policy`
+    : null;
   return (
     <>
       <script
@@ -286,16 +292,30 @@ export default function PrivacidadPage() {
         privacidad de datos UE-EE. UU.
       </p>
       <p style={p}>
-        Estas cookies analíticas <strong>solo se cargan si prestas tu
-        consentimiento previo</strong> mediante el banner que se muestra al
-        entrar. Hasta que pulses «Aceptar» no se ejecuta ningún script de Google
-        ni se instala ninguna cookie analítica. Puedes rechazarlas sin que ello
-        afecte a la navegación, y revocar o cambiar tu elección en cualquier
-        momento desde el enlace «Cookies» del pie de página, con el mismo grado
-        de facilidad con el que la otorgaste.
+        El consentimiento de cookies se gestiona con la Cookie Solution de
+        Iubenda junto con Google Consent Mode v2. La analítica arranca en estado{" "}
+        <strong>denegado por defecto</strong>: hasta que prestas tu
+        consentimiento explícito en el banner, no se instala ninguna cookie
+        analítica ni se mide tu actividad. Puedes rechazarla sin que ello afecte
+        a la navegación, y revocar o cambiar tu elección en cualquier momento
+        desde el enlace «Cookies» del pie de página, que reabre el panel de
+        preferencias, con el mismo grado de facilidad con el que la otorgaste.
       </p>
       <p style={p}>
-        No se utilizan cookies publicitarias ni de perfilado comercial. Más
+        El detalle actualizado de las cookies utilizadas está en nuestra{" "}
+        {cookiePolicyUrl ? (
+          <a
+            href={cookiePolicyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "underline" }}
+          >
+            política de cookies
+          </a>
+        ) : (
+          <span>política de cookies</span>
+        )}
+        . No se utilizan cookies publicitarias ni de perfilado comercial. Más
         información sobre el tratamiento de datos por parte de Google en{" "}
         <a
           href="https://policies.google.com/privacy"

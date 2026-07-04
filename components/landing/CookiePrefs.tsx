@@ -1,16 +1,20 @@
 "use client";
 
-import { CONSENT_EVENT } from "@/lib/consent";
+type IubApi = { cs?: { api?: { openPreferences?: () => void } } };
 
-// Reabre el banner de cookies para revocar o cambiar el consentimiento.
-// Solo tiene efecto si GA está configurado (si no, no hay banner que abrir).
+// Reabre el centro de preferencias de la Cookie Solution de Iubenda para
+// revocar o cambiar el consentimiento. Solo se muestra si Iubenda está
+// configurado; el optional chaining protege el caso en que aún no ha cargado.
 export function CookiePrefs({ label }: { label: string }) {
-  if (!process.env.NEXT_PUBLIC_GA_ID) return null;
+  if (!process.env.NEXT_PUBLIC_IUBENDA_SITE_ID) return null;
 
   return (
     <button
       type="button"
-      onClick={() => window.dispatchEvent(new Event(CONSENT_EVENT))}
+      onClick={() => {
+        const iub = (window as unknown as { _iub?: IubApi })._iub;
+        iub?.cs?.api?.openPreferences?.();
+      }}
       className="transition hover:text-ink"
     >
       {label}
