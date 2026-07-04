@@ -116,7 +116,7 @@ const T = {
         <span className="font-normal text-ink-3"> (pago único)</span>
       </>
     ),
-    start: "Empezar",
+    start: "Pedir demo",
     customLabel: "Plan a medida",
     custom: "A medida",
     customTeam: "Más de 30 comerciales",
@@ -146,7 +146,7 @@ const T = {
         <span className="font-normal text-ink-3"> (one-time)</span>
       </>
     ),
-    start: "Get started",
+    start: "Book a demo",
     customLabel: "Custom plan",
     custom: "Custom",
     customTeam: "More than 30 sales reps",
