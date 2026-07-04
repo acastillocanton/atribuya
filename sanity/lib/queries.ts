@@ -12,7 +12,7 @@ export type PostListItem = {
   excerpt: string;
   mainImage: (SanityImageSource & { alt?: string }) | null;
   publishedAt: string;
-  author: { name: string; role?: string } | null;
+  author: { name: string; role?: string; image?: SanityImageSource | null } | null;
   categories: string[] | null;
 };
 
@@ -36,7 +36,7 @@ const POST_FIELDS = groq`
   excerpt,
   mainImage,
   publishedAt,
-  "author": author->{ name, role },
+  "author": author->{ name, role, image },
   "categories": categories[]->title
 `;
 

@@ -30,6 +30,9 @@ export async function BlogPostPage({
   const ogUrl = post.mainImage
     ? urlFor(post.mainImage)?.width(1200).height(630).fit("crop").url()
     : null;
+  const authorAvatarUrl = post.author?.image
+    ? urlFor(post.author.image)?.width(80).height(80).fit("crop").url()
+    : null;
 
   const postJsonLd = {
     "@context": "https://schema.org",
@@ -73,12 +76,23 @@ export async function BlogPostPage({
         {post.title}
       </h1>
       {post.author ? (
-        <p className="mt-4 text-sm text-ink-3">
-          {post.author.name}
-          {post.author.role ? (
-            <span className="text-ink-4"> · {post.author.role}</span>
+        <div className="mt-4 flex items-center gap-3">
+          {authorAvatarUrl ? (
+            <Image
+              src={authorAvatarUrl}
+              alt={post.author.name}
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full object-cover"
+            />
           ) : null}
-        </p>
+          <p className="text-sm text-ink-3">
+            {post.author.name}
+            {post.author.role ? (
+              <span className="text-ink-4"> · {post.author.role}</span>
+            ) : null}
+          </p>
+        </div>
       ) : null}
 
       {heroUrl ? (
