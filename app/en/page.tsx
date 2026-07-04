@@ -214,6 +214,25 @@ const siteJsonLd = {
       logo: "https://atribuya.com/icon.png",
       sameAs: ["https://www.linkedin.com/company/atribuya"],
     },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://atribuya.com/#software",
+      name: "Atribuya",
+      url: "https://atribuya.com/",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      description:
+        "Attributes every Google Business Profile review to the sales rep who earned it, automatically and without asking the customer for a name.",
+      publisher: { "@id": "https://atribuya.com/#organization" },
+      // Precios desde PLANS: si cambian las tarjetas, cambia el JSON-LD solo.
+      offers: PLANS.map((p) => ({
+        "@type": "Offer",
+        name: `${p.name} plan`,
+        price: p.price,
+        priceCurrency: "EUR",
+        url: "https://atribuya.com/en#pricing",
+      })),
+    },
   ],
 };
 
