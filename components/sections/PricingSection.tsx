@@ -222,6 +222,7 @@ export function PricingSection({
             </p>
             <Link
               href={demo}
+              aria-label={`${t.start} — ${t.planLabel(plan.name)}`}
               className={
                 plan.featured
                   ? "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-accent-strong"
@@ -257,6 +258,7 @@ export function PricingSection({
           </p>
           <Link
             href={demo}
+            aria-label={`${t.talk} — ${t.customLabel}`}
             className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-[15px] font-semibold text-ink transition hover:bg-ink/[0.04]"
           >
             {t.talk}
