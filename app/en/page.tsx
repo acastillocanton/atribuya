@@ -7,9 +7,9 @@ import { ProductShot } from "@/components/landing/ProductShot";
 import { AttributionAnimation } from "@/components/landing/AttributionAnimation";
 
 export const metadata: Metadata = {
-  title: "Atribuya: attribute Google reviews to each sales rep, automatically",
+  title: "Atribuya: know which rep brings in every Google review",
   description:
-    "B2B SaaS that attributes Google Business Profile reviews to individual sales reps, without asking the customer to mention the rep's name. For companies with field sales teams.",
+    "Attributes every Google review to the sales rep who earned it, automatically and without asking the customer for a name. Team ranking, alerts, Excel export.",
   alternates: {
     canonical: "https://atribuya.com/en",
     languages: {
@@ -192,9 +192,38 @@ const faqJsonLd = {
   })),
 };
 
+// WebSite + Organization: Google los usa para el nombre del sitio en la SERP
+// (los @id apuntan a los mismos nodos que declara la home ES).
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://atribuya.com/#website",
+      url: "https://atribuya.com/",
+      name: "Atribuya",
+      alternateName: "atribuya.com",
+      inLanguage: "en-US",
+      publisher: { "@id": "https://atribuya.com/#organization" },
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://atribuya.com/#organization",
+      name: "Atribuya",
+      url: "https://atribuya.com/",
+      logo: "https://atribuya.com/icon.png",
+      sameAs: ["https://www.linkedin.com/company/atribuya"],
+    },
+  ],
+};
+
 export default function HomePageEn() {
   return (
     <div className="min-h-screen bg-bg font-text text-ink">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+      />
       <Header locale="en" />
 
       <main id="contenido">

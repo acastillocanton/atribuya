@@ -10,9 +10,9 @@ import { AttributionAnimation } from "@/components/landing/AttributionAnimation"
 // Sobrescribimos los robots heredados de app/layout.tsx (que son noindex global
 // para proteger las rutas autenticadas).
 export const metadata: Metadata = {
-  title: "Atribuya: atribuye reseñas de Google a cada comercial, en automático",
+  title: "Atribuya: sabe qué comercial te trae cada reseña de Google",
   description:
-    "SaaS de atribución de reseñas de Google Business Profile para empresas con red comercial. Cada vendedor recibe el crédito de las reseñas que ha conseguido, sin pedirle el nombre al cliente.",
+    "Atribuye cada reseña de Google al comercial que la consiguió, en automático y sin pedirle el nombre al cliente. Ranking del equipo, avisos y export a Excel.",
   alternates: {
     canonical: "https://atribuya.com/",
     languages: {
@@ -195,9 +195,39 @@ const faqJsonLd = {
   })),
 };
 
+// WebSite + Organization en la home: es lo que Google usa para mostrar
+// "Atribuya" como nombre del sitio en la SERP (en vez de "atribuya.com")
+// y para asociar el logo a la marca.
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://atribuya.com/#website",
+      url: "https://atribuya.com/",
+      name: "Atribuya",
+      alternateName: "atribuya.com",
+      inLanguage: "es-ES",
+      publisher: { "@id": "https://atribuya.com/#organization" },
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://atribuya.com/#organization",
+      name: "Atribuya",
+      url: "https://atribuya.com/",
+      logo: "https://atribuya.com/icon.png",
+      sameAs: ["https://www.linkedin.com/company/atribuya"],
+    },
+  ],
+};
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-bg font-text text-ink">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+      />
       <Header locale="es" />
 
       <main id="contenido">
