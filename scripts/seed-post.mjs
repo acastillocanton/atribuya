@@ -268,7 +268,7 @@ async function run() {
   console.log(`  ✓ imagen de la política de Google subida (${policyRef})`);
   const policyImg = img(
     policyRef,
-    "Políticas de contenido de Google Maps: entre lo que un comercio no puede hacer figura pedir a su personal que consiga reseñas con contenido que identifique a un empleado. Fuente: centro de ayuda de Google, vía Search Engine Roundtable.",
+    "Políticas de contenido de Google Maps: entre lo que un comercio no puede hacer figura pedir a su personal que consiga reseñas con contenido que identifique a un empleado.",
   );
   const body = buildBody(policyImg);
 
