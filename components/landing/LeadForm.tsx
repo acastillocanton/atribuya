@@ -36,8 +36,10 @@ const DICTS = {
     messagePh: "Sector, número de comerciales, qué problema queréis resolver…",
     cta: "Quiero saber quién me genera negocio",
     ctaSending: "Enviando…",
-    consent1: "Al enviar aceptas que te contactemos por email para coordinar la demo. No compartimos tus datos con terceros. Más en nuestra",
-    consent2: "política de privacidad",
+    legal1:
+      "De conformidad con el Reglamento General de Protección de Datos (UE) 2016/679, le informamos que los datos personales proporcionados serán tratados por Atribuya.com con la finalidad de que un agente comercial se ponga en contacto con usted. La base legal para el tratamiento de sus datos es su consentimiento al enviar este formulario. Sus datos no serán cedidos a terceros salvo obligación legal. Usted tiene derecho a acceder, rectificar y suprimir sus datos, así como otros derechos, como se explica en nuestra ",
+    legalPrivacy: "política de privacidad",
+    legal2: ". Para ejercer sus derechos o para cualquier consulta, puede contactarnos en ",
     privacyHref: "/privacidad",
     thanksHref: "/gracias",
   },
@@ -58,8 +60,10 @@ const DICTS = {
     messagePh: "Industry, number of sales reps, the problem you want to solve…",
     cta: "Show me who drives my business",
     ctaSending: "Sending…",
-    consent1: "By submitting you accept that we contact you by email to schedule the demo. We don't share your data with third parties. More in our",
-    consent2: "privacy policy",
+    legal1:
+      "In accordance with the General Data Protection Regulation (EU) 2016/679, we inform you that the personal data provided will be processed by Atribuya.com so that a sales agent can contact you. The legal basis for processing your data is your consent when submitting this form. Your data will not be shared with third parties except by legal obligation. You have the right to access, rectify and erase your data, as well as other rights, as explained in our ",
+    legalPrivacy: "privacy policy",
+    legal2: ". To exercise your rights or for any query, you can contact us at ",
     privacyHref: "/en/privacy",
     thanksHref: "/en/thanks",
   },
@@ -240,10 +244,14 @@ export function LeadForm({ locale = "es" }: { locale?: LeadFormLocale }) {
       >
         {pending ? t.ctaSending : t.cta}
       </button>
-      <p className="text-xs text-ink-3">
-        {t.consent1}{" "}
+      <p className="text-xs leading-relaxed text-ink-3">
+        {t.legal1}
         <a href={t.privacyHref} className="underline">
-          {t.consent2}
+          {t.legalPrivacy}
+        </a>
+        {t.legal2}
+        <a href="mailto:alejandro@atribuya.com" className="underline">
+          alejandro@atribuya.com
         </a>
         .
       </p>
