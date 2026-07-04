@@ -64,3 +64,6 @@ Venta/
 .bd.txt
 .tmpbuild/
 .env*
+
+# Documentos internos de negocio (no publicar: repo público)
+Buyer Persona/
