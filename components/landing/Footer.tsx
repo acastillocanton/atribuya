@@ -7,7 +7,7 @@ type Locale = "es" | "en";
 const STRINGS = {
   es: {
     statement:
-      "Sabes qué comercial te trae cada reseña de Google.",
+      "Descubre qué comercial hay detrás de cada reseña de Google.",
     how: { href: "/como-funciona", label: "Cómo funciona" },
     product: { href: "/producto", label: "Producto" },
     pricing: { href: "/precios", label: "Precios" },
@@ -23,7 +23,7 @@ const STRINGS = {
   },
   en: {
     statement:
-      "You know which rep brings in every Google review.",
+      "Discover which sales rep is behind every Google review.",
     how: { href: "/en/how-it-works", label: "How it works" },
     product: { href: "/en/product", label: "Product" },
     pricing: { href: "/en/pricing", label: "Pricing" },
