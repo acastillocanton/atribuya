@@ -193,12 +193,12 @@ const post = {
 };
 
 async function uploadCover() {
-  const buffer = readFileSync(new URL("../public/landing/ranking.png", import.meta.url));
-  const asset = await client.assets.upload("image", buffer, { filename: "ranking.png" });
+  const buffer = readFileSync(new URL("../public/landing/enlace-qr.png", import.meta.url));
+  const asset = await client.assets.upload("image", buffer, { filename: "enlace-qr.png" });
   return {
     _type: "image",
     asset: { _type: "reference", _ref: asset._id },
-    alt: "Ranking de comerciales por reseñas conseguidas en el panel de Atribuya",
+    alt: "Enlace personal y código QR de un comercial para que el cliente deje una reseña en Google, en el panel de Atribuya",
   };
 }
 
