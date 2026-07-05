@@ -52,23 +52,10 @@ export default function PricingPage() {
       <SiteHeader locale="en" altLangHref="/precios" />
       <main>
         <Breadcrumbs items={bc.items} className="mx-auto w-full max-w-6xl px-5 pt-6" />
-        <section className="mx-auto max-w-6xl px-5 pt-8 sm:pt-12">
-          <div className="grid items-center gap-8 lg:grid-cols-[1fr_440px]">
-            <div className="max-w-2xl">
-              <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-                Pricing
-              </p>
-              <h1
-                className="mt-3 font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
-                style={{ fontSize: "var(--text-h2)" }}
-              >
-                Atribuya pricing
-              </h1>
-              <p className="mt-5 leading-relaxed text-ink-2" style={{ fontSize: "var(--text-lead)" }}>
-                The price grows with your sales team, not with your reviews. No
-                lock-in, and everything included from the very first plan.
-              </p>
-            </div>
+        <PricingSection
+          locale="en"
+          headingLevel="h1"
+          illustration={
             <img
               src="/illustrations/precios.webp"
               alt="A person reaching for a star"
@@ -76,9 +63,8 @@ export default function PricingPage() {
               height={1100}
               className="mx-auto w-full max-w-[300px] lg:max-w-none"
             />
-          </div>
-        </section>
-        <PricingSection locale="en" headingLevel="h2" />
+          }
+        />
         <SectionCta locale="en" />
       </main>
       <Footer locale="en" />

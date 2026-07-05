@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { routes, type Locale } from "@/lib/marketing/nav";
 
@@ -162,30 +163,44 @@ const T = {
 export function PricingSection({
   locale,
   headingLevel = "h2",
+  illustration,
 }: {
   locale: Locale;
   headingLevel?: "h1" | "h2";
+  /** Ilustración opcional a la derecha de la cabecera (solo /precios). */
+  illustration?: ReactNode;
 }) {
   const t = T[locale];
   const demo = routes[locale].demo;
   const Heading = headingLevel;
 
+  const header = (
+    <div className="max-w-2xl">
+      <Heading
+        className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
+        style={{ fontSize: "var(--text-h2)" }}
+      >
+        {t.heading}
+      </Heading>
+      <p
+        className="mt-5 leading-relaxed text-ink-2"
+        style={{ fontSize: "var(--text-lead)" }}
+      >
+        {t.lead}
+      </p>
+    </div>
+  );
+
   return (
     <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-      <div className="max-w-2xl">
-        <Heading
-          className="font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
-          style={{ fontSize: "var(--text-h2)" }}
-        >
-          {t.heading}
-        </Heading>
-        <p
-          className="mt-5 leading-relaxed text-ink-2"
-          style={{ fontSize: "var(--text-lead)" }}
-        >
-          {t.lead}
-        </p>
-      </div>
+      {illustration ? (
+        <div className="grid items-center gap-8 lg:grid-cols-[1fr_440px]">
+          {header}
+          {illustration}
+        </div>
+      ) : (
+        header
+      )}
 
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {plans[locale].map((plan) => (
