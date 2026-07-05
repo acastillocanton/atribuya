@@ -61,7 +61,7 @@ export default function PreciosPage() {
             width={1100}
             height={1100}
             loading="lazy"
-            className="w-full max-w-[200px]"
+            className="w-full max-w-[340px]"
           />
         </div>
         <SectionCta locale="es" />

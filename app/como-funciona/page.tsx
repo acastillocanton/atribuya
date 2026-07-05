@@ -31,7 +31,7 @@ export default function ComoFuncionaPage() {
       <main>
         <Breadcrumbs items={bc.items} className="mx-auto w-full max-w-6xl px-5 pt-6" />
         <section className="mx-auto max-w-6xl px-5 pt-8 sm:pt-12">
-          <div className="grid items-center gap-8 lg:grid-cols-[1fr_320px]">
+          <div className="grid items-center gap-8 lg:grid-cols-[1fr_440px]">
             <div className="max-w-2xl">
               <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
                 Cómo funciona
@@ -52,7 +52,7 @@ export default function ComoFuncionaPage() {
               alt="Comercial saliendo a una visita con su carpeta"
               width={1100}
               height={1100}
-              className="mx-auto w-full max-w-[220px] lg:max-w-none"
+              className="mx-auto w-full max-w-[300px] lg:max-w-none"
             />
           </div>
         </section>
