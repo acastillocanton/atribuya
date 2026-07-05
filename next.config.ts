@@ -19,23 +19,18 @@ const CSP = [
   // googletagmanager.com sirve el gtag.js de Google Analytics 4. Solo se carga
   // tras el consentimiento del usuario (banner) y en páginas públicas.
   // core.sanity-cdn.com sirve el bridge.js del Studio embebido de Sanity.
-  // cdn/cs/embeds.iubenda.com: Cookie Solution (banner + Consent Mode + centro
-  // de preferencias).
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://core.sanity-cdn.com https://cdn.iubenda.com https://cs.iubenda.com https://embeds.iubenda.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://core.sanity-cdn.com",
   // fonts.googleapis.com es el CSS de Google Fonts (Inter); fonts.gstatic.com
-  // sirve los .woff2 reales. cdn.iubenda.com sirve el CSS del banner.
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.iubenda.com",
-  "font-src 'self' data: https://fonts.gstatic.com https://cdn.iubenda.com",
+  // sirve los .woff2 reales.
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
   // Google APIs (mybusiness*) + endpoints de recogida de GA4 (g/collect, que
   // usa subdominios regionales como region1.google-analytics.com).
   // Sanity: el Studio embebido en /studio habla con <projectId>.api.sanity.io
   // (REST + login + listeners WebSocket), apicdn.sanity.io (CDN de datos),
   // cdn.sanity.io (assets/imágenes vía fetch) y sanity-cdn.com (auto-update de
   // los módulos del Studio).
-  // idb.iubenda.com registra la prueba de consentimiento (proof).
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://api.sanity.io https://*.api.sanity.io wss://*.api.sanity.io https://*.apicdn.sanity.io https://cdn.sanity.io https://sanity-cdn.com https://*.sanity-cdn.com https://cdn.iubenda.com https://cs.iubenda.com https://idb.iubenda.com",
-  // Iubenda embebe el centro de preferencias y la política de cookies en iframe.
-  "frame-src 'self' https://*.iubenda.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://api.sanity.io https://*.api.sanity.io wss://*.api.sanity.io https://*.apicdn.sanity.io https://cdn.sanity.io https://sanity-cdn.com https://*.sanity-cdn.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
