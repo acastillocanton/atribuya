@@ -277,8 +277,12 @@ export default function PrivacyPage() {
         <strong>are only loaded if you give your prior consent</strong> via the
         banner shown on first visit. Until you click "Accept", no Google script
         runs and no analytics cookie is set. You may decline without affecting
-        your browsing experience, and you can change your choice at any time from
-        the "Cookies" link in the page footer.
+        your browsing experience, manage each category separately, and change or
+        withdraw your choice at any time from the "Cookies" link in the page
+        footer, as easily as you gave it. Your choice is stored in a first-party
+        cookie with a timestamp and version, which lets us honour it and
+        demonstrate your consent; if we update this policy, we will ask you
+        again.
       </p>
       <p style={p}>
         No advertising or commercial profiling cookies are used. For more

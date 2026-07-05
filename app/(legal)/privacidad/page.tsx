@@ -290,9 +290,12 @@ export default function PrivacidadPage() {
         consentimiento previo</strong> mediante el banner que se muestra al
         entrar. Hasta que pulses «Aceptar» no se ejecuta ningún script de Google
         ni se instala ninguna cookie analítica. Puedes rechazarlas sin que ello
-        afecte a la navegación, y revocar o cambiar tu elección en cualquier
-        momento desde el enlace «Cookies» del pie de página, con el mismo grado
-        de facilidad con el que la otorgaste.
+        afecte a la navegación, gestionar cada categoría por separado, y revocar
+        o cambiar tu elección en cualquier momento desde el enlace «Cookies» del
+        pie de página, con el mismo grado de facilidad con el que la otorgaste.
+        Tu elección se guarda en una cookie propia con marca de tiempo y versión,
+        que nos permite respetarla y acreditar tu consentimiento; si actualizamos
+        esta política, te volveremos a preguntar.
       </p>
       <p style={p}>
         No se utilizan cookies publicitarias ni de perfilado comercial. Más

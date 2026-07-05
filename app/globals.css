@@ -280,3 +280,42 @@ button {
     position: static !important;
   }
 }
+
+/* vanilla-cookieconsent · tema de marca.
+   Botones «Aceptar»/«Rechazar» neutros y de igual peso (equalWeightButtons),
+   para cumplir la AEPD sin dark-patterns. Enlaces y toggle de analítica en
+   terracota, coherente con el resto de la web. */
+#cc-main {
+  --cc-font-family: var(--font-text), system-ui, sans-serif;
+  --cc-bg: var(--surface);
+  --cc-primary-color: var(--ink);
+  --cc-secondary-color: var(--ink-3);
+  --cc-separator-border-color: var(--line);
+
+  --cc-btn-primary-bg: var(--ink);
+  --cc-btn-primary-color: #ffffff;
+  --cc-btn-primary-border-color: var(--ink);
+  --cc-btn-primary-hover-bg: var(--ink-2);
+  --cc-btn-primary-hover-color: #ffffff;
+  --cc-btn-primary-hover-border-color: var(--ink-2);
+
+  --cc-btn-secondary-bg: var(--surface);
+  --cc-btn-secondary-color: var(--ink-2);
+  --cc-btn-secondary-border-color: var(--line-strong);
+  --cc-btn-secondary-hover-bg: var(--surface-2);
+  --cc-btn-secondary-hover-color: var(--ink);
+  --cc-btn-secondary-hover-border-color: var(--ink-3);
+
+  --cc-btn-border-radius: 9999px;
+  --cc-modal-border-radius: var(--radius-lg);
+
+  --cc-toggle-on-bg: var(--accent);
+  --cc-toggle-off-bg: var(--line-strong);
+  --cc-toggle-on-knob-bg: #ffffff;
+  --cc-toggle-off-knob-bg: #ffffff;
+}
+
+#cc-main a {
+  color: var(--accent);
+}
+

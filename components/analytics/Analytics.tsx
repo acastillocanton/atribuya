@@ -1,14 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
-import {
-  CONSENT_EVENT,
-  CONSENT_KEY,
-  type CookieConsent,
-} from "@/lib/consent";
-import { CookieBanner } from "./CookieBanner";
+import * as CookieConsent from "vanilla-cookieconsent";
+import "vanilla-cookieconsent/dist/cookieconsent.css";
+import { cookieConsentConfig } from "@/lib/cookie-consent-config";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
@@ -35,65 +32,49 @@ function localeFor(p: string): "es" | "en" {
 
 export function Analytics() {
   const pathname = usePathname();
-  const [consent, setConsent] = useState<CookieConsent | null>(null);
-  const [hydrated, setHydrated] = useState(false);
-  const [reopened, setReopened] = useState(false);
+  const [analyticsAccepted, setAnalyticsAccepted] = useState(false);
+  const started = useRef(false);
 
-  // Leemos la elección guardada después de montar, para no romper la hidratación.
+  const onPublic = Boolean(GA_ID) && isPublicPath(pathname);
+  const locale = localeFor(pathname);
+
+  // Arranca vanilla-cookieconsent una sola vez, cuando estamos en una página
+  // pública. La librería pinta el banner, persiste la elección en su cookie y
+  // guarda el registro versionado del consentimiento (prueba RGPD). El callback
+  // onConsent/onChange nos dice si la analítica está aceptada.
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(CONSENT_KEY);
-      if (stored === "granted" || stored === "denied") setConsent(stored);
-    } catch {
-      // localStorage puede no estar disponible (modo privado, etc.)
-    }
-    setHydrated(true);
-  }, []);
+    if (!onPublic || started.current) return;
+    started.current = true;
+    void CookieConsent.run(
+      cookieConsentConfig({
+        defaultLang: locale,
+        onAnalyticsConsent: setAnalyticsAccepted,
+      }),
+    );
+  }, [onPublic, locale]);
 
-  // El footer puede reabrir el banner para revocar/cambiar la decisión.
+  // Mantén el idioma del banner/modal sincronizado con la navegación ES↔EN.
   useEffect(() => {
-    const handler = () => setReopened(true);
-    window.addEventListener(CONSENT_EVENT, handler);
-    return () => window.removeEventListener(CONSENT_EVENT, handler);
-  }, []);
+    if (started.current) void CookieConsent.setLanguage(locale);
+  }, [locale]);
 
-  const choose = useCallback((value: CookieConsent) => {
-    try {
-      window.localStorage.setItem(CONSENT_KEY, value);
-    } catch {
-      // sin persistencia: la decisión vale solo para esta sesión
-    }
-    setConsent(value);
-    setReopened(false);
-  }, []);
+  if (!onPublic) return null;
 
-  if (!GA_ID || !isPublicPath(pathname)) return null;
+  // Cargamos gtag solo tras aceptar la analítica y solo en producción (en dev
+  // probamos el banner sin contaminar los datos de GA).
+  const loadGa = analyticsAccepted && process.env.NODE_ENV === "production";
 
-  const showBanner = hydrated && (consent === null || reopened);
-  // Cargamos gtag solo tras el opt-in y solo en producción (en dev probamos el
-  // banner sin contaminar los datos de GA).
-  const loadGa = consent === "granted" && process.env.NODE_ENV === "production";
+  if (!loadGa) return null;
 
   return (
     <>
-      {loadGa && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-            strategy="afterInteractive"
-          />
-          <Script id="ga4-init" strategy="afterInteractive">
-            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}
-          </Script>
-        </>
-      )}
-      {showBanner && (
-        <CookieBanner
-          locale={localeFor(pathname)}
-          onAccept={() => choose("granted")}
-          onReject={() => choose("denied")}
-        />
-      )}
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="ga4-init" strategy="afterInteractive">
+        {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}
+      </Script>
     </>
   );
 }
