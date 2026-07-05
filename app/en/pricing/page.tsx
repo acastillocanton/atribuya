@@ -53,6 +53,16 @@ export default function PricingPage() {
       <main>
         <Breadcrumbs items={bc.items} className="mx-auto w-full max-w-6xl px-5 pt-6" />
         <PricingSection locale="en" headingLevel="h1" />
+        <div className="mx-auto flex max-w-6xl justify-center px-5 pt-8">
+          <img
+            src="/illustrations/precios.webp"
+            alt="A person reaching for a star"
+            width={1100}
+            height={1100}
+            loading="lazy"
+            className="w-full max-w-[200px]"
+          />
+        </div>
         <SectionCta locale="en" />
       </main>
       <Footer locale="en" />

@@ -31,21 +31,30 @@ export default function HowItWorksPage() {
       <main>
         <Breadcrumbs items={bc.items} className="mx-auto w-full max-w-6xl px-5 pt-6" />
         <section className="mx-auto max-w-6xl px-5 pt-8 sm:pt-12">
-          <div className="max-w-2xl">
-            <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
-              How it works
-            </p>
-            <h1
-              className="mt-3 font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
-              style={{ fontSize: "var(--text-h2)" }}
-            >
-              How Atribuya works
-            </h1>
-            <p className="mt-5 leading-relaxed text-ink-2" style={{ fontSize: "var(--text-lead)" }}>
-              Attribute every Google review to the sales rep who earned it,
-              without asking the customer for anything. It's that simple, in
-              three steps.
-            </p>
+          <div className="grid items-center gap-8 lg:grid-cols-[1fr_320px]">
+            <div className="max-w-2xl">
+              <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+                How it works
+              </p>
+              <h1
+                className="mt-3 font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
+                style={{ fontSize: "var(--text-h2)" }}
+              >
+                How Atribuya works
+              </h1>
+              <p className="mt-5 leading-relaxed text-ink-2" style={{ fontSize: "var(--text-lead)" }}>
+                Attribute every Google review to the sales rep who earned it,
+                without asking the customer for anything. It's that simple, in
+                three steps.
+              </p>
+            </div>
+            <img
+              src="/illustrations/como-funciona.webp"
+              alt="A sales rep heading out to a visit with their folder"
+              width={1100}
+              height={1100}
+              className="mx-auto w-full max-w-[220px] lg:max-w-none"
+            />
           </div>
         </section>
         <HowItWorks locale="en" />
