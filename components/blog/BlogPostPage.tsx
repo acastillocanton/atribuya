@@ -67,7 +67,16 @@ export async function BlogPostPage({
           },
         }
       : {}),
-    publisher: { "@id": "https://atribuya.com/#organization" },
+    // Publisher autocontenido (mismo @id que el nodo Organization de la home,
+    // para que Google fusione la entidad) con name/url/logo replicados EXACTOS
+    // de app/page.tsx → el rich result de Article queda completo por página.
+    publisher: {
+      "@type": "Organization",
+      "@id": "https://atribuya.com/#organization",
+      name: "Atribuya",
+      url: "https://atribuya.com/",
+      logo: "https://atribuya.com/icon.png",
+    },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     inLanguage: t.inLanguage,
   };
