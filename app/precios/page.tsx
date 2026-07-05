@@ -53,17 +53,33 @@ export default function PreciosPage() {
       <SiteHeader locale="es" altLangHref="/en/pricing" />
       <main>
         <Breadcrumbs items={bc.items} className="mx-auto w-full max-w-6xl px-5 pt-6" />
-        <PricingSection locale="es" headingLevel="h1" />
-        <div className="mx-auto flex max-w-6xl justify-center px-5 pt-8">
-          <img
-            src="/illustrations/precios.webp"
-            alt="Persona alcanzando una estrella"
-            width={1100}
-            height={1100}
-            loading="lazy"
-            className="w-full max-w-[340px]"
-          />
-        </div>
+        <section className="mx-auto max-w-6xl px-5 pt-8 sm:pt-12">
+          <div className="grid items-center gap-8 lg:grid-cols-[1fr_440px]">
+            <div className="max-w-2xl">
+              <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-ink-3">
+                Precios
+              </p>
+              <h1
+                className="mt-3 font-display font-medium leading-[1.05] tracking-[-0.02em] text-ink"
+                style={{ fontSize: "var(--text-h2)" }}
+              >
+                Precios de Atribuya
+              </h1>
+              <p className="mt-5 leading-relaxed text-ink-2" style={{ fontSize: "var(--text-lead)" }}>
+                El precio crece con tu equipo comercial, no con las reseñas. Sin
+                permanencia y con todo incluido desde el primer plan.
+              </p>
+            </div>
+            <img
+              src="/illustrations/precios.webp"
+              alt="Persona alcanzando una estrella"
+              width={1100}
+              height={1100}
+              className="mx-auto w-full max-w-[300px] lg:max-w-none"
+            />
+          </div>
+        </section>
+        <PricingSection locale="es" headingLevel="h2" />
         <SectionCta locale="es" />
       </main>
       <Footer locale="es" />
