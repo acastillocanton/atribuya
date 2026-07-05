@@ -21,8 +21,13 @@ export async function generateMetadata({
 
   const url = `https://atribuya.com/en/blog/author/${author.slug}`;
   const title = `${author.name}${author.role ? ` — ${author.role}` : ""}`;
-  const description =
+  const rawDescription =
     author.bio ?? `Articles by ${author.name} on the Atribuya blog.`;
+  // Meta description ≤ 160 chars: the author bio can be long.
+  const description =
+    rawDescription.length > 160
+      ? `${rawDescription.slice(0, 157).trimEnd()}…`
+      : rawDescription;
   const image = author.image
     ? urlFor(author.image)?.width(1200).height(630).fit("crop").url()
     : null;

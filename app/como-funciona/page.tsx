@@ -10,7 +10,7 @@ export const metadata: Metadata = sectionMetadata({
   locale: "es",
   title: "Cómo funciona Atribuya: reseñas atribuidas en tres pasos",
   description:
-    "Cómo Atribuya asigna cada reseña de Google al comercial que la consiguió: enlace personalizado por comercial, el cliente reseña como siempre, y la atribución se resuelve sola.",
+    "Cómo Atribuya asigna cada reseña de Google al comercial que la consiguió, con un enlace personal por comercial y sin fricción para el cliente.",
   esPath: "/como-funciona",
   enPath: "/en/how-it-works",
 });

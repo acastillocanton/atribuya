@@ -21,9 +21,13 @@ export async function generateMetadata({
 
   const url = `https://atribuya.com/blog/autor/${author.slug}`;
   const title = `${author.name}${author.role ? ` — ${author.role}` : ""}`;
+  const rawDescription =
+    author.bio ?? `Artículos de ${author.name} en el blog de Atribuya.`;
+  // Meta description ≤ 160 car.: la bio del autor puede ser larga.
   const description =
-    author.bio ??
-    `Artículos de ${author.name} en el blog de Atribuya.`;
+    rawDescription.length > 160
+      ? `${rawDescription.slice(0, 157).trimEnd()}…`
+      : rawDescription;
   const image = author.image
     ? urlFor(author.image)?.width(1200).height(630).fit("crop").url()
     : null;

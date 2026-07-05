@@ -14,7 +14,7 @@ const OG_IMAGE = `${ORIGIN}/recursos/plantilla-atribucion-resenas-google-ranking
 export const metadata: Metadata = {
   title: "Plantilla de atribución de reseñas de Google (Excel gratis)",
   description:
-    "Descarga gratis la plantilla de Excel para saber qué comercial ha conseguido cada reseña de Google y ver un ranking automático de tu equipo, sin pedirle el nombre del vendedor al cliente.",
+    "Descarga gratis la plantilla de Excel para saber qué comercial ha conseguido cada reseña de Google y ver un ranking automático de tu equipo.",
   alternates: { canonical: `${ORIGIN}${PATH}` },
   openGraph: {
     title: "Plantilla de atribución de reseñas de Google",

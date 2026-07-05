@@ -10,7 +10,7 @@ export const metadata: Metadata = sectionMetadata({
   locale: "en",
   title: "How Atribuya works: attributed reviews in three steps",
   description:
-    "How Atribuya assigns each Google review to the sales rep who earned it: a personal link per rep, the customer reviews as always, and attribution resolves on its own.",
+    "How Atribuya assigns each Google review to the rep who earned it: a personal link per rep, and attribution resolves on its own without asking the customer.",
   esPath: "/como-funciona",
   enPath: "/en/how-it-works",
 });
