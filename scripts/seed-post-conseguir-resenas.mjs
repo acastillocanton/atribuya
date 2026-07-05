@@ -97,11 +97,16 @@ const body = [
 
   block("h2", "Lo que Google prohíbe al pedir reseñas"),
   paraWithLink(
-    "Aquí es donde muchos negocios se meten en problemas sin saberlo. Las políticas de contenido de Google son explícitas: no puedes ofrecer incentivos a cambio de reseñas, y hacerlo se considera interacción falsa, con riesgo de que las reseñas se eliminen o penalicen ",
-    "(políticas de Google)",
+    "Aquí es donde muchos negocios se meten en problemas sin saberlo. Las ",
+    "políticas de Perfil de Empresa de Google",
     "https://support.google.com/business/answer/3474122",
-    ". En la práctica, conviene tener claras tres cosas:",
+    " son explícitas sobre los incentivos:",
   ),
+  block(
+    "blockquote",
+    "Ofrecer incentivos, como productos o servicios gratuitos o con descuento, a los clientes a cambio de que publiquen reseñas, las cambien o eliminen las negativas se considera interacción falsa y está estrictamente prohibido.",
+  ),
+  block("normal", "En la práctica, esto deja fuera tres cosas que conviene tener claras:"),
   li([span("Ofrecer incentivos ", ["strong"]), span("por reseñas: descuentos, regalos o sorteos.")]),
   li([span("Pedir que el cliente mencione al comercial por su nombre ", ["strong"]), span("en el texto. Además de forzar la reseña, te deja un dato frágil.")]),
   li([span("Filtrar ", ["strong"]), span("para que solo los clientes contentos reseñen, o pedir que retiren las negativas.")]),
