@@ -23,6 +23,7 @@ function isPublicPath(p: string): boolean {
     "/gracias",
     "/terminos",
     "/privacidad",
+    "/cookies",
   ].some((prefix) => p.startsWith(prefix));
 }
 
