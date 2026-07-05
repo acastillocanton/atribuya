@@ -66,4 +66,5 @@ Venta/
 .env*
 
 # Documentos internos de negocio (no publicar: repo público)
-Buyer Persona/
+# (incluye Plan de contenidos/Buyer Persona/ — el Excel de buyer personas vive ahí dentro)
+Plan de contenidos/
