@@ -79,6 +79,8 @@ const PUBLIC_SEGMENT_PREFIXES = [
   "/casos",
   "/demo",
   "/como-funciona",
+  // Recursos descargables (lead magnets): páginas de conversión públicas.
+  "/recursos",
   // El Studio de Sanity gestiona su propio login (cuenta Sanity, no Supabase).
   "/studio",
 ];
