@@ -79,6 +79,9 @@ export async function BlogPostPage({
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     inLanguage: t.inLanguage,
+    ...(post.categories && post.categories.length
+      ? { articleSection: post.categories }
+      : {}),
   };
 
   const blogPath = locale === "es" ? "/blog" : "/en/blog";
