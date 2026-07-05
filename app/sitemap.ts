@@ -95,6 +95,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.3,
     },
+    {
+      url: `${BASE}/cookies`,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${BASE}/en/cookies`,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
   ];
 
   // Posts del blog desde Sanity. Devuelve [] sin env vars o si Sanity falla,

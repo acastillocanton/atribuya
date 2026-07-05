@@ -69,6 +69,7 @@ const PUBLIC_SEGMENT_PREFIXES = [
   "/api/google/oauth/callback",
   "/privacidad",
   "/terminos",
+  "/cookies",
   "/gracias",
   "/en",
   "/blog",
@@ -96,8 +97,10 @@ const PUBLIC_SEO_PATHS = new Set<string>([
   "/en",
   "/terminos",
   "/privacidad",
+  "/cookies",
   "/en/terms",
   "/en/privacy",
+  "/en/cookies",
   // Páginas de sección de marketing (indexables por bots).
   "/producto",
   "/precios",

@@ -75,7 +75,7 @@ export function cookieConsentConfig({
             acceptAllBtn: "Aceptar",
             acceptNecessaryBtn: "Rechazar",
             showPreferencesBtn: "Preferencias",
-            footer: `<a href="/privacidad">Política de privacidad</a>`,
+            footer: `<a href="/cookies">Política de cookies</a> · <a href="/privacidad">Política de privacidad</a>`,
           },
           preferencesModal: {
             title: "Preferencias de cookies",
@@ -103,7 +103,7 @@ export function cookieConsentConfig({
               },
               {
                 title: "Más información",
-                description: `Consulta nuestra <a href="/privacidad">política de privacidad</a>.`,
+                description: `Consulta nuestra <a href="/cookies">política de cookies</a> y nuestra <a href="/privacidad">política de privacidad</a>.`,
               },
             ],
           },
@@ -116,7 +116,7 @@ export function cookieConsentConfig({
             acceptAllBtn: "Accept",
             acceptNecessaryBtn: "Decline",
             showPreferencesBtn: "Preferences",
-            footer: `<a href="/en/privacy">Privacy policy</a>`,
+            footer: `<a href="/en/cookies">Cookie policy</a> · <a href="/en/privacy">Privacy policy</a>`,
           },
           preferencesModal: {
             title: "Cookie preferences",
@@ -144,7 +144,7 @@ export function cookieConsentConfig({
               },
               {
                 title: "More information",
-                description: `See our <a href="/en/privacy">privacy policy</a>.`,
+                description: `See our <a href="/en/cookies">cookie policy</a> and our <a href="/en/privacy">privacy policy</a>.`,
               },
             ],
           },

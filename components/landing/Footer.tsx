@@ -16,7 +16,8 @@ const STRINGS = {
     blog: { href: "/blog", label: "Blog" },
     terms: { href: "/terminos", label: "Términos" },
     privacy: { href: "/privacidad", label: "Privacidad" },
-    cookies: "Cookies",
+    cookies: { href: "/cookies", label: "Cookies" },
+    prefs: "Preferencias",
     login: "Iniciar sesión",
     by: "Un producto de Castillo Cantón",
   },
@@ -31,7 +32,8 @@ const STRINGS = {
     blog: { href: "/en/blog", label: "Blog" },
     terms: { href: "/en/terms", label: "Terms" },
     privacy: { href: "/en/privacy", label: "Privacy" },
-    cookies: "Cookies",
+    cookies: { href: "/en/cookies", label: "Cookies" },
+    prefs: "Preferences",
     login: "Sign in",
     by: "A Castillo Cantón product",
   },
@@ -112,7 +114,10 @@ export function Footer({ locale }: { locale: Locale }) {
               <Link href={t.privacy.href} className="transition hover:text-ink">
                 {t.privacy.label}
               </Link>
-              <CookiePrefs label={t.cookies} />
+              <Link href={t.cookies.href} className="transition hover:text-ink">
+                {t.cookies.label}
+              </Link>
+              <CookiePrefs label={t.prefs} />
             </nav>
           </div>
         </div>

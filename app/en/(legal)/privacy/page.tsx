@@ -285,8 +285,12 @@ export default function PrivacyPage() {
         again.
       </p>
       <p style={p}>
-        No advertising or commercial profiling cookies are used. For more
-        information on Google's data processing, see{" "}
+        No advertising or commercial profiling cookies are used. You can find
+        the full detail (specific cookies, purpose and duration) in our{" "}
+        <a href="/en/cookies" style={{ textDecoration: "underline" }}>
+          Cookie Policy
+        </a>
+        , and more information on Google's data processing at{" "}
         <a
           href="https://policies.google.com/privacy"
           target="_blank"

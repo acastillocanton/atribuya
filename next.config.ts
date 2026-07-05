@@ -68,7 +68,7 @@ const NOINDEX_HEADERS = [
   { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet" },
 ];
 const INDEXABLE_PATHS_NEGATIVE_LOOKAHEAD =
-  "/((?!$|en$|en/terms$|en/privacy$|terminos$|privacidad$|producto$|precios$|casos$|demo$|como-funciona$|en/product$|en/pricing$|en/case-studies$|en/demo$|en/how-it-works$|blog$|blog/.*|en/blog$|en/blog/.*|sitemap\\.xml$|robots\\.txt$|llms\\.txt$).*)";
+  "/((?!$|en$|en/terms$|en/privacy$|en/cookies$|terminos$|privacidad$|cookies$|producto$|precios$|casos$|demo$|como-funciona$|en/product$|en/pricing$|en/case-studies$|en/demo$|en/how-it-works$|blog$|blog/.*|en/blog$|en/blog/.*|sitemap\\.xml$|robots\\.txt$|llms\\.txt$).*)";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

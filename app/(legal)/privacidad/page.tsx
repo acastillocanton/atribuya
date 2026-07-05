@@ -298,8 +298,13 @@ export default function PrivacidadPage() {
         esta política, te volveremos a preguntar.
       </p>
       <p style={p}>
-        No se utilizan cookies publicitarias ni de perfilado comercial. Más
-        información sobre el tratamiento de datos por parte de Google en{" "}
+        No se utilizan cookies publicitarias ni de perfilado comercial. Puedes
+        consultar el detalle completo (cookies concretas, finalidad y duración)
+        en nuestra{" "}
+        <a href="/cookies" style={{ textDecoration: "underline" }}>
+          Política de Cookies
+        </a>
+        , y más información sobre el tratamiento de datos por parte de Google en{" "}
         <a
           href="https://policies.google.com/privacy"
           target="_blank"
