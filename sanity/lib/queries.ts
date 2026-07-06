@@ -35,6 +35,7 @@ export type Post = PostListItem & {
   body: PortableTextBlock[];
   seoTitle?: string;
   seoDescription?: string;
+  translationSlug?: string | null;
   _updatedAt: string;
 };
 
@@ -66,6 +67,7 @@ const POST_QUERY = groq`
     body,
     seoTitle,
     seoDescription,
+    translationSlug,
     _updatedAt
   }
 `;

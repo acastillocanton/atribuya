@@ -22,6 +22,9 @@ export async function generateMetadata({
   if (!post) return {};
 
   const url = `https://atribuya.com/en/blog/${post.slug}`;
+  const esUrl = post.translationSlug
+    ? `https://atribuya.com/blog/${post.translationSlug}`
+    : null;
   const ogImage = post.mainImage
     ? urlFor(post.mainImage)?.width(1200).height(630).fit("crop").url()
     : null;
@@ -29,7 +32,10 @@ export async function generateMetadata({
   return {
     title: post.seoTitle ?? post.title,
     description: post.seoDescription ?? post.excerpt,
-    alternates: { canonical: url },
+    alternates: {
+      canonical: url,
+      ...(esUrl ? { languages: { es: esUrl, en: url, "x-default": esUrl } } : {}),
+    },
     openGraph: {
       title: post.seoTitle ?? post.title,
       description: post.seoDescription ?? post.excerpt,

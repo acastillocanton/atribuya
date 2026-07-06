@@ -23,6 +23,13 @@ export const post = defineType({
         "Los artículos en español se publican en /blog; los ingleses en /en/blog.",
     }),
     defineField({
+      name: "translationSlug",
+      title: "Slug de la traducción",
+      type: "string",
+      description:
+        "Slug del mismo artículo en el OTRO idioma, para el hreflang. Si este post es ES, aquí va el slug del post EN (y viceversa). Dejar vacío si aún no hay traducción.",
+    }),
+    defineField({
       name: "title",
       title: "Título",
       type: "string",
