@@ -54,7 +54,7 @@ SaaS B2B multi-tenant que atribuye reseñas de Google Business Profile a comerci
 | 14 | Lote 1 — calidad de reseñas (mig 015) | ✅ | 2026-06-06 |
 | 15 | Lote 2 — features para vender (ranking, soporte, excel, parte por ficha) | ✅ | 2026-06-06 |
 | 16 | Google Cloud — Places API (Vía A) | ✅ | `f755644` · 2026-06-07 |
-| — | Google Cloud — OAuth Business Profile (Vía B) | ⏳ re-solicitud enviada 2026-06-24 (corregida → `castillocanton.com`), esperando aprobación (ver §7.3) | 2026-06-07 |
+| — | Google Cloud — OAuth Business Profile (Vía B) | 🟡 **APROBADA 2026-07-10** + env en Vercel prod (redeploy hecho); falta verificación E2E manual + publicar consent screen (ver §7.3) | 2026-07-10 |
 | 8 | DPA finalizado + plantilla `.docx` firmable | ✅ | `6b3d598` · 2026-06-07 |
 | — | Reescritura de copy de la landing (tono beneficio-first) | ✅ | 2026-06-07 |
 | — | Asistente de alta de ficha (búsqueda Google, Vía A) + fix OAuth en blanco + reorden sidebar admin (→ §16) | ✅ | `1be88e2`→`8487971` · 2026-06-09 |
@@ -207,6 +207,17 @@ Dos integraciones de Google, ambas en el proyecto Cloud `atribuya`:
   > **Tras aprobación**: subir `GOOGLE_CLIENT_ID`/`SECRET`/`REDIRECT_URI` a Vercel + redeploy + probar OAuth. ⚠️ `REDIRECT_URI` SIN www (`https://atribuya.com/api/google/oauth/callback`).
 
   > **Actualización (2026-06-30) — 2º RECHAZO + 3ª solicitud enviada.** Google respondió: *"your account did not pass our internal quality checks."* Análisis: el buzón `alejandro@atribuya.com` era un reenviador ImprovMX (no un buzón real), lo que resta credibilidad a la cuenta. Además era la primera vez que se usaba esa cuenta para el formulario. **Correcciones aplicadas**: (1) `alejandro@atribuya.com` convertido a buzón real en Hostinger (ya no es ImprovMX). (2) Añadido `alejandro@atribuya.com` como Propietario en el IAM del proyecto Cloud `443155173600`. (3) Formulario reenviado el 2026-06-30 desde `alejandro@atribuya.com` con nº de proyecto `443155173600`, web `https://atribuya.com`, descripción en español del caso de uso (atribución de reseñas GBP a comerciales, OAuth read-only, scope `business.manage`, desarrollador Castillo Cantón). **Esperando aprobación** (~7-10 días; indicador = cuota Business Information API).
+  >
+  > **✅ Actualización (2026-07-10) — APROBADA.** Google envió el email *"Congratulations! Your project has been approved to use the Google Business Profile API!"* (proyecto `443155173600`). Se activó la integración en producción:
+  >
+  > **Env en Vercel prod** (subidas el 2026-07-10): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (copiadas de `.env.local` — es el mismo OAuth client "Web application", vale para local y prod; solo cambia el redirect) y `GOOGLE_OAUTH_REDIRECT_URI` = `https://atribuya.com/api/google/oauth/callback` (**apex, SIN www** — los callbacks OAuth no siguen el 308 www→apex; el apex ya estaba autorizado en el client). Redeploy de producción hecho (aliaseado a `atribuya.com`).
+  >
+  > ⚠️ **Gotcha del entorno**: `npx vercel env add <VAR> production` **no aceptaba el valor por stdin** en este sandbox (ni `printf`, ni `echo`, ni `< fichero`) → creaba las vars con valor **vacío** (`len=0`). Solución: subirlas por la **API REST de Vercel** (`POST /v10/projects/{id}/env?teamId=...`, type `encrypted`, target `["production"]`) usando el token que la CLI guarda en `~/Library/Application Support/com.vercel.cli/auth.json`. projectId `prj_ehJxbkHI7UuUWjiUVlHvVAhHfxIR`, teamId `team_ntxhArccOPMxfU2IE9JqbueG` (en `.vercel/repo.json`). Nota: Python 3.14 del sistema falla el TLS (sin CA bundle) → el script hace las llamadas vía `curl`. Verificado con `vercel env pull` (CLIENT_ID len 72, SECRET len 35, REDIRECT_URI correcto).
+  >
+  > **PENDIENTE (próxima sesión, manual — requiere login admin en prod):**
+  > 1. **Verificar OAuth E2E**: login como admin en `https://atribuya.com` → `/fichas` → el botón "Conectar Google" debe estar habilitado (`isGoogleOAuthConfigured()` = true) → conectar una ficha con una cuenta Google admin del GBP → confirmar que trae **todas** las reseñas (no solo el top-5 de la Vía A). El cron horario (Business Profile) empezará a sincronizarlas.
+  > 2. **Publicar el consent screen** para onboardear clientes externos: el scope `business.manage` es **sensible**; en modo Testing solo completan el OAuth los test users añadidos a mano (suficiente para la ficha propia de Castillo Cantón con `a.castillo.esv@gmail.com` / `alejandro@atribuya.com`). Publicar puede disparar verificación de scopes sensibles de Google.
+  > 3. Confirmar en Google Cloud que la cuota "Requests per minute" de Business Information API ya está en ~300 (indicador de aprobación efectiva).
 
 ### 7.4 Dominio comercial ✅ RESUELTO (2026-06-06)
 
@@ -230,7 +241,7 @@ Los `/terminos` y `/privacidad` están completos. El DPA (Acuerdo de Encargado d
 
 ### 7.7 Camino crítico al primer cliente
 
-En orden: ~~Brevo (§7.2)~~ ✅ → ~~Google Places Vía A (§7.3)~~ ✅ → ~~DPA (§7.6)~~ ✅ → **solo queda Google OAuth Vía B (§7.3)**, rechazada el 2026-06-24 y **re-solicitud enviada el mismo día** con todo alineado a `castillocanton.com` (consent screen 1A ✅ + términos 1B ✅ + formulario 2 ✅). **Esperando aprobación de Google** (~7-10 días; indicador = cuota de Business Information API). Vigilar también el aviso de verificación del GBP de Castillo Cantón. Ver §7.3 para el detalle exacto del punto en que se pausó. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
+En orden: ~~Brevo (§7.2)~~ ✅ → ~~Google Places Vía A (§7.3)~~ ✅ → ~~DPA (§7.6)~~ ✅ → **Google OAuth Vía B (§7.3): ✅ APROBADA por Google 2026-07-10 + env en Vercel prod (redeploy hecho)**. Solo falta la verificación E2E manual (conectar ficha en `/fichas` → traer todas las reseñas) y publicar el consent screen para clientes externos. **No queda ningún bloqueante técnico** para el primer cliente. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
 
 ### 7.8 Mejoras de producto pendientes (lotes del producto base)
 
