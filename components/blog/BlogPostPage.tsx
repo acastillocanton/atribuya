@@ -7,6 +7,7 @@ import { getPost, type BlogLocale } from "@/sanity/lib/queries";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { makeBreadcrumb } from "@/lib/marketing/seo";
 import { extractToc } from "@/lib/blog/toc";
+import { extractFaq } from "@/lib/blog/faq";
 import { formatPostDate } from "./PostCard";
 import { ArticleToc } from "./ArticleToc";
 import { SidebarDemoCta } from "./SidebarDemoCta";
@@ -93,12 +94,34 @@ export async function BlogPostPage({
     ],
   });
 
+  // FAQPage a partir de la sección "Preguntas frecuentes" del cuerpo, si la hay
+  // (≥2 pares). Da rich result propio en Google para los artículos con FAQ.
+  const faq = extractFaq(post.body);
+  const faqJsonLd =
+    faq.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "@id": `${url}#faq`,
+          inLanguage: t.inLanguage,
+          mainEntity: faq.map((it) => ({
+            "@type": "Question",
+            name: it.question,
+            acceptedAnswer: { "@type": "Answer", text: it.answer },
+          })),
+        }
+      : null;
+
+  const jsonLd = faqJsonLd
+    ? [postJsonLd, bc.jsonLd, faqJsonLd]
+    : [postJsonLd, bc.jsonLd];
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([postJsonLd, bc.jsonLd]),
+          __html: JSON.stringify(jsonLd),
         }}
       />
       <Breadcrumbs
