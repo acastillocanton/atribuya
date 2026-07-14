@@ -38,6 +38,10 @@ const PAIRS = [
     es: { id: "post.ranking-resenas-comercial-sin-rivalidad-es", slug: "ranking-resenas-comercial-sin-rivalidad" },
     en: { id: "post.ranking-resenas-comercial-sin-rivalidad-en", slug: "sales-rep-review-ranking-without-rivalry" },
   },
+  {
+    es: { id: "post.pedir-resenas-google-sin-infringir-politicas-es", slug: "pedir-resenas-google-sin-infringir-politicas" },
+    en: { id: "post.pedir-resenas-google-sin-infringir-politicas-en", slug: "ask-for-google-reviews-without-breaking-policies" },
+  },
 ];
 
 async function run() {
