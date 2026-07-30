@@ -46,6 +46,10 @@ const PAIRS = [
     es: { id: "post.atribuya-vs-birdeye-vs-excel-es", slug: "atribuya-vs-birdeye-vs-excel" },
     en: { id: "post.atribuya-vs-birdeye-vs-excel-en", slug: "atribuya-vs-birdeye-vs-excel" },
   },
+  {
+    es: { id: "post.incentivos-comerciales-resenas-google-es", slug: "incentivos-comerciales-resenas-google" },
+    en: { id: "post.incentivos-comerciales-resenas-google-en", slug: "sales-rep-incentives-google-reviews" },
+  },
 ];
 
 async function run() {
