@@ -45,7 +45,11 @@ export async function AuthorPage({
 
   const personJsonLd = {
     "@type": "Person",
-    "@id": `${url}#person`,
+    // @id canónico SIEMPRE sobre la ruta ES: identificador opaco compartido
+    // por los BlogPosting (ES y EN), el founder de la Organization y esta
+    // ProfilePage → Google fusiona una única entidad Person. La URL visible
+    // (`url`) sí es la del idioma de la página.
+    "@id": `https://atribuya.com/blog/autor/${author.slug}#person`,
     name: author.name,
     ...(author.role ? { jobTitle: author.role } : {}),
     ...(author.bio ? { description: author.bio } : {}),

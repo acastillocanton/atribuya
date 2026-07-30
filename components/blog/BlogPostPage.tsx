@@ -47,6 +47,13 @@ export async function BlogPostPage({
   // entidad Person que emite AuthorPage (@id `…#person`), cerrando el grafo
   // artículo → autor → sameAs (LinkedIn/X/web). Señal E-E-A-T.
   const authorUrlAbs = authorHref ? `https://atribuya.com${authorHref}` : null;
+  // @id CANÓNICO de la entidad Person, SIEMPRE sobre la ruta ES: es un
+  // identificador opaco (no una URL visible) y usar el mismo en ES y EN hace
+  // que Google fusione UNA sola entidad con el founder de la Organization y
+  // la ProfilePage, en vez de partir el grafo en dos Person por idioma.
+  const authorIdAbs = post.author?.slug
+    ? `https://atribuya.com/blog/autor/${post.author.slug}#person`
+    : null;
 
   const postJsonLd = {
     "@context": "https://schema.org",
@@ -61,9 +68,8 @@ export async function BlogPostPage({
           author: {
             "@type": "Person",
             name: post.author.name,
-            ...(authorUrlAbs
-              ? { "@id": `${authorUrlAbs}#person`, url: authorUrlAbs }
-              : {}),
+            ...(authorIdAbs ? { "@id": authorIdAbs } : {}),
+            ...(authorUrlAbs ? { url: authorUrlAbs } : {}),
             ...(authorAvatarUrl ? { image: authorAvatarUrl } : {}),
           },
         }
