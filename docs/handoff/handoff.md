@@ -223,8 +223,10 @@ Dos integraciones de Google, ambas en el proyecto Cloud `atribuya`:
   > 5. **Duplicados en la transición Vía A → Vía B**: si una ficha sincronizó primero por Places (el asistente de alta lo hace en el paso 4) y luego conecta OAuth, las reseñas de Places quedan como filas duplicadas (los `google_review_id` no colisionan: `places:%` vs ID real de Google). El cron de Places ya **salta** las fichas `oauth_status='connected'` (no hay doble proceso en adelante), pero las filas viejas hay que limpiarlas; en esta sesión se borraron a mano las 5 de Mon Petit. **Mejora pendiente de decidir**: que `linkGoogleLocation` limpie o reconcilie las reseñas `places:%` sin atribución al conectar.
   > 6. La cuota aprobada quedó confirmada de facto: Account Management, Business Information y Reviews v4 responden 200 en producción.
   >
+  > **✅ Consent screen PUBLICADO (2026-07-30, misma sesión).** Estado «En producción» (sin verificar): cualquier cuenta de Google puede completar el OAuth, con el aviso de «app no verificada» (Avanzado → Continuar) y tope de **100 usuarios acumulados** hasta pasar la verificación de marca. Motivo adicional para publicar ya: **en modo Testing los refresh tokens caducan a los 7 días** → las fichas se desconectarían solas cada semana. Tras publicar se **reconectaron las 2 fichas** para emitir refresh tokens de larga duración (verificado: ambos con `business.manage`, sync OK, dedup idempotente — 7 fetched / 0 new).
+  >
   > **PENDIENTE:**
-  > 1. **Publicar el consent screen** para onboardear clientes externos: el scope `business.manage` es **sensible**; en modo Testing solo completan el OAuth los test users añadidos a mano (suficiente para las fichas propias con `a.castillo.esv@gmail.com` / `alejandro@atribuya.com`). Publicar puede disparar verificación de scopes sensibles de Google.
+  > 1. **Verificación de marca de Google** (opcional, quita el aviso de «app no verificada» y el tope de 100 usuarios): antes de solicitarla, añadir a la política de privacidad una cláusula sobre el tratamiento de datos de Google Business Profile (hoy la privacidad de `castillocanton.com` no menciona Atribuya ni OAuth). Sin prisa: el aviso es tolerable para los primeros clientes.
   > 2. Decidir la limpieza automática de duplicados Vía A → Vía B (punto 5 de arriba).
 
 ### 7.4 Dominio comercial ✅ RESUELTO (2026-06-06)
@@ -249,7 +251,7 @@ Los `/terminos` y `/privacidad` están completos. El DPA (Acuerdo de Encargado d
 
 ### 7.7 Camino crítico al primer cliente
 
-En orden: ~~Brevo (§7.2)~~ ✅ → ~~Google Places Vía A (§7.3)~~ ✅ → ~~DPA (§7.6)~~ ✅ → ~~Google OAuth Vía B (§7.3)~~ ✅ **VERIFICADA E2E 2026-07-30** (7/7 reseñas + alerta 1★ enviada). Para clientes externos falta **publicar el consent screen** (en Testing solo test users). **No queda ningún bloqueante técnico** para el primer cliente. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
+En orden: ~~Brevo (§7.2)~~ ✅ → ~~Google Places Vía A (§7.3)~~ ✅ → ~~DPA (§7.6)~~ ✅ → ~~Google OAuth Vía B (§7.3)~~ ✅ **VERIFICADA E2E + consent screen publicado 2026-07-30** (7/7 reseñas + alerta 1★; clientes externos ya pueden conectar). **Camino crítico COMPLETO: no queda ningún bloqueante técnico** para el primer cliente. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
 
 ### 7.8 Mejoras de producto pendientes (lotes del producto base)
 
