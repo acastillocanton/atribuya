@@ -233,8 +233,7 @@ Dos integraciones de Google, ambas en el proyecto Cloud `atribuya`:
   >
   > **Estado final Vía B: COMPLETA.** OAuth E2E verificado, consent screen publicado y con marca verificada, sin avisos ni topes para clientes externos.
   >
-  > **PENDIENTE:**
-  > 1. Decidir la limpieza automática de duplicados Vía A → Vía B (punto 5 de arriba).
+  > **✅ Reconciliación Vía A → Vía B (misma sesión, cierra el punto 5).** El cron de Business Profile reconcilia las filas `places:%` importadas antes de conectar OAuth, en dos niveles sobre el mecanismo de fusión existente: (1) **reclamo cross-fuente** (`decideCrossSourceClaim` en `edit-merge.ts`, lógica pura con 12 tests): cada reseña fresca de la Vía B busca su gemela `places:%` y, si es inequívoca, ACTUALIZA esa fila al id real conservando fila, atribución, comisión y sello de alerta (con nombre empareja por autor; anónimas por rating + timestamp ±10 min contra createTime/updateTime); (2) **barrido post-sync** (`sweepPlacesLeftovers`): tras un listado completo, las `places:%` restantes sin atribución se borran y las atribuidas se conservan auditadas (`places_leftover_conflict`) para revisión manual. Contadores `migrated`/`swept`/`sweep_conflicts` en el summary del cron y auditoría completa (`review_source_migrated`/`places_leftovers_swept`). **Verificado E2E en prod** con escenario real (gemela de Mireia S reclamada al id real conservando la fila + huérfano barrido; `new_reviews: 0`, sin duplicados). En régimen estable el pool está vacío → coste cero.
 
 ### 7.4 Dominio comercial ✅ RESUELTO (2026-06-06)
 
