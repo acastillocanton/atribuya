@@ -170,9 +170,14 @@ export async function linkGoogleLocation(input: z.input<typeof linkSchema>) {
   // Service client para esquivar RLS, pero filtrando por org_id del actor:
   // sin ese filtro un admin podría conectar OAuth a una ficha de otra org.
   const admin = createServiceClient();
+  // La Business Information API v1 devuelve nombres "locations/456" (sin
+  // cuenta), pero la Reviews API v4 exige "accounts/123/locations/456".
+  const locationResource = parsed.data.googleLocationResource.startsWith("accounts/")
+    ? parsed.data.googleLocationResource
+    : `${parsed.data.googleAccountId}/${parsed.data.googleLocationResource}`;
   const update: Record<string, unknown> = {
     google_account_id: parsed.data.googleAccountId,
-    google_location_resource: parsed.data.googleLocationResource,
+    google_location_resource: locationResource,
     oauth_status: "connected",
     oauth_last_sync_error: null,
   };
