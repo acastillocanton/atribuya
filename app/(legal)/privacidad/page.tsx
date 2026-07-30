@@ -35,7 +35,7 @@ export default function PrivacidadPage() {
       <article className="mx-auto w-full max-w-[720px] px-6 pt-8">
       <h1 style={h1}>Política de Privacidad</h1>
       <p style={lede}>
-        Última actualización: 7 de junio de 2026.
+        Última actualización: 30 de julio de 2026.
       </p>
 
       <p style={p}>
@@ -316,7 +316,7 @@ export default function PrivacidadPage() {
         .
       </p>
 
-      <h2 style={h2}>9. Datos públicos de reseñas de Google</h2>
+      <h2 style={h2}>9. Datos de Google Business Profile y uso limitado</h2>
       <p style={p}>
         Las reseñas publicadas en Google Business Profile son contenido
         publicado voluntariamente por sus autores en una plataforma
@@ -326,6 +326,74 @@ export default function PrivacidadPage() {
         derechos sobre dicho contenido frente a Google y pueden ejercer
         los derechos enumerados en el apartado 6 también frente al
         Responsable de Atribuya.
+      </p>
+
+      <h3 style={h3}>9.1 Datos obtenidos a través de las APIs de Google</h3>
+      <p style={p}>
+        Cuando el administrador de una organización conecta su ficha mediante
+        el flujo de autorización de Google (OAuth, permiso{" "}
+        <code style={code}>business.manage</code>), Atribuya accede únicamente
+        a: las reseñas de las fichas conectadas (autor mostrado por Google,
+        estrellas, texto, fecha y respuesta del negocio si existe), la
+        información identificativa de la cuenta y de la ficha (nombre,
+        identificadores) y el email de la cuenta que autorizó la conexión.
+        Atribuya no accede a ningún otro contenido de la cuenta de Google.
+      </p>
+
+      <h3 style={h3}>9.2 Uso limitado (Limited Use)</h3>
+      <p style={p}>
+        El uso que hace Atribuya de la información recibida de las APIs de
+        Google se ajusta a la{" "}
+        <a
+          style={a}
+          href="https://developers.google.com/terms/api-services-user-data-policy"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Política de Datos de Usuario de los Servicios de API de Google
+        </a>
+        , incluidos los requisitos de Uso Limitado (Limited Use). En
+        particular:
+      </p>
+      <ul style={ul}>
+        <li>
+          Los datos se utilizan exclusivamente para prestar las funciones
+          visibles del Servicio: atribución de reseñas a comerciales, paneles,
+          alertas y exportaciones de la propia organización.
+        </li>
+        <li>
+          No se venden, no se utilizan para publicidad y no se ceden a
+          terceros, salvo a los sub-encargados necesarios para operar el
+          Servicio (apartado 4), por motivos de seguridad o por obligación
+          legal.
+        </li>
+        <li>
+          Ninguna persona lee esos datos, salvo consentimiento del Cliente,
+          motivos de seguridad, obligación legal o que estén agregados y
+          anonimizados para uso interno.
+        </li>
+        <li>
+          No se utilizan para entrenar modelos de inteligencia artificial ni
+          de aprendizaje automático.
+        </li>
+      </ul>
+
+      <h3 style={h3}>9.3 Revocación del acceso</h3>
+      <p style={p}>
+        La organización puede desconectar una ficha desde el propio Servicio
+        en cualquier momento (los tokens de acceso se eliminan) o revocar el
+        permiso concedido a Atribuya desde la configuración de su cuenta de
+        Google en{" "}
+        <a
+          style={a}
+          href="https://myaccount.google.com/permissions"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          myaccount.google.com/permissions
+        </a>
+        . Tras la revocación, Atribuya deja de sincronizar datos de esa ficha
+        de inmediato.
       </p>
 
       <h2 style={h2}>10. Cambios en esta política</h2>

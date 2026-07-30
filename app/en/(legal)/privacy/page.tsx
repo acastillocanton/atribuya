@@ -28,7 +28,7 @@ export default function PrivacyPage() {
       />
       <article className="mx-auto w-full max-w-[720px] px-6 pt-8">
       <h1 style={h1}>Privacy Policy</h1>
-      <p style={lede}>Last updated: June 7, 2026.</p>
+      <p style={lede}>Last updated: July 30, 2026.</p>
 
       <p style={p}>
         This Privacy Policy describes how personal data is processed within{" "}
@@ -302,7 +302,7 @@ export default function PrivacyPage() {
         .
       </p>
 
-      <h2 style={h2}>9. Public Google review data</h2>
+      <h2 style={h2}>9. Google Business Profile data and limited use</h2>
       <p style={p}>
         Reviews published on Google Business Profile are content voluntarily
         published by their authors on a public platform. Atribuya synchronises
@@ -311,6 +311,72 @@ export default function PrivacyPage() {
         authors retain all their rights over that content with respect to Google
         and may also exercise the rights listed in section 6 against the
         Atribuya controller.
+      </p>
+
+      <h3 style={h3}>9.1 Data obtained through Google APIs</h3>
+      <p style={p}>
+        When an organisation administrator connects their listing through the
+        Google authorisation flow (OAuth, <code style={code}>business.manage</code>{" "}
+        scope), Atribuya accesses only: the reviews of the connected listings
+        (author name as displayed by Google, star rating, text, date and the
+        business reply if any), identifying information about the account and
+        the listing (name, identifiers) and the email address of the account
+        that authorised the connection. Atribuya does not access any other
+        content of the Google account.
+      </p>
+
+      <h3 style={h3}>9.2 Limited Use</h3>
+      <p style={p}>
+        Atribuya&apos;s use of information received from Google APIs adheres to
+        the{" "}
+        <a
+          style={a}
+          href="https://developers.google.com/terms/api-services-user-data-policy"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Google API Services User Data Policy
+        </a>
+        , including the Limited Use requirements. In particular:
+      </p>
+      <ul style={ul}>
+        <li>
+          Data is used exclusively to provide the user-facing features of the
+          Service: attributing reviews to sales reps, dashboards, alerts and
+          exports for the organisation itself.
+        </li>
+        <li>
+          Data is not sold, is not used for advertising and is not transferred
+          to third parties, except to the sub-processors required to operate
+          the Service (section 4), for security reasons or where required by
+          law.
+        </li>
+        <li>
+          No humans read this data unless the Client consents, it is needed for
+          security purposes, it is required by law, or it has been aggregated
+          and anonymised for internal use.
+        </li>
+        <li>
+          Data is not used to train artificial intelligence or machine learning
+          models.
+        </li>
+      </ul>
+
+      <h3 style={h3}>9.3 Revoking access</h3>
+      <p style={p}>
+        The organisation can disconnect a listing from within the Service at
+        any time (access tokens are deleted) or revoke the permission granted
+        to Atribuya from their Google account settings at{" "}
+        <a
+          style={a}
+          href="https://myaccount.google.com/permissions"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          myaccount.google.com/permissions
+        </a>
+        . After revocation, Atribuya immediately stops synchronising data from
+        that listing.
       </p>
 
       <h2 style={h2}>10. Changes to this policy</h2>
