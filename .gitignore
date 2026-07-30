@@ -68,3 +68,6 @@ Venta/
 # Documentos internos de negocio (no publicar: repo público)
 # (incluye Plan de contenidos/Buyer Persona/ — el Excel de buyer personas vive ahí dentro)
 Plan de contenidos/
+
+# Ficheros de bloqueo de Microsoft Office (docx abiertos)
+**/~$*
