@@ -42,6 +42,10 @@ const PAIRS = [
     es: { id: "post.pedir-resenas-google-sin-infringir-politicas-es", slug: "pedir-resenas-google-sin-infringir-politicas" },
     en: { id: "post.pedir-resenas-google-sin-infringir-politicas-en", slug: "ask-for-google-reviews-without-breaking-policies" },
   },
+  {
+    es: { id: "post.atribuya-vs-birdeye-vs-excel-es", slug: "atribuya-vs-birdeye-vs-excel" },
+    en: { id: "post.atribuya-vs-birdeye-vs-excel-en", slug: "atribuya-vs-birdeye-vs-excel" },
+  },
 ];
 
 async function run() {
