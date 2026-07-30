@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ES, GB } from "country-flag-icons/react/3x2";
 import type { Locale } from "@/lib/marketing/nav";
+import { useAltLangHref } from "@/components/site/useAltLangHref";
 
 const LANGS = [
   { code: "es" as const, label: "Español", Flag: ES },
@@ -18,8 +19,9 @@ const UI = {
 
 // Selector de idioma desplegable: muestra el idioma actual y, al abrir, lista
 // TODOS los idiomas disponibles (con bandera), marcando el activo. El idioma
-// alterno enlaza a `altLangHref` (equivalente de la página en el otro idioma);
-// el actual, a la propia URL.
+// alterno enlaza al equivalente exacto de la página actual (leído del hreflang
+// del <head> vía useAltLangHref, con `altLangHref` como respaldo); el actual,
+// a la propia URL.
 export function LangSwitcher({
   locale,
   altLangHref,
@@ -29,6 +31,7 @@ export function LangSwitcher({
 }) {
   const t = UI[locale];
   const pathname = usePathname();
+  const resolvedAltHref = useAltLangHref(locale, altLangHref);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -87,7 +90,7 @@ export function LangSwitcher({
       >
         {LANGS.map(({ code, label, Flag }) => {
           const isCurrent = code === locale;
-          const href = isCurrent ? pathname : altLangHref;
+          const href = isCurrent ? pathname : resolvedAltHref;
           return (
             <Link
               key={code}

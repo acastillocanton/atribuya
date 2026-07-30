@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ES, GB } from "country-flag-icons/react/3x2";
+import { useAltLangHref } from "@/components/site/useAltLangHref";
 
 type NavItem = { href: string; label: string };
 
@@ -29,6 +30,7 @@ export function MobileMenu({
 }: Props) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const resolvedAltHref = useAltLangHref(locale, altLangHref);
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
 
@@ -140,7 +142,7 @@ export function MobileMenu({
           </p>
           {LANGS.map(({ code, label, Flag }) => {
             const isCurrent = code === locale;
-            const href = isCurrent ? pathname : altLangHref;
+            const href = isCurrent ? pathname : resolvedAltHref;
             return (
               <Link
                 key={code}
