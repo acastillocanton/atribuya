@@ -8,7 +8,7 @@ Checklist paso a paso para dar de alta un cliente en Atribuya, de cero a primera
 
 ## Fase 0 — Antes de tocar nada (preventa)
 
-1. **[P] Recopilar datos del cliente:**
+1. **[P] Recopilar datos del cliente** enviándole la **ficha de alta** (`docs/onboarding/ficha-alta-cliente.docx`) para que la devuelva rellenada. Recoge todo lo de esta fase:
    - Razón social, CIF/NIF, dirección fiscal (para el DPA y la ficha de la org en `/super`).
    - Email del que será **admin** de la org (no puede ser un email ya usado como super_admin).
    - Nº de fichas de Google y nº de comerciales + directores → decide el **plan**: `basic` (5 comerciales / 1 ficha, 45 €) · `standard` (15 / 3, 99 €) · `plus` (30 / 10, 199 €) · `custom`. Los directores ocupan plaza; los gestores no.
