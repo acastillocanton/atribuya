@@ -54,7 +54,7 @@ SaaS B2B multi-tenant que atribuye reseñas de Google Business Profile a comerci
 | 14 | Lote 1 — calidad de reseñas (mig 015) | ✅ | 2026-06-06 |
 | 15 | Lote 2 — features para vender (ranking, soporte, excel, parte por ficha) | ✅ | 2026-06-06 |
 | 16 | Google Cloud — Places API (Vía A) | ✅ | `f755644` · 2026-06-07 |
-| — | Google Cloud — OAuth Business Profile (Vía B) | 🟡 **APROBADA 2026-07-10** + env en Vercel prod (redeploy hecho); falta verificación E2E manual + publicar consent screen (ver §7.3) | 2026-07-10 |
+| — | Google Cloud — OAuth Business Profile (Vía B) | ✅ **VERIFICADA E2E 2026-07-30** (trae todas las reseñas + alerta ≤2★); pendiente solo publicar consent screen para clientes externos (ver §7.3) | 2026-07-30 |
 | 8 | DPA finalizado + plantilla `.docx` firmable | ✅ | `6b3d598` · 2026-06-07 |
 | — | Reescritura de copy de la landing (tono beneficio-first) | ✅ | 2026-06-07 |
 | — | Asistente de alta de ficha (búsqueda Google, Vía A) + fix OAuth en blanco + reorden sidebar admin (→ §16) | ✅ | `1be88e2`→`8487971` · 2026-06-09 |
@@ -179,7 +179,7 @@ Activa el email transaccional (alertas ≤2★, notificación de reseña, aviso 
 
 **Código** (commit del 2026-06-06): reply-to global vía `BREVO_REPLY_TO` en `lib/email/brevo.ts`; aviso de leads best-effort `lib/email/notify-lead.ts` → `submit-lead.ts`; refs `atribuya.es`→`.com` limpiadas.
 
-### 7.3 Google Cloud — Vía A ✅ / Vía B ⏳ (2026-06-07)
+### 7.3 Google Cloud — Vía A ✅ / Vía B ✅ (verificada E2E 2026-07-30)
 
 Dos integraciones de Google, ambas en el proyecto Cloud `atribuya`:
 
@@ -214,10 +214,18 @@ Dos integraciones de Google, ambas en el proyecto Cloud `atribuya`:
   >
   > ⚠️ **Gotcha del entorno**: `npx vercel env add <VAR> production` **no aceptaba el valor por stdin** en este sandbox (ni `printf`, ni `echo`, ni `< fichero`) → creaba las vars con valor **vacío** (`len=0`). Solución: subirlas por la **API REST de Vercel** (`POST /v10/projects/{id}/env?teamId=...`, type `encrypted`, target `["production"]`) usando el token que la CLI guarda en `~/Library/Application Support/com.vercel.cli/auth.json`. projectId `prj_ehJxbkHI7UuUWjiUVlHvVAhHfxIR`, teamId `team_ntxhArccOPMxfU2IE9JqbueG` (en `.vercel/repo.json`). Nota: Python 3.14 del sistema falla el TLS (sin CA bundle) → el script hace las llamadas vía `curl`. Verificado con `vercel env pull` (CLIENT_ID len 72, SECRET len 35, REDIRECT_URI correcto).
   >
-  > **PENDIENTE (próxima sesión, manual — requiere login admin en prod):**
-  > 1. **Verificar OAuth E2E**: login como admin en `https://atribuya.com` → `/fichas` → el botón "Conectar Google" debe estar habilitado (`isGoogleOAuthConfigured()` = true) → conectar una ficha con una cuenta Google admin del GBP → confirmar que trae **todas** las reseñas (no solo el top-5 de la Vía A). El cron horario (Business Profile) empezará a sincronizarlas.
-  > 2. **Publicar el consent screen** para onboardear clientes externos: el scope `business.manage` es **sensible**; en modo Testing solo completan el OAuth los test users añadidos a mano (suficiente para la ficha propia de Castillo Cantón con `a.castillo.esv@gmail.com` / `alejandro@atribuya.com`). Publicar puede disparar verificación de scopes sensibles de Google.
-  > 3. Confirmar en Google Cloud que la cuota "Requests per minute" de Business Information API ya está en ~300 (indicador de aprobación efectiva).
+  > **✅ Actualización (2026-07-30) — VERIFICADA E2E en producción.** Flujo completo probado con la org de prueba **AleCris** (recreada; ver más abajo) y dos fichas reales: **Castillo Cantón** (0 reseñas) y **Mon Petit Caprice** (7 reseñas). Resultado: OAuth conecta, el cron `sync-google-reviews` trajo las **7 reseñas completas** (`source='business_profile'`), incluidas dos antiguas (2025-09 y 2024-11) fuera del alcance del top-5 de la Vía A, y la reseña de **1★ disparó el email de alerta** a los admins (`low_rating_alerted_at` sellado, sin fallos en audit_log). Hallazgos y fixes de la sesión:
+  >
+  > 1. **Perfil del super_admin recreado**: el wipe de orgs del 2026-07-03 (audit `org_deleted` × 2, actor `manual-cli`) borró por cascade la fila de `profiles` del super_admin → el middleware rebotaba el login con `error=no-profile`. Reinsertada vía PostgREST (role `admin`, `org_id` null).
+  > 2. **Gotcha del consent granular de Google**: en la pantalla de permisos, la casilla «Ver, editar… tus fichas de empresa» viene **desmarcada** y si el usuario no la marca el token llega solo con `openid email` → `listAccounts` falla con 403 `ACCESS_TOKEN_SCOPE_INSUFFICIENT`. Solución: repetir «Conectar Google» (el flujo fuerza `prompt=consent`) y marcar la casilla. **Instrucción a dar a cada cliente en el onboarding.**
+  > 3. **Bug corregido (`daf82fc`)**: la Business Information API v1 devuelve nombres `locations/456` (sin cuenta) y así se guardaba `google_location_resource`, pero la Reviews API v4 exige `accounts/123/locations/456` → el sync daba 404. `linkGoogleLocation` ahora normaliza al guardar (antepone `google_account_id` si falta el prefijo).
+  > 4. **API legacy «Google My Business API» (mybusiness.googleapis.com, v4) habilitada** en el proyecto `443155173600`: es la que sirve las reseñas y estaba deshabilitada (`SERVICE_DISABLED`). No aparece en el buscador de la librería de APIs; solo se llega por URL directa (`console.cloud.google.com/apis/api/mybusiness.googleapis.com/overview?project=443155173600`). Hecha una vez, queda para siempre.
+  > 5. **Duplicados en la transición Vía A → Vía B**: si una ficha sincronizó primero por Places (el asistente de alta lo hace en el paso 4) y luego conecta OAuth, las reseñas de Places quedan como filas duplicadas (los `google_review_id` no colisionan: `places:%` vs ID real de Google). El cron de Places ya **salta** las fichas `oauth_status='connected'` (no hay doble proceso en adelante), pero las filas viejas hay que limpiarlas; en esta sesión se borraron a mano las 5 de Mon Petit. **Mejora pendiente de decidir**: que `linkGoogleLocation` limpie o reconcilie las reseñas `places:%` sin atribución al conectar.
+  > 6. La cuota aprobada quedó confirmada de facto: Account Management, Business Information y Reviews v4 responden 200 en producción.
+  >
+  > **PENDIENTE:**
+  > 1. **Publicar el consent screen** para onboardear clientes externos: el scope `business.manage` es **sensible**; en modo Testing solo completan el OAuth los test users añadidos a mano (suficiente para las fichas propias con `a.castillo.esv@gmail.com` / `alejandro@atribuya.com`). Publicar puede disparar verificación de scopes sensibles de Google.
+  > 2. Decidir la limpieza automática de duplicados Vía A → Vía B (punto 5 de arriba).
 
 ### 7.4 Dominio comercial ✅ RESUELTO (2026-06-06)
 
@@ -241,7 +249,7 @@ Los `/terminos` y `/privacidad` están completos. El DPA (Acuerdo de Encargado d
 
 ### 7.7 Camino crítico al primer cliente
 
-En orden: ~~Brevo (§7.2)~~ ✅ → ~~Google Places Vía A (§7.3)~~ ✅ → ~~DPA (§7.6)~~ ✅ → **Google OAuth Vía B (§7.3): ✅ APROBADA por Google 2026-07-10 + env en Vercel prod (redeploy hecho)**. Solo falta la verificación E2E manual (conectar ficha en `/fichas` → traer todas las reseñas) y publicar el consent screen para clientes externos. **No queda ningún bloqueante técnico** para el primer cliente. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
+En orden: ~~Brevo (§7.2)~~ ✅ → ~~Google Places Vía A (§7.3)~~ ✅ → ~~DPA (§7.6)~~ ✅ → ~~Google OAuth Vía B (§7.3)~~ ✅ **VERIFICADA E2E 2026-07-30** (7/7 reseñas + alerta 1★ enviada). Para clientes externos falta **publicar el consent screen** (en Testing solo test users). **No queda ningún bloqueante técnico** para el primer cliente. Lo demás (pricing, setup, billing) son decisiones de negocio (§8), no técnicas.
 
 ### 7.8 Mejoras de producto pendientes (lotes del producto base)
 
