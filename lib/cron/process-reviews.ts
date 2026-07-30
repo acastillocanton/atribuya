@@ -11,7 +11,11 @@ import {
 // módulos distintos.
 export type { CommercialInfo };
 import { decideDuplicateForClient } from "@/lib/cron/duplicate-detection";
-import { decideEditMerge } from "@/lib/cron/edit-merge";
+import {
+  decideEditMerge,
+  decideCrossSourceClaim,
+  type PlacesIncumbent,
+} from "@/lib/cron/edit-merge";
 import {
   isLowRating,
   type LowRatingAlert,
@@ -39,6 +43,9 @@ export type FreshReview = {
   rating: number; // 1..5
   text: string | null;
   google_created_at: string; // ISO
+  /** updateTime de Business Profile (ISO). Solo lo aporta la Vía B; se usa
+   *  para emparejar reseñas anónimas en el reclamo cross-fuente. */
+  google_updated_at?: string | null;
 };
 
 export type LocationCtx = {
@@ -68,6 +75,15 @@ export type LocationSummary = {
   /** Reseñas frescas que resultaron ser una EDICIÓN de una existente (mismo
    *  autor+ficha) y se fusionaron en vez de insertarse. */
   merged?: number;
+  /** Filas `places:%` reclamadas por su gemela de Business Profile en la
+   *  transición Vía A → Vía B (fila actualizada al id real, sin insertar). */
+  migrated?: number;
+  /** Filas `places:%` huérfanas SIN atribución borradas por el barrido
+   *  post-sync (duplicados residuales o reseñas ya no presentes en Google). */
+  swept?: number;
+  /** Filas `places:%` huérfanas CON atribución que el barrido NO toca; quedan
+   *  auditadas para revisión manual. */
+  sweep_conflicts?: number;
   error?: string;
 };
 
@@ -174,7 +190,139 @@ export async function processFreshReviews(
   const notifications: PendingNotification[] = [];
   const lowRatingAlerts: LowRatingAlert[] = [];
 
+  // ── Pool de reclamo cross-fuente (transición Vía A → Vía B) ──────────────
+  // Si la fuente es Business Profile, cargamos UNA VEZ las filas `places:%`
+  // de la ficha: son las importadas por Vía A antes de conectar OAuth y cada
+  // reseña fresca puede reclamar la suya (misma reseña, id sintético). En
+  // régimen estable la ficha conectada no tiene filas `places:%` → pool vacío
+  // y coste cero. `claimedIds` evita que dos frescas reclamen la misma fila.
+  type PlacesPoolRow = PlacesIncumbent & {
+    match_state: "counted" | "pending" | "unmatched";
+    sales_id: string | null;
+    client_id: string | null;
+  };
+  let placesPool: PlacesPoolRow[] = [];
+  const claimedIds = new Set<string>();
+  if (source === "business_profile") {
+    const { data: poolRows } = await admin
+      .from("reviews")
+      .select(
+        "id, author_name, rating, google_created_at, removed_at, low_rating_alerted_at, match_state, sales_id, client_id",
+      )
+      .eq("location_id", location.id)
+      .like("google_review_id", "places:%")
+      .returns<
+        {
+          id: string;
+          author_name: string;
+          rating: number;
+          google_created_at: string;
+          removed_at: string | null;
+          low_rating_alerted_at: string | null;
+          match_state: "counted" | "pending" | "unmatched";
+          sales_id: string | null;
+          client_id: string | null;
+        }[]
+      >();
+    placesPool = (poolRows ?? []).map((r) => ({
+      ...r,
+      hasAuthorName: r.author_name !== "Anónimo",
+    }));
+  }
+
   for (const fr of fresh) {
+    // ── Reclamo cross-fuente (Vía A → Vía B) ───────────────────────────────
+    // La reseña fresca de Business Profile puede ser una ya importada por
+    // Places con id sintético. Si hay gemela inequívoca, actualizamos ESA fila
+    // al id real (conservando fila, atribución, comisión y sello de alerta) en
+    // vez de insertar un duplicado.
+    if (source === "business_profile" && placesPool.length > 0) {
+      const decision = decideCrossSourceClaim({
+        hasAuthorName: fr.hasAuthorName,
+        authorName: fr.author_name,
+        incomingRating: fr.rating,
+        incomingCreatedAt: fr.google_created_at,
+        incomingUpdatedAt: fr.google_updated_at ?? null,
+        incumbents: placesPool.filter((r) => !claimedIds.has(r.id)),
+      });
+
+      if (decision.action === "claim") {
+        const inc = placesPool.find((r) => r.id === decision.incumbentId);
+        const update: Record<string, unknown> = {
+          google_review_id: fr.google_review_id,
+          source: "business_profile",
+          rating: fr.rating,
+          text: fr.text,
+          google_created_at: fr.google_created_at,
+          fetched_at: new Date().toISOString(),
+        };
+        if (decision.clearRemovedAt) update.removed_at = null;
+        if (decision.reAlertLowRating) update.low_rating_alerted_at = null;
+
+        const { error: claimErr } = await admin
+          .from("reviews")
+          .update(update as never)
+          .eq("id", decision.incumbentId)
+          .eq("org_id", location.org_id);
+
+        if (claimErr) {
+          console.error(
+            "[cron] cross-source claim failed:",
+            claimErr,
+            fr.google_review_id,
+          );
+          await admin.from("audit_log").insert({
+            entity_type: "review",
+            entity_id: decision.incumbentId,
+            action: "review_source_claim_failed",
+            org_id: location.org_id,
+            payload: {
+              google_review_id: fr.google_review_id,
+              author_name: fr.author_name,
+              error: claimErr.message,
+            },
+          } as never);
+          // No insertamos: evitaríamos el duplicado que queremos prevenir.
+          // La reseña sigue "fresca" → se reintenta en el próximo run.
+          continue;
+        }
+
+        claimedIds.add(decision.incumbentId);
+        summary.migrated = (summary.migrated ?? 0) + 1;
+        await admin.from("audit_log").insert({
+          entity_type: "review",
+          entity_id: decision.incumbentId,
+          action: "review_source_migrated",
+          org_id: location.org_id,
+          payload: {
+            author_name: fr.author_name,
+            new_google_review_id: fr.google_review_id,
+            new_rating: fr.rating,
+            old_rating: inc?.rating ?? null,
+            preserved_sales_id: inc?.sales_id ?? null,
+            preserved_client_id: inc?.client_id ?? null,
+            re_alert_low_rating: decision.reAlertLowRating,
+          },
+        } as never);
+
+        if (decision.reAlertLowRating && inc) {
+          lowRatingAlerts.push({
+            reviewId: inc.id,
+            rating: fr.rating,
+            authorName: fr.author_name,
+            reviewText: fr.text,
+            locationId: location.id,
+            locationName: location.name,
+            placeId: location.place_id ?? null,
+            matchState: inc.match_state,
+            salesId: inc.sales_id,
+            clientId: inc.client_id,
+          });
+        }
+        continue;
+      }
+    }
+
     // ── Fusión por autor (edit-merge) ──────────────────────────────────────
     // Google permite UNA reseña por persona y negocio, así que una reseña
     // fresca cuyo author_name (no anónimo) ya existe en esta ficha es la MISMA
@@ -451,6 +599,104 @@ export async function processFreshReviews(
   }
 
   return { notifications, lowRatingAlerts };
+}
+
+/**
+ * Barrido post-sync de la transición Vía A → Vía B: elimina las filas
+ * `places:%` que sigan existiendo en una ficha conectada por OAuth DESPUÉS de
+ * un sync COMPLETO de Business Profile (paginación agotada de forma natural).
+ *
+ * En ese punto, toda reseña real de Google ya existe como fila propia de
+ * Business Profile o fue reclamada por `decideCrossSourceClaim`; lo que queda
+ * en el namespace `places:%` es, por definición, un duplicado residual que el
+ * reclamo no pudo emparejar sin ambigüedad o una reseña que ya no está en
+ * Google. Política conservadora:
+ *
+ *   - SIN atribución (sales_id y client_id nulos) → DELETE. No llevan estado
+ *     de negocio; conservarlas solo infla los contadores.
+ *   - CON atribución → NO se tocan (borrarlas perdería comisión/objetivo del
+ *     comercial). Quedan auditadas (`places_leftover_conflict`) para revisión
+ *     manual. Con el reclamo por autor operativo, este caso es residual.
+ *
+ * El caller decide CUÁNDO es seguro llamar (sync completo). En régimen
+ * estable no quedan filas `places:%` en fichas conectadas → no-op.
+ */
+export async function sweepPlacesLeftovers(
+  admin: ProcessReviewsArgs["admin"],
+  location: LocationCtx,
+  summary: LocationSummary,
+): Promise<void> {
+  const { data: leftovers } = await admin
+    .from("reviews")
+    .select("id, author_name, rating, google_created_at, sales_id, client_id")
+    .eq("location_id", location.id)
+    .like("google_review_id", "places:%")
+    .returns<
+      {
+        id: string;
+        author_name: string;
+        rating: number;
+        google_created_at: string;
+        sales_id: string | null;
+        client_id: string | null;
+      }[]
+    >();
+  if (!leftovers || leftovers.length === 0) return;
+
+  const attributed = leftovers.filter((r) => r.sales_id !== null || r.client_id !== null);
+  const deletable = leftovers.filter((r) => r.sales_id === null && r.client_id === null);
+
+  if (deletable.length > 0) {
+    const ids = deletable.map((r) => r.id);
+    const { error: delErr } = await admin
+      .from("reviews")
+      .delete()
+      .in("id", ids)
+      .eq("org_id", location.org_id);
+    if (delErr) {
+      console.error("[cron] sweep places leftovers failed:", delErr, location.id);
+    } else {
+      summary.swept = (summary.swept ?? 0) + deletable.length;
+      await admin.from("audit_log").insert({
+        entity_type: "location",
+        entity_id: location.id,
+        action: "places_leftovers_swept",
+        org_id: location.org_id,
+        payload: {
+          count: deletable.length,
+          reviews: deletable.map((r) => ({
+            id: r.id,
+            author_name: r.author_name,
+            rating: r.rating,
+            google_created_at: r.google_created_at,
+          })),
+        },
+      } as never);
+    }
+  }
+
+  if (attributed.length > 0) {
+    summary.sweep_conflicts = (summary.sweep_conflicts ?? 0) + attributed.length;
+    console.warn(
+      `[cron] ${location.id}: ${attributed.length} fila(s) places:% atribuidas sin gemela clara tras sync completo; requieren revisión manual`,
+    );
+    await admin.from("audit_log").insert({
+      entity_type: "location",
+      entity_id: location.id,
+      action: "places_leftover_conflict",
+      org_id: location.org_id,
+      payload: {
+        count: attributed.length,
+        reviews: attributed.map((r) => ({
+          id: r.id,
+          author_name: r.author_name,
+          rating: r.rating,
+          sales_id: r.sales_id,
+          client_id: r.client_id,
+        })),
+      },
+    } as never);
+  }
 }
 
 /**

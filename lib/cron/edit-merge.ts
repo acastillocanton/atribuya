@@ -70,3 +70,97 @@ export function decideEditMerge(p: {
 
   return { action: "merge", incumbentId: inc.id, clearRemovedAt, reAlertLowRating };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reclamo cross-fuente (transición Vía A → Vía B)
+//
+// Cuando una ficha que sincronizaba por Places API conecta OAuth, el cron de
+// Business Profile trae TODAS las reseñas con su reviewId REAL. Las que ya
+// habíamos importado por Places viven en DB con id sintético `places:%`, así
+// que el dedup por google_review_id no las reconoce → duplicado. La reseña es
+// LA MISMA entidad, de modo que en vez de insertar+borrar, la fila de Places
+// se RECLAMA: se actualiza en el sitio con el id real y source nueva,
+// conservando id de fila, atribución, comisión, sello de alerta y auditoría.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Fila `places:%` candidata a ser reclamada por su gemela de Business Profile. */
+export type PlacesIncumbent = IncumbentLite & {
+  author_name: string;
+  hasAuthorName: boolean;
+  google_created_at: string;
+};
+
+export type CrossSourceDecision =
+  | { action: "insert" }
+  | {
+      action: "claim";
+      incumbentId: string;
+      clearRemovedAt: boolean;
+      reAlertLowRating: boolean;
+    };
+
+/**
+ * Tolerancia para emparejar reseñas ANÓNIMAS por instante de publicación.
+ * Places (`time`, unix) y Business Profile (`createTime`/`updateTime`, ISO)
+ * describen el mismo momento; el margen absorbe redondeos de formato.
+ */
+export const ANON_CLAIM_TOLERANCE_MS = 10 * 60_000;
+
+/**
+ * Decide si una reseña fresca de Business Profile debe RECLAMAR una fila
+ * `places:%` existente (misma reseña importada antes por Vía A) o insertarse.
+ *
+ *   - Autor con nombre → gemela = incumbente `places:%` del MISMO autor
+ *     (Google permite una reseña por persona y negocio). Exactamente 1 → claim.
+ *     El rating y la fecha pueden diferir (edición entre syncs): sigue siendo
+ *     la misma reseña.
+ *   - Autor anónimo → el nombre no identifica, pero la transición no es una
+ *     edición: gemela = incumbente anónimo con MISMO rating y timestamp a
+ *     ≤ ANON_CLAIM_TOLERANCE_MS de createTime o updateTime. Exactamente 1 → claim.
+ *   - Ambigüedad (0 o ≥2 candidatas) → insert; la fila `places:%` sobrante la
+ *     resuelve el barrido posterior (sweepPlacesLeftovers) con política
+ *     conservadora.
+ *
+ * Sin I/O; el caller pasa las incumbentes aún no reclamadas en este run.
+ */
+export function decideCrossSourceClaim(p: {
+  hasAuthorName: boolean;
+  authorName: string;
+  incomingRating: number;
+  incomingCreatedAt: string;
+  incomingUpdatedAt?: string | null;
+  incumbents: PlacesIncumbent[];
+}): CrossSourceDecision {
+  let candidates: PlacesIncumbent[];
+
+  if (p.hasAuthorName) {
+    candidates = p.incumbents.filter(
+      (inc) => inc.hasAuthorName && inc.author_name === p.authorName,
+    );
+  } else {
+    const incomingTimes = [p.incomingCreatedAt, p.incomingUpdatedAt]
+      .filter((t): t is string => Boolean(t))
+      .map((t) => new Date(t).getTime())
+      .filter((ms) => !Number.isNaN(ms));
+    candidates = p.incumbents.filter((inc) => {
+      if (inc.hasAuthorName || inc.rating !== p.incomingRating) return false;
+      const incMs = new Date(inc.google_created_at).getTime();
+      if (Number.isNaN(incMs)) return false;
+      return incomingTimes.some(
+        (ms) => Math.abs(ms - incMs) <= ANON_CLAIM_TOLERANCE_MS,
+      );
+    });
+  }
+
+  if (candidates.length !== 1) return { action: "insert" };
+  const [inc] = candidates;
+  if (!inc) return { action: "insert" };
+
+  const clearRemovedAt = inc.removed_at !== null;
+  const reAlertLowRating =
+    isLowRating(p.incomingRating) &&
+    !isLowRating(inc.rating) &&
+    inc.low_rating_alerted_at === null;
+
+  return { action: "claim", incumbentId: inc.id, clearRemovedAt, reAlertLowRating };
+}

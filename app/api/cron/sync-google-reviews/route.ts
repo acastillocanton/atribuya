@@ -9,6 +9,7 @@ import {
 } from "@/lib/google/business-profile";
 import {
   processFreshReviews,
+  sweepPlacesLeftovers,
   flushNotifications,
   flushLowRatingAlerts,
   type LocationSummary,
@@ -220,6 +221,10 @@ export async function GET(request: NextRequest) {
       const PAGE_SIZE = 50;
       const googleReviews: GoogleReview[] = [];
       let pageToken: string | undefined;
+      // Un sync es COMPLETO cuando la paginación termina de forma natural
+      // (sin nextPageToken pendiente al agotar MAX_PAGES). Solo entonces es
+      // seguro barrer las filas `places:%` huérfanas de la transición Vía A→B.
+      let syncComplete = true;
       for (let page = 0; page < MAX_PAGES; page++) {
         const { reviews: pageReviews, nextPageToken } = await listReviews(
           accessToken,
@@ -242,10 +247,21 @@ export async function GET(request: NextRequest) {
 
         if (!nextPageToken) break;
         pageToken = nextPageToken;
+        if (page === MAX_PAGES - 1) syncComplete = false;
       }
       entry.fetched = googleReviews.length;
 
+      const locationCtx = {
+        id: loc.id,
+        name: loc.name,
+        org_id: loc.org_id,
+        place_id: loc.google_place_id,
+      };
+
       if (googleReviews.length === 0) {
+        // Sin reseñas en Google: cualquier fila `places:%` que quede es
+        // huérfana de la transición Vía A→B → barrido.
+        if (syncComplete) await sweepPlacesLeftovers(admin, locationCtx, entry);
         await markSyncOk(admin, loc.id);
         summary.push(entry);
         continue;
@@ -262,6 +278,9 @@ export async function GET(request: NextRequest) {
       const fresh = googleReviews.filter((r) => !existingSet.has(r.reviewId));
 
       if (fresh.length === 0) {
+        // Todo el listado ya está en DB con su id real; las `places:%` que
+        // queden no tienen gemela pendiente de reclamar → barrido.
+        if (syncComplete) await sweepPlacesLeftovers(admin, locationCtx, entry);
         await markSyncOk(admin, loc.id);
         summary.push(entry);
         continue;
@@ -294,6 +313,7 @@ export async function GET(request: NextRequest) {
           rating,
           text: gr.comment ?? null,
           google_created_at: gr.createTime,
+          google_updated_at: gr.updateTime ?? null,
         });
       }
       if (droppedInvalid > 0) {
@@ -305,12 +325,7 @@ export async function GET(request: NextRequest) {
       const { notifications, lowRatingAlerts } = await processFreshReviews(
         {
           admin,
-          location: {
-            id: loc.id,
-            name: loc.name,
-            org_id: loc.org_id,
-            place_id: loc.google_place_id,
-          },
+          location: locationCtx,
           fresh: freshNormalized,
           salesById,
           source: "business_profile",
@@ -320,6 +335,10 @@ export async function GET(request: NextRequest) {
       );
       pendingNotifications.push(...notifications);
       allLowRatingAlerts.push(...lowRatingAlerts);
+
+      // Tras los reclamos, lo que quede en `places:%` ya no tiene gemela
+      // pendiente → barrido (solo con listado completo de Google).
+      if (syncComplete) await sweepPlacesLeftovers(admin, locationCtx, entry);
 
       await markSyncOk(admin, loc.id);
     } catch (err) {

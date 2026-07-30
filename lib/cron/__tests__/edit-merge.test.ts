@@ -124,3 +124,193 @@ describe("decideEditMerge", () => {
     });
   });
 });
+
+// ─── decideCrossSourceClaim (transición Vía A → Vía B) ───────────────────────
+
+import {
+  decideCrossSourceClaim,
+  ANON_CLAIM_TOLERANCE_MS,
+  type PlacesIncumbent,
+} from "@/lib/cron/edit-merge";
+
+const T0 = "2026-05-24T10:00:00.000Z";
+const t0Plus = (ms: number) => new Date(new Date(T0).getTime() + ms).toISOString();
+
+const pInc = (over: Partial<PlacesIncumbent> = {}): PlacesIncumbent => ({
+  id: "p-1",
+  author_name: "Lucía Moragón",
+  hasAuthorName: true,
+  rating: 5,
+  google_created_at: T0,
+  removed_at: null,
+  low_rating_alerted_at: null,
+  ...over,
+});
+
+describe("decideCrossSourceClaim", () => {
+  it("autor con nombre + 1 incumbente del mismo autor → claim", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: true,
+      authorName: "Lucía Moragón",
+      incomingRating: 5,
+      incomingCreatedAt: T0,
+      incumbents: [pInc()],
+    });
+    expect(r).toEqual({
+      action: "claim",
+      incumbentId: "p-1",
+      clearRemovedAt: false,
+      reAlertLowRating: false,
+    });
+  });
+
+  it("autor con nombre: claim aunque rating y fecha difieran (edición entre syncs)", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: true,
+      authorName: "Lucía Moragón",
+      incomingRating: 1,
+      incomingCreatedAt: t0Plus(72 * 3_600_000),
+      incumbents: [pInc({ rating: 5 })],
+    });
+    expect(r.action).toBe("claim");
+    if (r.action === "claim") expect(r.reAlertLowRating).toBe(true);
+  });
+
+  it("autor con nombre: NO reclama incumbentes de otro autor", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: true,
+      authorName: "Otra Persona",
+      incomingRating: 5,
+      incomingCreatedAt: T0,
+      incumbents: [pInc()],
+    });
+    expect(r).toEqual({ action: "insert" });
+  });
+
+  it("autor con nombre + 2 incumbentes del mismo autor → insert (ambigüedad)", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: true,
+      authorName: "Lucía Moragón",
+      incomingRating: 5,
+      incomingCreatedAt: T0,
+      incumbents: [pInc(), pInc({ id: "p-2" })],
+    });
+    expect(r).toEqual({ action: "insert" });
+  });
+
+  it("anónima: claim con mismo rating y timestamp dentro de tolerancia", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: false,
+      authorName: "Anónimo",
+      incomingRating: 4,
+      incomingCreatedAt: t0Plus(ANON_CLAIM_TOLERANCE_MS - 1000),
+      incumbents: [
+        pInc({ author_name: "Anónimo", hasAuthorName: false, rating: 4 }),
+      ],
+    });
+    expect(r.action).toBe("claim");
+  });
+
+  it("anónima: empareja también contra updateTime (reseña editada)", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: false,
+      authorName: "Anónimo",
+      incomingRating: 4,
+      incomingCreatedAt: "2020-01-01T00:00:00.000Z",
+      incomingUpdatedAt: T0,
+      incumbents: [
+        pInc({ author_name: "Anónimo", hasAuthorName: false, rating: 4 }),
+      ],
+    });
+    expect(r.action).toBe("claim");
+  });
+
+  it("anónima: fuera de tolerancia → insert", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: false,
+      authorName: "Anónimo",
+      incomingRating: 4,
+      incomingCreatedAt: t0Plus(ANON_CLAIM_TOLERANCE_MS + 60_000),
+      incumbents: [
+        pInc({ author_name: "Anónimo", hasAuthorName: false, rating: 4 }),
+      ],
+    });
+    expect(r).toEqual({ action: "insert" });
+  });
+
+  it("anónima: rating distinto → insert aunque el timestamp coincida", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: false,
+      authorName: "Anónimo",
+      incomingRating: 5,
+      incomingCreatedAt: T0,
+      incumbents: [
+        pInc({ author_name: "Anónimo", hasAuthorName: false, rating: 4 }),
+      ],
+    });
+    expect(r).toEqual({ action: "insert" });
+  });
+
+  it("anónima: 2 candidatas equivalentes → insert (ambigüedad)", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: false,
+      authorName: "Anónimo",
+      incomingRating: 4,
+      incomingCreatedAt: T0,
+      incumbents: [
+        pInc({ author_name: "Anónimo", hasAuthorName: false, rating: 4 }),
+        pInc({ id: "p-2", author_name: "Anónimo", hasAuthorName: false, rating: 4 }),
+      ],
+    });
+    expect(r).toEqual({ action: "insert" });
+  });
+
+  it("anónima NO reclama incumbentes con nombre (y viceversa)", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: false,
+      authorName: "Anónimo",
+      incomingRating: 5,
+      incomingCreatedAt: T0,
+      incumbents: [pInc({ rating: 5 })],
+    });
+    expect(r).toEqual({ action: "insert" });
+  });
+
+  it("incumbente soft-borrada → claim con clearRemovedAt (la Vía B la revive)", () => {
+    const r = decideCrossSourceClaim({
+      hasAuthorName: true,
+      authorName: "Lucía Moragón",
+      incomingRating: 5,
+      incomingCreatedAt: T0,
+      incumbents: [pInc({ removed_at: "2026-06-01T00:00:00Z" })],
+    });
+    expect(r).toEqual({
+      action: "claim",
+      incumbentId: "p-1",
+      clearRemovedAt: true,
+      reAlertLowRating: false,
+    });
+  });
+
+  it("no re-alerta si la incumbente ya era ≤2★ o ya se alertó", () => {
+    const yaBaja = decideCrossSourceClaim({
+      hasAuthorName: true,
+      authorName: "Lucía Moragón",
+      incomingRating: 1,
+      incomingCreatedAt: T0,
+      incumbents: [pInc({ rating: 2 })],
+    });
+    expect(yaBaja.action).toBe("claim");
+    if (yaBaja.action === "claim") expect(yaBaja.reAlertLowRating).toBe(false);
+
+    const yaAlertada = decideCrossSourceClaim({
+      hasAuthorName: true,
+      authorName: "Lucía Moragón",
+      incomingRating: 1,
+      incomingCreatedAt: T0,
+      incumbents: [pInc({ rating: 5, low_rating_alerted_at: "2026-06-01T00:00:00Z" })],
+    });
+    expect(yaAlertada.action).toBe("claim");
+    if (yaAlertada.action === "claim") expect(yaAlertada.reAlertLowRating).toBe(false);
+  });
+});

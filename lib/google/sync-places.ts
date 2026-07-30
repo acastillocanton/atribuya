@@ -181,6 +181,11 @@ export async function syncPlaces(args: SyncPlacesArgs = {}): Promise<SyncPlacesR
   // (no deduplicable) contaría DOBLE al comercial. La Vía B (OAuth) trae TODAS
   // las reseñas y es autoritativa cuando está conectada, así que Places la
   // salta. Fichas con oauth_status NULL o desconectado siguen por Vía A.
+  //
+  // Las filas `places:%` importadas ANTES de conectar OAuth las reconcilia el
+  // cron de Business Profile: cada reseña fresca reclama su gemela
+  // (`decideCrossSourceClaim`, conserva atribución) y el barrido post-sync
+  // (`sweepPlacesLeftovers`) elimina las huérfanas sin atribución.
   let locationsQuery = admin
     .from("locations")
     .select("id, name, google_place_id, org_id")
