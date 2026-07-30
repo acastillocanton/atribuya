@@ -225,8 +225,15 @@ Dos integraciones de Google, ambas en el proyecto Cloud `atribuya`:
   >
   > **✅ Consent screen PUBLICADO (2026-07-30, misma sesión).** Estado «En producción» (sin verificar): cualquier cuenta de Google puede completar el OAuth, con el aviso de «app no verificada» (Avanzado → Continuar) y tope de **100 usuarios acumulados** hasta pasar la verificación de marca. Motivo adicional para publicar ya: **en modo Testing los refresh tokens caducan a los 7 días** → las fichas se desconectarían solas cada semana. Tras publicar se **reconectaron las 2 fichas** para emitir refresh tokens de larga duración (verificado: ambos con `business.manage`, sync OK, dedup idempotente — 7 fetched / 0 new).
   >
+  > **✅ Verificación de marca SOLICITADA (2026-07-30, misma sesión).** Prerequisitos completados y enviada desde `a.castillo.esv@gmail.com` (propietaria del proyecto y de `atribuya.com` en Search Console):
+  > - **Cláusula de Limited Use en la privacidad** (ES+EN, desplegada y verificada live): §9 ampliado con 9.1 datos accedidos vía `business.manage`, 9.2 compromiso con la Google API Services User Data Policy (sin venta, sin publicidad, sin lectura humana, sin entrenar IA) y 9.3 revocación (desconectar ficha / myaccount.google.com/permissions).
+  > - **Branding del consent screen migrado a `atribuya.com`**: nombre «Atribuya», logo subido, homepage `https://atribuya.com`, privacidad `/privacidad`, términos `/terminos`; dominios autorizados `atribuya.com` + `castillocanton.com` (se conserva el segundo, alineado en su día para la aprobación de la API). Email de soporte: `a.castillo.esv@gmail.com` (la consola solo ofrece el email de la sesión o Grupos; cambiarlo a `alejandro@atribuya.com` exigiría editar el branding logueado con esa cuenta — se puede hacer luego sin reiniciar nada).
+  > - Justificación del scope enviada (read-only, único scope que da acceso al endpoint v4 de reseñas).
+  >
+  > **En espera**: respuesta de Google Trust & Safety por email (días a ~2 semanas; pueden pedir aclaraciones o un vídeo demo del flujo OAuth — grabar login admin → Fichas → Conectar Google → consent → selector → reseñas, YouTube unlisted). Mientras tanto el aviso de «app no verificada» sigue activo y todo funciona (tope 100 usuarios).
+  >
   > **PENDIENTE:**
-  > 1. **Verificación de marca de Google** (opcional, quita el aviso de «app no verificada» y el tope de 100 usuarios): antes de solicitarla, añadir a la política de privacidad una cláusula sobre el tratamiento de datos de Google Business Profile (hoy la privacidad de `castillocanton.com` no menciona Atribuya ni OAuth). Sin prisa: el aviso es tolerable para los primeros clientes.
+  > 1. Vigilar el email de la verificación de marca y responder a lo que pida Google.
   > 2. Decidir la limpieza automática de duplicados Vía A → Vía B (punto 5 de arriba).
 
 ### 7.4 Dominio comercial ✅ RESUELTO (2026-06-06)
