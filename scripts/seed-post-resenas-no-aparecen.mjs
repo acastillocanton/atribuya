@@ -219,7 +219,7 @@ const post = {
   title: "Por qué tus reseñas de Google no aparecen (y cómo saber si te están filtrando)",
   slug: { _type: "slug", current: "resenas-google-no-aparecen" },
   excerpt:
-    "Google retira reseñas sin avisar: ni email ni notificación. Las causas más frecuentes por las que las reseñas de tus clientes no aparecen, un diagnóstico en seis pasos y qué hacer para recuperar el ritmo.",
+    "Google retira reseñas sin avisar: ni email ni notificación. Las causas por las que las reseñas de tus clientes no aparecen, un diagnóstico en seis pasos y cómo recuperar el ritmo.",
   author: { _type: "reference", _ref: authorId },
   categories: [{ _type: "reference", _ref: categoryId, _key: key() }],
   seoTitle: "Reseñas de Google que no aparecen: causas y solución",
