@@ -50,6 +50,10 @@ const PAIRS = [
     es: { id: "post.incentivos-comerciales-resenas-google-es", slug: "incentivos-comerciales-resenas-google" },
     en: { id: "post.incentivos-comerciales-resenas-google-en", slug: "sales-rep-incentives-google-reviews" },
   },
+  {
+    es: { id: "post.resenas-google-no-aparecen-es", slug: "resenas-google-no-aparecen" },
+    en: { id: "post.resenas-google-no-aparecen-en", slug: "google-reviews-not-showing-up" },
+  },
 ];
 
 async function run() {
