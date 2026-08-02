@@ -59,15 +59,38 @@ const DICTS = {
 // Textos que cambian según el magnet (el resto del diccionario es común).
 const MAGNET_TEXTS: Record<
   LeadMagnetFormMagnet,
-  Record<LeadMagnetFormLocale, { download: string; cta: string }>
+  Record<
+    LeadMagnetFormLocale,
+    { download: string; cta: string; successTitle: string; successBody: string }
+  >
 > = {
   "plantilla-atribucion-resenas": {
-    es: { download: "Descargar la plantilla", cta: "Descargar la plantilla gratis" },
-    en: { download: "Download the template", cta: "Download the free template" },
+    es: {
+      download: "Descargar la plantilla",
+      cta: "Descargar la plantilla gratis",
+      successTitle: "✓ Lista para descargar",
+      successBody: "Te la hemos enviado también a tu email por si quieres tenerla a mano.",
+    },
+    en: {
+      download: "Download the template",
+      cta: "Download the free template",
+      successTitle: "✓ Ready to download",
+      successBody: "We also sent it to your email so you have it handy.",
+    },
   },
   "plantillas-respuesta-resenas": {
-    es: { download: "Descargar el pack", cta: "Descargar el pack gratis" },
-    en: { download: "Download the pack", cta: "Download the free pack" },
+    es: {
+      download: "Descargar el pack",
+      cta: "Descargar el pack gratis",
+      successTitle: "✓ Listo para descargar",
+      successBody: "Te lo hemos enviado también a tu email por si quieres tenerlo a mano.",
+    },
+    en: {
+      download: "Download the pack",
+      cta: "Download the free pack",
+      successTitle: "✓ Ready to download",
+      successBody: "We also sent it to your email so you have it handy.",
+    },
   },
 };
 
@@ -79,7 +102,7 @@ export function LeadMagnetForm({
   magnet?: LeadMagnetFormMagnet;
 }) {
   const mt = MAGNET_TEXTS[magnet][locale];
-  const t = { ...DICTS[locale], download: mt.download, cta: mt.cta };
+  const t = { ...DICTS[locale], ...mt };
   const [state, setState] = useState<FormState>({ kind: "idle" });
   const [pending, startTransition] = useTransition();
 
