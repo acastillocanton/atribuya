@@ -204,7 +204,7 @@ const post = {
   categories: [{ _type: "reference", _ref: categoryId, _key: key() }],
   seoTitle: "How to ask for Google reviews without breaking the rules",
   seoDescription:
-    "What Google prohibits when asking for reviews (incentives, filtering negatives, mentioning the rep) and how to get them legitimately without risking your listing.",
+    "What Google prohibits when asking for reviews (incentives, filtering, mentioning the rep) and how to get them legitimately without risking your listing.",
   mainImage: {
     _type: "image",
     asset: { _type: "reference", _ref: esCoverAssetRef },

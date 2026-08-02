@@ -205,7 +205,7 @@ const post = {
   categories: [{ _type: "reference", _ref: categoryId, _key: key() }],
   seoTitle: "How to respond to Google reviews: guide and templates",
   seoDescription:
-    "A practical guide to responding to Google reviews: a four-principle method, templates for positive and negative reviews, forbidden mistakes and how to organize it as a team.",
+    "A practical guide to responding to Google reviews: a four-principle method, templates for positive and negative reviews and how to organize it as a team.",
 };
 
 async function reuseEsCover() {

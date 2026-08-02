@@ -204,7 +204,7 @@ const post = {
   categories: [{ _type: "reference", _ref: categoryId, _key: key() }],
   seoTitle: "Cómo responder reseñas de Google: guía y plantillas",
   seoDescription:
-    "Guía práctica para responder reseñas de Google: método en cuatro principios, plantillas para positivas y negativas, errores prohibidos y cómo organizarlo en equipo.",
+    "Guía práctica para responder reseñas de Google: método en cuatro principios, plantillas para positivas y negativas y cómo organizarlo en equipo.",
 };
 
 async function uploadCover() {
