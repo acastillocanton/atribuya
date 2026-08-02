@@ -1033,3 +1033,17 @@ Publicado **«Cómo responder reseñas de Google: guía con plantillas listas pa
 
 ### 28.4 Pendiente para la próxima
 Escribir #8 (Omnibus, con fuentes primarias verificadas), #9 (falsas) y #10 (GEO) en sus semanas. Crear el pack descargable de plantillas de respuesta (+ página de recurso tipo `/recursos/plantilla-atribucion-resenas`; recordar el 4º punto de alta `isPublicPath` en Analytics). El usuario programa el post 4 (mito del 5,0) ya, que su artículo destino está vivo.
+
+## 29. Pack de plantillas de respuesta: 2º lead magnet (2026-08-02, misma sesión que §28)
+
+### 29.1 Regla nueva de marca (del founder, misma sesión)
+**Todo material entregable a clientes/leads lleva la marca Atribuya y la forma de contacto** (atribuya.com + alejandro@atribuya.com). Aplicado al pack nuevo (portada + pie en todas las páginas) y retroactivamente a la **plantilla Excel** existente (añadido el email a la línea final de «Cómo usar»; editado vía `xl/sharedStrings.xml` con zipfile **porque openpyxl dropea las validaciones de datos x14** al guardar y rompería los desplegables — gotcha a recordar con ese fichero).
+
+### 29.2 El pack (Word, 20 plantillas)
+`public/recursos/plantillas-respuesta-resenas-google.docx`, generado con docx-js (generador en scratchpad, no versionado; regenerable). A4, Arial, acento terracota `#A84A2A`, portada de marca, pie con contacto y nº de página. 4 secciones: positivas (5), negativas (7), casos delicados (5: no-cliente, sospecha de falsa, exempleado, reseña antigua, amenaza de reclamación), sectores con confidencialidad (3: salud sin confirmar condición de paciente, asesorías, promotoras postventa). Cada plantilla: «Cuándo usarla» + caja + «Ojo» con el matiz de política. Vista previa `plantillas-respuesta-resenas-google-portada.png` (compuesta con PIL desde el PDF, 2240×1244, mismo formato que la del Excel).
+
+### 29.3 Infra de lead magnets generalizada (commit `8332d4c`)
+`submit-lead-magnet.ts`: registro `MAGNETS` (downloadPath+source por id), campo oculto `magnet` en el form (valores desconocidos caen al Excel, compatibilidad); source nuevo `lead-magnet:plantillas-respuesta-resenas`. `deliver-lead-magnet.ts`: copy de email por magnet (asunto/título/intro/botón), pie con email de contacto. `LeadMagnetForm.tsx`: prop `magnet` + `MAGNET_TEXTS` (CTA/descarga/éxito por magnet y locale; fix de género `Listo/Lista` en commit posterior). El evento GA4 `download_lead_magnet` ya distingue por parámetro `magnet`.
+
+### 29.4 Página del recurso + SEO
+`app/recursos/plantillas-respuesta-resenas/page.tsx` (calcada al patrón del Excel: hero+form, vista previa, cómo usarlo, FAQ con FAQPage JSON-LD, enlace a la guía #7). Alta en los 3 puntos: lookahead de `next.config.ts`, `PUBLIC_SEO_PATHS` del middleware, `sitemap.ts` (el 4º punto, `isPublicPath` de Analytics, ya cubría el prefijo `/recursos`). **CTA al pack añadido al artículo #7** ES+EN (párrafo tras las plantillas negativas), republicado con `--force` (portadas eran aún el placeholder, verificado antes) + `link-post-translations.mjs` para reponer el hreflang.
