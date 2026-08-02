@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase/service";
 import { deliverLeadMagnet } from "@/lib/email/deliver-lead-magnet";
+import { notifyLead } from "@/lib/email/notify-lead";
 
 /**
  * Server action del lead magnet (Plantilla Excel de atribución de reseñas),
@@ -25,14 +26,19 @@ import { deliverLeadMagnet } from "@/lib/email/deliver-lead-magnet";
 // oculto `magnet`; cualquier valor desconocido cae al primero (compatibilidad).
 export type LeadMagnetId = "plantilla-atribucion-resenas" | "plantillas-respuesta-resenas";
 
-const MAGNETS: Record<LeadMagnetId, { downloadPath: string; source: string }> = {
+const MAGNETS: Record<
+  LeadMagnetId,
+  { downloadPath: string; source: string; notifyLabel: string }
+> = {
   "plantilla-atribucion-resenas": {
     downloadPath: "/recursos/plantilla-atribucion-resenas-google.xlsx",
     source: "lead-magnet:plantilla-atribucion-resenas",
+    notifyLabel: "Descarga: plantilla de atribución (Excel)",
   },
   "plantillas-respuesta-resenas": {
     downloadPath: "/recursos/plantillas-respuesta-resenas-google.docx",
     source: "lead-magnet:plantillas-respuesta-resenas",
+    notifyLabel: "Descarga: pack de plantillas de respuesta (Word)",
   },
 };
 
@@ -134,6 +140,23 @@ export async function submitLeadMagnet(formData: FormData): Promise<SubmitLeadMa
     });
   } catch (deliverErr) {
     console.error("submitLeadMagnet deliver failed", deliverErr);
+  }
+
+  // Aviso interno (best-effort, como en submit-lead.ts): que el founder se
+  // entere de cada descarga sin tener que mirar la tabla `leads` ni GA4.
+  try {
+    await notifyLead({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      company: magnet.notifyLabel,
+      phone: "(sin teléfono, descarga de recurso)",
+      message: null,
+      source: magnet.source,
+      userAgent,
+      ip,
+    });
+  } catch (notifyErr) {
+    console.error("submitLeadMagnet notify failed", notifyErr);
   }
 
   return { ok: true, downloadUrl: magnet.downloadPath };
