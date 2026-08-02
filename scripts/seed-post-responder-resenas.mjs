@@ -128,6 +128,11 @@ const body = [
   ]),
   block("h3", "Una estrella sin texto"),
   quote("Hola, [nombre]. Vemos tu valoración pero no sabemos qué ha fallado, y nos gustaría arreglarlo. ¿Nos escribes a [contacto] y nos lo cuentas? Lo revisamos personalmente."),
+  para([
+    { text: "Estas siete plantillas cubren lo esencial. Si quieres la biblioteca completa, hemos preparado un ", marks: [] },
+    { text: "pack gratuito con 20 plantillas de respuesta en Word", href: "/recursos/plantillas-respuesta-resenas", marks: ["strong"] },
+    { text: ": positivas, negativas, casos delicados (reseñas falsas, exempleados, amenazas de reclamación) y sectores con confidencialidad como clínicas o asesorías." },
+  ]),
 
   block("h2", "Lo que no debes hacer jamás"),
   li([

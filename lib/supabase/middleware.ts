@@ -116,6 +116,7 @@ const PUBLIC_SEO_PATHS = new Set<string>([
   "/en/how-it-works",
   // Recurso/lead magnet indexable.
   "/recursos/plantilla-atribucion-resenas",
+  "/recursos/plantillas-respuesta-resenas",
   "/robots.txt",
   "/sitemap.xml",
 ]);

@@ -21,8 +21,25 @@ import { deliverLeadMagnet } from "@/lib/email/deliver-lead-magnet";
  * Anti-spam: honeypot `website` (igual que `submit-lead.ts`) + Zod estricto.
  */
 
-const DOWNLOAD_PATH = "/recursos/plantilla-atribucion-resenas-google.xlsx";
-const SOURCE = "lead-magnet:plantilla-atribucion-resenas";
+// Registro de magnets disponibles. El formulario indica cuál pide vía el campo
+// oculto `magnet`; cualquier valor desconocido cae al primero (compatibilidad).
+export type LeadMagnetId = "plantilla-atribucion-resenas" | "plantillas-respuesta-resenas";
+
+const MAGNETS: Record<LeadMagnetId, { downloadPath: string; source: string }> = {
+  "plantilla-atribucion-resenas": {
+    downloadPath: "/recursos/plantilla-atribucion-resenas-google.xlsx",
+    source: "lead-magnet:plantilla-atribucion-resenas",
+  },
+  "plantillas-respuesta-resenas": {
+    downloadPath: "/recursos/plantillas-respuesta-resenas-google.docx",
+    source: "lead-magnet:plantillas-respuesta-resenas",
+  },
+};
+
+function normalizeMagnet(raw: unknown): LeadMagnetId {
+  return raw === "plantillas-respuesta-resenas" ? raw : "plantilla-atribucion-resenas";
+}
+
 const COMPANY_SENTINEL = "Descarga de plantilla";
 
 type Locale = "es" | "en";
@@ -62,10 +79,12 @@ export type SubmitLeadMagnetResult =
   | { ok: false; error: string; fieldErrors?: Record<string, string> };
 
 export async function submitLeadMagnet(formData: FormData): Promise<SubmitLeadMagnetResult> {
+  const magnet = MAGNETS[normalizeMagnet(formData.get("magnet"))];
+
   // Honeypot: si "website" llega con valor, es un bot. Simulamos éxito.
   const honeypot = String(formData.get("website") ?? "").trim();
   if (honeypot.length > 0) {
-    return { ok: true, downloadUrl: DOWNLOAD_PATH };
+    return { ok: true, downloadUrl: magnet.downloadPath };
   }
 
   const locale = normalizeLocale(formData.get("locale"));
@@ -95,7 +114,7 @@ export async function submitLeadMagnet(formData: FormData): Promise<SubmitLeadMa
     name: parsed.data.name,
     email: parsed.data.email,
     company: COMPANY_SENTINEL,
-    source: SOURCE,
+    source: magnet.source,
     user_agent: userAgent,
     ip,
   });
@@ -108,10 +127,14 @@ export async function submitLeadMagnet(formData: FormData): Promise<SubmitLeadMa
   // Entrega por email best-effort. La página ofrece además el botón de descarga
   // directa, así que un fallo de email no deja al usuario sin la plantilla.
   try {
-    await deliverLeadMagnet({ to: parsed.data.email, name: parsed.data.name });
+    await deliverLeadMagnet({
+      to: parsed.data.email,
+      name: parsed.data.name,
+      magnet: normalizeMagnet(formData.get("magnet")),
+    });
   } catch (deliverErr) {
     console.error("submitLeadMagnet deliver failed", deliverErr);
   }
 
-  return { ok: true, downloadUrl: DOWNLOAD_PATH };
+  return { ok: true, downloadUrl: magnet.downloadPath };
 }

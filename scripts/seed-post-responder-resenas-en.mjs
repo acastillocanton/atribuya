@@ -128,6 +128,11 @@ const body = [
   ]),
   block("h3", "One star with no text"),
   quote("Hi, [name]. We can see your rating but we do not know what went wrong, and we would like to fix it. Could you write to us at [contact] and tell us? We will look into it personally."),
+  para([
+    { text: "These seven templates cover the essentials. If you want the full library, we have put together a ", marks: [] },
+    { text: "free pack with 20 response templates in Word", href: "/recursos/plantillas-respuesta-resenas", marks: ["strong"] },
+    { text: ": positive, negative, tricky cases (fake reviews, former employees, threats of formal complaints) and confidentiality-bound sectors such as clinics or advisory firms. The pack is in Spanish." },
+  ]),
 
   block("h2", "What you must never do"),
   li([

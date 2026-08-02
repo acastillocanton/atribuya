@@ -8,6 +8,7 @@ import {
 import { trackEvent } from "@/lib/gtag";
 
 export type LeadMagnetFormLocale = "es" | "en";
+export type LeadMagnetFormMagnet = "plantilla-atribucion-resenas" | "plantillas-respuesta-resenas";
 
 type FormState =
   | { kind: "idle" }
@@ -55,8 +56,30 @@ const DICTS = {
   },
 } as const;
 
-export function LeadMagnetForm({ locale = "es" }: { locale?: LeadMagnetFormLocale }) {
-  const t = DICTS[locale];
+// Textos que cambian según el magnet (el resto del diccionario es común).
+const MAGNET_TEXTS: Record<
+  LeadMagnetFormMagnet,
+  Record<LeadMagnetFormLocale, { download: string; cta: string }>
+> = {
+  "plantilla-atribucion-resenas": {
+    es: { download: "Descargar la plantilla", cta: "Descargar la plantilla gratis" },
+    en: { download: "Download the template", cta: "Download the free template" },
+  },
+  "plantillas-respuesta-resenas": {
+    es: { download: "Descargar el pack", cta: "Descargar el pack gratis" },
+    en: { download: "Download the pack", cta: "Download the free pack" },
+  },
+};
+
+export function LeadMagnetForm({
+  locale = "es",
+  magnet = "plantilla-atribucion-resenas",
+}: {
+  locale?: LeadMagnetFormLocale;
+  magnet?: LeadMagnetFormMagnet;
+}) {
+  const mt = MAGNET_TEXTS[magnet][locale];
+  const t = { ...DICTS[locale], download: mt.download, cta: mt.cta };
   const [state, setState] = useState<FormState>({ kind: "idle" });
   const [pending, startTransition] = useTransition();
 
@@ -68,7 +91,7 @@ export function LeadMagnetForm({ locale = "es" }: { locale?: LeadMagnetFormLocal
       if (res.ok) {
         // Conversión: descarga de lead magnet. No-op sin consentimiento de cookies.
         trackEvent("download_lead_magnet", {
-          magnet: "plantilla-atribucion-resenas",
+          magnet,
           locale,
         });
         setState({ kind: "success", downloadUrl: res.downloadUrl });
@@ -100,6 +123,7 @@ export function LeadMagnetForm({ locale = "es" }: { locale?: LeadMagnetFormLocal
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="magnet" value={magnet} />
 
       <div
         aria-hidden="true"
