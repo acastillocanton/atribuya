@@ -54,6 +54,10 @@ const PAIRS = [
     es: { id: "post.resenas-google-no-aparecen-es", slug: "resenas-google-no-aparecen" },
     en: { id: "post.resenas-google-no-aparecen-en", slug: "google-reviews-not-showing-up" },
   },
+  {
+    es: { id: "post.responder-resenas-google-es", slug: "responder-resenas-google" },
+    en: { id: "post.responder-resenas-google-en", slug: "respond-to-google-reviews" },
+  },
 ];
 
 async function run() {
