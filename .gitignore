@@ -69,5 +69,9 @@ Venta/
 # (incluye Plan de contenidos/Buyer Persona/ — el Excel de buyer personas vive ahí dentro)
 Plan de contenidos/
 
+# Base de datos de empresas comprada (datos personales — NUNCA publicar: repo público)
+DATOS#*/
+Prospeccion/
+
 # Ficheros de bloqueo de Microsoft Office (docx abiertos)
 **/~$*
